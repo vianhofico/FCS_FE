@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { UserRole } from "@/shared/contracts/commonContract";
 import {
   AuditOutlined,
   DashboardOutlined,
@@ -30,6 +31,8 @@ export type AppRouteItem = {
   icon: ReactNode;
   element: ReactNode;
   backendModule: string;
+  requireAuth?: boolean;
+  requiredRoles?: UserRole[];
 };
 
 export const appRoutes: AppRouteItem[] = [
@@ -40,6 +43,7 @@ export const appRoutes: AppRouteItem[] = [
     icon: <DashboardOutlined />,
     element: <DashboardPage />,
     backendModule: "common",
+    requireAuth: true,
   },
   {
     key: "health",
@@ -56,6 +60,8 @@ export const appRoutes: AppRouteItem[] = [
     icon: <TeamOutlined />,
     element: <IamPage />,
     backendModule: "iam",
+    requireAuth: true,
+    requiredRoles: ["MANAGER" as UserRole, "ADMIN" as UserRole],
   },
   {
     key: "catalog",
@@ -64,6 +70,7 @@ export const appRoutes: AppRouteItem[] = [
     icon: <TagsOutlined />,
     element: <CatalogPage />,
     backendModule: "catalog",
+    requireAuth: true,
   },
   {
     key: "product",
@@ -72,6 +79,7 @@ export const appRoutes: AppRouteItem[] = [
     icon: <ShopOutlined />,
     element: <ProductPage />,
     backendModule: "product",
+    requireAuth: true,
   },
   {
     key: "consignment",
@@ -80,6 +88,7 @@ export const appRoutes: AppRouteItem[] = [
     icon: <ReconciliationOutlined />,
     element: <ConsignmentPage />,
     backendModule: "consignment",
+    requireAuth: true,
   },
   {
     key: "order",
@@ -88,6 +97,7 @@ export const appRoutes: AppRouteItem[] = [
     icon: <ShoppingCartOutlined />,
     element: <OrderPage />,
     backendModule: "order",
+    requireAuth: true,
   },
   {
     key: "financial",
@@ -96,6 +106,7 @@ export const appRoutes: AppRouteItem[] = [
     icon: <DollarOutlined />,
     element: <FinancialPage />,
     backendModule: "financial",
+    requireAuth: true,
   },
   {
     key: "notification",
@@ -104,6 +115,7 @@ export const appRoutes: AppRouteItem[] = [
     icon: <NotificationOutlined />,
     element: <NotificationPage />,
     backendModule: "notification",
+    requireAuth: true,
   },
   {
     key: "audit",
@@ -112,5 +124,6 @@ export const appRoutes: AppRouteItem[] = [
     icon: <AuditOutlined />,
     element: <AuditPage />,
     backendModule: "audit",
+    requireAuth: true,
   },
 ];

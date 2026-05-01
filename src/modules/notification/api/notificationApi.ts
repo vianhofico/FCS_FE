@@ -1,18 +1,30 @@
+/**
+ * Notification API service
+ */
+
 import { http } from "@/shared/api/http";
 import { endpoints } from "@/shared/api/endpoints";
-import type { ApiPage, ApiResponse } from "@/shared/contracts/apiContract";
-
-export type NotificationSummary = {
-  id: string;
-  title?: string;
-  read?: boolean;
-  createdAt?: string;
-};
+import type { ApiResponse, PageResponse } from "@/shared/contracts/commonContract";
+import type { Notification, NotificationReadRequest, NotificationQuery } from "@/shared/contracts/notificationContract";
 
 export const notificationApi = {
-  getNotifications: async () => {
-    const response = await http.get<ApiResponse<ApiPage<NotificationSummary>>>(
-      `${endpoints.notification}/user-notifications`,
+  /**
+   * Get user notifications
+   */
+  getNotifications: async (query: NotificationQuery = {}): Promise<ApiResponse<PageResponse<Notification>>> => {
+    const response = await http.get<ApiResponse<PageResponse<Notification>>>(endpoints.notifications, {
+      params: query,
+    });
+    return response.data;
+  },
+
+  /**
+   * Mark notification as read
+   */
+  markAsRead: async (notificationId: string, payload: NotificationReadRequest = {}): Promise<ApiResponse<Notification>> => {
+    const response = await http.patch<ApiResponse<Notification>>(
+      `${endpoints.notifications}/${notificationId}/read`,
+      payload
     );
     return response.data;
   },

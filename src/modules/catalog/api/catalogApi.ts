@@ -1,16 +1,7 @@
-import { http } from "@/shared/api/http";
-import { endpoints } from "@/shared/api/endpoints";
-import type { ApiPage, ApiResponse } from "@/shared/contracts/apiContract";
+export { brandApi } from "@/modules/catalog/api/brandApi";
+export { categoryApi } from "@/modules/catalog/api/categoryApi";
+export { systemSettingApi } from "@/modules/catalog/api/systemSettingApi";
 
-export type CategorySummary = {
-  id: string;
-  name: string;
-  slug?: string;
-};
-
-export const catalogApi = {
-  getCategories: async () => {
-    const response = await http.get<ApiResponse<ApiPage<CategorySummary>>>(`${endpoints.catalog}/categories`);
-    return response.data;
-  },
-};
+export type { BrandSummary } from "@/modules/catalog/api/brandApi";
+export type { CategorySummary } from "@/modules/catalog/api/categoryApi";
+export type { SystemSettingSummary } from "@/modules/catalog/api/systemSettingApi";

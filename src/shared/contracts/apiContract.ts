@@ -1,13 +1,23 @@
+export type ApiErrorCode =
+  | "VALIDATION_FAILED"
+  | "BUSINESS_ERROR"
+  | "UNAUTHORIZED"
+  | "FORBIDDEN"
+  | "RESOURCE_NOT_FOUND"
+  | string;
+
 export type ApiResponse<T> = {
   success: boolean;
   message: string;
   data: T;
+  errorCode: ApiErrorCode | null;
+  errors: Record<string, string> | null;
 };
 
-export type ApiPage<T> = {
-  items: T[];
+export type PageResponse<T> = {
+  content: T[];
   page: number;
   size: number;
-  totalItems: number;
+  totalElements: number;
   totalPages: number;
 };
