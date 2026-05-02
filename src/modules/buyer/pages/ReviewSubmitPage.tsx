@@ -15,7 +15,7 @@ export default function ReviewSubmitPage({ productId }: Props) {
     try {
       await http.post(`${endpoints.products}/${productId}/reviews`, { rating, comment });
       message.success('Review submitted');
-    } catch (e) {
+    } catch {
       message.error('Submit failed');
     }
   };

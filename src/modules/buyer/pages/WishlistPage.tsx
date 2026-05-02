@@ -3,8 +3,13 @@ import { Card, List, Button, Spin } from 'antd';
 import { http } from '@/shared/api/http';
 import { API_PREFIX } from '@/shared/api/endpoints';
 
+type WishlistItem = {
+  id?: string;
+  name?: string;
+};
+
 export default function WishlistPage() {
-  const [items, setItems] = useState<any[]>([]);
+  const [items, setItems] = useState<WishlistItem[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -13,7 +18,7 @@ export default function WishlistPage() {
       try {
         const res = await http.get(`${API_PREFIX}/wishlist`);
         setItems(res.data?.data || []);
-      } catch (e) {
+      } catch {
         setItems([]);
       } finally {
         setLoading(false);

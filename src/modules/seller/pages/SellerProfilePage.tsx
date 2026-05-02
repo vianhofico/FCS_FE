@@ -72,11 +72,11 @@ export default function SellerProfilePage() {
           profile: mockProfile,
           isLoading: false,
         }));
-      } catch (err) {
+      } catch {
         setState((prev) => ({
           ...prev,
           isLoading: false,
-          error: err instanceof Error ? err.message : "Failed to load profile",
+          error: "Failed to load profile",
         }));
       }
     };
@@ -84,7 +84,7 @@ export default function SellerProfilePage() {
     fetchProfile();
   }, [user, form]);
 
-  const handleSave = async (values: Record<string, any>) => {
+  const handleSave = async (values: Record<string, unknown>) => {
     try {
       setState((prev) => ({ ...prev, isSaving: true }));
 
@@ -92,11 +92,11 @@ export default function SellerProfilePage() {
       message.success("Profile updated successfully");
       setState((prev) => ({
         ...prev,
-        profile: { ...state.profile, ...values } as SellerProfile,
+        profile: { ...(prev.profile ?? state.profile ?? {}), ...values } as SellerProfile,
         isSaving: false,
       }));
-    } catch (err) {
-      message.error(err instanceof Error ? err.message : "Failed to save profile");
+    } catch {
+      message.error("Failed to save profile");
       setState((prev) => ({ ...prev, isSaving: false }));
     }
   };

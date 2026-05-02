@@ -41,5 +41,5 @@ export function useNotifications(pollInterval = 30000) {
     }
   }, [fetchNotifications]);
 
-  return { items, loading, unread: items.filter((i) => !i.read).length, refresh: fetchNotifications, markRead };
+  return { items, loading, unread: items.filter((i) => i.status !== 'READ').length, refresh: fetchNotifications, markRead };
 }

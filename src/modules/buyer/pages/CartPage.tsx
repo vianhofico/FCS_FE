@@ -103,7 +103,7 @@ export default function CartPage() {
       }));
 
       message.success("Item removed from cart");
-    } catch (err) {
+    } catch {
       message.error("Failed to remove item");
     }
   };
@@ -120,7 +120,7 @@ export default function CartPage() {
       // Navigate to checkout page instead of creating order directly
       // This allows user to review, add addresses, and select shipping method
       navigate("/buyer/checkout");
-    } catch (err) {
+    } catch {
       message.error("Checkout failed");
       setState((prev) => ({ ...prev, isCheckingOut: false }));
     }

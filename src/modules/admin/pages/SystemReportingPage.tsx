@@ -44,7 +44,7 @@ export default function SystemReportingPage() {
           systemUptime: 99.95,
         });
         setIsLoading(false);
-      } catch (err) {
+      } catch {
         setIsLoading(false);
       }
     };

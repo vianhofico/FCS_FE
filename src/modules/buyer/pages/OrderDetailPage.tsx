@@ -34,6 +34,7 @@ import { orderApi } from "@/modules/order/api/orderApi";
 import { returnApi } from "@/modules/order/api/returnApi";
 import type { OrderDetail, OrderItem } from "@/shared/contracts/orderContract";
 import { useAuth } from "@/shared/context/AuthContext";
+import TimelineWidget from "@/shared/components/TimelineWidget";
 
 interface OrderDetailPageState {
   order: OrderDetail | null;
@@ -70,7 +71,7 @@ const ORDER_STATUS_STEPS: Record<string, number> = {
 export default function OrderDetailPage() {
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
-  const { user: _user } = useAuth();
+  useAuth();
 
   const [state, setState] = useState<OrderDetailPageState>({
     order: null,
@@ -235,6 +236,30 @@ export default function OrderDetailPage() {
   ];
 
   const statusIndex = ORDER_STATUS_STEPS[state.order.status] || 0;
+  const timelineItems = [
+    {
+      id: "created",
+      title: "Order created",
+      description: `Order ${state.order.orderCode}`,
+      createdAt: state.order.createdAt,
+    },
+    {
+      id: "status",
+      title: `Current status: ${state.order.status}`,
+      description: `Payment method: ${state.order.paymentMethod}`,
+      createdAt: state.order.updatedAt,
+    },
+    ...(state.order.trackingNumber
+      ? [
+          {
+            id: "tracking",
+            title: "Tracking assigned",
+            description: state.order.shippingProvider,
+            createdAt: state.order.updatedAt,
+          },
+        ]
+      : []),
+  ];
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -263,6 +288,10 @@ export default function OrderDetailPage() {
             ]}
           />
         </Card>
+
+        <div className="mb-6">
+          <TimelineWidget items={timelineItems} title="Order Timeline" />
+        </div>
 
         {/* Order Summary */}
         <Card className="mb-6 shadow-sm">

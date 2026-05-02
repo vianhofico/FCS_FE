@@ -7,6 +7,8 @@ import { useState } from "react";
 import { Card, Button, Table, Empty, Form, Modal, Input, Select, message, Space, Row, Col, Statistic } from "antd";
 import { SendOutlined } from "@ant-design/icons";
 
+const ONE_DAY_AGO = new Date(Date.now() - 86400000).toISOString();
+
 interface Message {
   id: string;
   title: string;
@@ -18,7 +20,7 @@ interface Message {
 export default function CommunicationCenterPage() {
   const [messages, setMessages] = useState<Message[]>([
     { id: "m1", title: "Maintenance Notice", recipient: "ALL", status: "SENT", createdAt: new Date().toISOString() },
-    { id: "m2", title: "New Feature Announcement", recipient: "SELLERS", status: "SENT", createdAt: new Date(Date.now() - 86400000).toISOString() },
+    { id: "m2", title: "New Feature Announcement", recipient: "SELLERS", status: "SENT", createdAt: ONE_DAY_AGO },
   ]);
   const [form] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -38,8 +40,8 @@ export default function CommunicationCenterPage() {
       message.success("Message sent successfully");
       form.resetFields();
       setIsModalVisible(false);
-    } catch (err) {
-      message.error(err instanceof Error ? err.message : "Failed to send message");
+    } catch {
+      message.error("Failed to send message");
     } finally {
       setLoading(false);
     }

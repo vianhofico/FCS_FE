@@ -9,6 +9,7 @@ import { Card, Button, Space, Spin, Empty, Table, Tag, Pagination, Select } from
 import { EyeOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import { returnApi } from "@/modules/order/api/returnApi";
 import type { ReturnRequestSummary } from "@/shared/contracts/returnContract";
+import type { ReturnStatus } from "@/shared/contracts/commonContract";
 import { useAuth } from "@/shared/context/AuthContext";
 
 interface MyReturnsPageState {
@@ -47,7 +48,7 @@ export default function MyReturnsPage() {
 
         const response = await returnApi.getReturns({
           requestedById: user.id,
-          status: state.statusFilter as any || undefined,
+          status: state.statusFilter ? (state.statusFilter as ReturnStatus) : undefined,
           page: state.page,
           size: state.size,
         });
@@ -60,8 +61,8 @@ export default function MyReturnsPage() {
             isLoading: false,
           }));
         }
-      } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : "Failed to load returns";
+      } catch {
+        const errorMsg = "Failed to load returns";
         setState((prev) => ({
           ...prev,
           isLoading: false,
@@ -71,7 +72,7 @@ export default function MyReturnsPage() {
     };
 
     fetchReturns();
-  }, [state.page, state.statusFilter, user]);
+  }, [state.page, state.size, state.statusFilter, user]);
 
   const getStatusColor = (status: string) => {
     const colorMap: Record<string, string> = {

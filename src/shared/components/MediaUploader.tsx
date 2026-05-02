@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Upload, Button, message } from 'antd';
+import type { UploadFile, UploadProps } from 'antd';
 import { mediaApi } from '@/shared/api/mediaApi';
 import { UploadOutlined } from '@ant-design/icons';
 
@@ -9,21 +10,26 @@ type Props = {
 };
 
 export default function MediaUploader({ multiple = true, onUpload }: Props) {
-  const [fileList, setFileList] = useState<any[]>([]);
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
 
-  const handleChange = ({ fileList: fl }: any) => {
+  const handleChange: UploadProps['onChange'] = ({ fileList: fl }) => {
     setFileList(fl);
   };
 
   const handleUpload = async () => {
     if (fileList.length === 0) return message.warning('No files selected');
     try {
-      const files = fileList.map((f) => f.originFileObj).filter(Boolean) as File[];
+      const files = fileList.reduce<File[]>((acc, file) => {
+        if (file.originFileObj instanceof File) {
+          acc.push(file.originFileObj);
+        }
+        return acc;
+      }, []);
       const res = await mediaApi.upload(files);
-      const urls = res?.data || res || [];
+      const urls = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
       message.success('Files uploaded');
       onUpload?.(urls);
-    } catch (e) {
+    } catch {
       message.error('Upload failed');
     }
   };

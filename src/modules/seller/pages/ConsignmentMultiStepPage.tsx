@@ -26,7 +26,7 @@ export default function ConsignmentMultiStepPage() {
               const payload = { /* collect payload from form state - placeholder */ };
               await http.post(endpoints.consignments, payload);
               message.success('Consignment submitted');
-            } catch (e) {
+            } catch {
               message.error('Submit failed');
             }
           }}

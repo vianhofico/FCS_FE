@@ -55,7 +55,7 @@ export default function AdminDashboardPage() {
         ]);
 
         setIsLoading(false);
-      } catch (err) {
+      } catch {
         setIsLoading(false);
       }
     };

@@ -19,9 +19,9 @@ export type DashboardKpi = {
  */
 export type ManagerDashboard = {
   kpis: DashboardKpi[];
-  revenueChart?: any;
-  consignmentStats?: any;
-  orderStats?: any;
+  revenueChart?: Record<string, unknown>;
+  consignmentStats?: Record<string, unknown>;
+  orderStats?: Record<string, unknown>;
 };
 
 /**

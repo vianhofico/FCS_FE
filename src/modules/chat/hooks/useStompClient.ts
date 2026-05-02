@@ -4,14 +4,20 @@ type WSClient = {
   connect: () => void;
   disconnect: () => void;
   send: (payload: string) => void;
-  subscribe: (cb: (data: any) => void) => () => void;
+  subscribe: (cb: (data: unknown) => void) => () => void;
 };
 
 export function useStompClient(wsPath = '/ws') {
   const socketRef = useRef<WebSocket | null>(null);
-  const listenersRef = useRef(new Set<(d: any) => void>());
+  const listenersRef = useRef(new Set<(d: unknown) => void>());
   const reconnectRef = useRef<number>(0);
   const urlRef = useRef(wsPath);
+  const connectRef = useRef<() => void>(() => {});
+
+  const scheduleReconnect = useCallback(() => {
+    reconnectRef.current = Math.min(30000, reconnectRef.current ? reconnectRef.current * 2 : 1000);
+    window.setTimeout(() => connectRef.current(), reconnectRef.current || 1000);
+  }, []);
 
   const connect = useCallback(() => {
     const url = urlRef.current;
@@ -27,10 +33,10 @@ export function useStompClient(wsPath = '/ws') {
       };
 
       ws.onmessage = (ev) => {
-        let data: any = ev.data;
+        let data: unknown = ev.data;
         try {
           data = JSON.parse(ev.data);
-        } catch (e) {
+        } catch {
           // keep raw
         }
         listenersRef.current.forEach((cb) => cb(data));
@@ -38,21 +44,22 @@ export function useStompClient(wsPath = '/ws') {
 
       ws.onclose = () => {
         socketRef.current = null;
-        // exponential backoff reconnect
-        reconnectRef.current = Math.min(30000, reconnectRef.current ? reconnectRef.current * 2 : 1000);
-        setTimeout(() => connect(), reconnectRef.current || 1000);
+        scheduleReconnect();
       };
 
       ws.onerror = () => {
         // close will trigger reconnect
         ws.close();
       };
-    } catch (e) {
+    } catch {
       // ignore — will retry
-      reconnectRef.current = Math.min(30000, reconnectRef.current ? reconnectRef.current * 2 : 1000);
-      setTimeout(() => connect(), reconnectRef.current || 1000);
+      scheduleReconnect();
     }
-  }, []);
+  }, [scheduleReconnect]);
+
+  useEffect(() => {
+    connectRef.current = connect;
+  }, [connect]);
 
   const disconnect = useCallback(() => {
     socketRef.current?.close();
@@ -67,7 +74,7 @@ export function useStompClient(wsPath = '/ws') {
     return false;
   }, []);
 
-  const subscribe = useCallback((cb: (d: any) => void) => {
+  const subscribe = useCallback((cb: (d: unknown) => void) => {
     listenersRef.current.add(cb);
     return () => listenersRef.current.delete(cb);
   }, []);

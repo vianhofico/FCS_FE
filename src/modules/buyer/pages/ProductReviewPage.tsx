@@ -74,8 +74,8 @@ export default function ProductReviewPage() {
             isLoading: false,
           }));
         }
-      } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : "Failed to load product";
+      } catch {
+        const errorMsg = "Failed to load product";
         setState((prev) => ({
           ...prev,
           isLoading: false,
@@ -87,16 +87,19 @@ export default function ProductReviewPage() {
     fetchProduct();
   }, [productId]);
 
-  const handleMediaUpload = async (_file: RcFile) => {
+  const handleMediaUpload = async (file: RcFile) => {
     // Media upload not implemented yet
+    void file;
     return false;
   };
 
-  const handleRemoveMedia = (_mediaId: string) => {
+  const handleRemoveMedia = (mediaId: string) => {
     // Media upload not implemented yet
+    void mediaId;
   };
 
-  const handleSubmit = async (_values: { title: string; description: string }) => {
+  const handleSubmit = async (values: { title: string; description: string }) => {
+    void values;
     if (state.rating === 0) {
       message.error("Please select a rating");
       return;

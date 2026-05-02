@@ -4,6 +4,7 @@
  */
 
 import { createContext, useContext, useState, useCallback, useEffect } from "react";
+/* eslint-disable react-refresh/only-export-components */
 import type { ReactNode } from "react";
 import { authApi } from "@/modules/iam/api/authApi";
 import type { UserProfile } from "@/shared/contracts/authContract";
@@ -211,8 +212,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const timeUntilExpiry = expiryTime - now;
 
       if (timeUntilExpiry <= 0) {
-        refreshAccessToken();
-        return;
+        const timer = setTimeout(() => {
+          refreshAccessToken();
+        }, 0);
+        return () => clearTimeout(timer);
       }
 
       // Schedule refresh 1 minute before expiry

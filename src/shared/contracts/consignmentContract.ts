@@ -61,7 +61,7 @@ export type ConsignmentItem = {
   suggestedPrice: number;
   conditionNote?: string;
   status: ConsignmentItemStatus;
-  media?: any[];
+  media?: Array<Record<string, unknown>>;
   createdAt?: string;
 };
 

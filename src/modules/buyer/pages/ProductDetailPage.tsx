@@ -81,8 +81,8 @@ export default function ProductDetailPage() {
           reviews: reviewsData,
           isLoading: false,
         }));
-      } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : "Failed to load product";
+      } catch {
+        const errorMsg = "Failed to load product";
         setState((prev) => ({
           ...prev,
           isLoading: false,
@@ -115,7 +115,7 @@ export default function ProductDetailPage() {
       setTimeout(() => {
         navigate("/buyer/cart");
       }, 1000);
-    } catch (err) {
+    } catch {
       message.error("Failed to add to cart");
       setState((prev) => ({ ...prev, isAddingToCart: false }));
     }

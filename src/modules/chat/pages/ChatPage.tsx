@@ -4,7 +4,7 @@ import { useStompClient } from '../hooks/useStompClient';
 
 export default function ChatPage() {
   const client = useStompClient('/ws');
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<unknown[]>([]);
 
   useEffect(() => {
     const unsub = client.subscribe((d) => {

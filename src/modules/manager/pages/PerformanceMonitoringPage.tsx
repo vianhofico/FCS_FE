@@ -3,7 +3,7 @@
  * System performance and monitoring
  */
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, Row, Col, Spin, Empty, Statistic, Table, Progress } from "antd";
 import { ArrowUpOutlined } from "@ant-design/icons";
 
@@ -15,17 +15,13 @@ interface MetricData {
 }
 
 export default function PerformanceMonitoringPage() {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading] = useState(false);
   const [metrics] = useState<MetricData[]>([
     { name: "Server Uptime", value: 99.9, unit: "%", status: "good" },
     { name: "API Response Time", value: 145, unit: "ms", status: "good" },
     { name: "Database Performance", value: 95, unit: "%", status: "good" },
     { name: "Cache Hit Rate", value: 88, unit: "%", status: "warning" },
   ]);
-
-  useEffect(() => {
-    setIsLoading(false);
-  }, []);
 
   const columns = [
     { title: "Metric", dataIndex: "name", key: "name" },

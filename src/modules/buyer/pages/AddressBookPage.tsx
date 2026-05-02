@@ -3,8 +3,12 @@ import { Card, List, Button, Spin } from 'antd';
 import { http } from '@/shared/api/http';
 import { endpoints } from '@/shared/api/endpoints';
 
+type AddressItem = {
+  fullAddress?: string;
+};
+
 export default function AddressBookPage() {
-  const [addresses, setAddresses] = useState<any[]>([]);
+  const [addresses, setAddresses] = useState<AddressItem[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -13,7 +17,7 @@ export default function AddressBookPage() {
       try {
         const res = await http.get(`${endpoints.iamUsers}/addresses`);
         setAddresses(res.data?.data || []);
-      } catch (e) {
+      } catch {
         setAddresses([]);
       } finally {
         setLoading(false);

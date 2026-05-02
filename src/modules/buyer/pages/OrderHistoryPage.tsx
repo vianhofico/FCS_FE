@@ -9,6 +9,7 @@ import { Card, Button, Space, Spin, Empty, Table, Tag, Pagination, Select } from
 import { EyeOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import { orderApi } from "@/modules/order/api/orderApi";
 import type { OrderSummary } from "@/shared/contracts/orderContract";
+import type { OrderStatus } from "@/shared/contracts/commonContract";
 import { useAuth } from "@/shared/context/AuthContext";
 
 interface OrderHistoryPageState {
@@ -47,7 +48,7 @@ export default function OrderHistoryPage() {
 
         const response = await orderApi.getOrders({
           buyerId: user.id,
-          status: state.statusFilter as any || undefined,
+          status: state.statusFilter ? (state.statusFilter as OrderStatus) : undefined,
           page: state.page,
           size: state.size,
         });
@@ -60,8 +61,8 @@ export default function OrderHistoryPage() {
             isLoading: false,
           }));
         }
-      } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : "Failed to load orders";
+      } catch {
+        const errorMsg = "Failed to load orders";
         setState((prev) => ({
           ...prev,
           isLoading: false,
@@ -71,7 +72,7 @@ export default function OrderHistoryPage() {
     };
 
     fetchOrders();
-  }, [state.page, state.statusFilter, user]);
+  }, [state.page, state.size, state.statusFilter, user]);
 
   const getStatusColor = (status: string) => {
     const colorMap: Record<string, string> = {

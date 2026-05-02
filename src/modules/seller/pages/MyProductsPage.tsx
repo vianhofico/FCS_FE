@@ -9,6 +9,7 @@ import { Card, Button, Table, Space, Spin, Empty, Pagination, Tag, Input, Select
 import { PlusOutlined, EyeOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { productApi } from "@/modules/product/api/productApi";
 import type { ProductSummary } from "@/shared/contracts/productContract";
+import type { ProductStatus } from "@/shared/contracts/commonContract";
 import { useAuth } from "@/shared/context/AuthContext";
 
 interface PageState {
@@ -48,7 +49,7 @@ export default function MyProductsPage() {
         setState((prev) => ({ ...prev, isLoading: true }));
         const response = await productApi.getProducts({
           keyword: state.filters.search || undefined,
-          status: (state.filters.status as any) || undefined,
+          status: state.filters.status ? (state.filters.status as ProductStatus) : undefined,
           page: state.page,
           size: state.size,
         });
@@ -61,8 +62,8 @@ export default function MyProductsPage() {
             isLoading: false,
           }));
         }
-      } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : "Failed to load products";
+      } catch {
+        const errorMsg = "Failed to load products";
         setState((prev) => ({
           ...prev,
           isLoading: false,

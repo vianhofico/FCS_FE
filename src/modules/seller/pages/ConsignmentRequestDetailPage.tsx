@@ -21,6 +21,7 @@ import {
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { consignmentApi } from "@/modules/seller/api/consignmentApi";
 import type { ConsignmentRequestDetail } from "@/shared/contracts/consignmentContract";
+import TimelineWidget from "@/shared/components/TimelineWidget";
 
 interface PageState {
   request: ConsignmentRequestDetail | null;
@@ -152,6 +153,30 @@ export default function ConsignmentRequestDetailPage() {
   }
 
   const request = state.request;
+  const timelineItems = [
+    {
+      id: "created",
+      title: "Request created",
+      description: `Consignment ${request.code}`,
+      createdAt: request.createdAt,
+    },
+    {
+      id: "status",
+      title: `Current status: ${request.status}`,
+      description: request.note || "No note provided",
+      createdAt: request.updatedAt,
+    },
+    ...(request.contract?.signedAt
+      ? [
+          {
+            id: "contract-signed",
+            title: "Contract signed",
+            description: `Commission ${request.contract.commissionRate ?? 0}%`,
+            createdAt: request.contract.signedAt,
+          },
+        ]
+      : []),
+  ];
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -179,6 +204,10 @@ export default function ConsignmentRequestDetailPage() {
             </Col>
           </Row>
         </Card>
+
+        <div className="mb-6">
+          <TimelineWidget items={timelineItems} title="Consignment Timeline" />
+        </div>
 
         {/* Details */}
         {request.note && (
