@@ -31,8 +31,8 @@
   body {
     @apply bg-bg-main text-text-dark font-sans;
     letter-spacing: 0.01em;
-    font-size: 15px;
-    line-height: 1.6;
+    font-size: 14.5px;
+    line-height: 1.58;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -63,7 +63,7 @@
 
   .site-deco {
     @apply font-deco text-primary;
-    font-size: 1.95rem;
+    font-size: 1.82rem;
     line-height: 1;
   }
 
@@ -73,13 +73,13 @@
 
   .luxury-menu.ant-menu-horizontal > .ant-menu-item,
   .luxury-menu.ant-menu-horizontal > .ant-menu-submenu {
-    padding-inline: 18px !important;
+    padding-inline: 10px !important;
   }
 
   .luxury-menu.ant-menu-horizontal > .ant-menu-item-selected::after,
   .luxury-menu.ant-menu-horizontal > .ant-menu-submenu-selected::after {
     border-bottom-color: var(--color-primary) !important;
-    border-bottom-width: 3px !important;
+    border-bottom-width: 2px !important;
     border-radius: 999px;
   }
 }
