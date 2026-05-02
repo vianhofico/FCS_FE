@@ -3,13 +3,33 @@
  * View all consignment requests with status filtering
  */
 
-import { useState, useEffect } from "react";
+import {
+  AuditOutlined,
+  ClockCircleOutlined,
+  EyeOutlined,
+  PlusOutlined,
+  ReconciliationOutlined,
+} from "@ant-design/icons";
+import {
+  Avatar,
+  Card,
+  Col,
+  Pagination,
+  Row,
+  Space,
+  Spin,
+  Table,
+  Typography,
+} from "antd";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, Button, Table, Spin, Empty, Pagination, Tag } from "antd";
-import { PlusOutlined, EyeOutlined } from "@ant-design/icons";
+
 import { consignmentApi } from "@/modules/seller/api/consignmentApi";
-import type { ConsignmentRequestSummary } from "@/shared/contracts/consignmentContract";
 import { useAuth } from "@/shared/context/AuthContext";
+import { Badge, Button, EmptyState } from "@/shared/ui";
+import type { ConsignmentRequestSummary } from "@/shared/contracts/consignmentContract";
+
+const { Title, Text, Paragraph } = Typography;
 
 interface PageState {
   requests: ConsignmentRequestSummary[];
@@ -34,7 +54,6 @@ export default function ConsignmentRequestListPage() {
 
   useEffect(() => {
     if (!user) return;
-
     const fetchRequests = async () => {
       try {
         setState((prev) => ({ ...prev, isLoading: true }));
@@ -53,118 +72,141 @@ export default function ConsignmentRequestListPage() {
           }));
         }
       } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : "Failed to load requests";
-        setState((prev) => ({
-          ...prev,
-          isLoading: false,
-          error: errorMsg,
-        }));
+        setState((prev) => ({ ...prev, isLoading: false, error: "Không thể tải danh sách yêu cầu" }));
       }
     };
-
     fetchRequests();
   }, [user, state.page, state.size]);
 
-  if (state.isLoading && state.requests.length === 0) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Spin size="large" />
-      </div>
-    );
-  }
-
   const columns = [
     {
-      title: "Request ID",
+      title: <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Mã yêu cầu</span>,
       dataIndex: "id",
       key: "id",
-      render: (text: string) => <span className="font-mono text-sm">{text}</span>,
+      render: (id: string) => (
+        <span className="font-mono text-xs font-bold text-slate-400">#{id.slice(-8).toUpperCase()}</span>
+      ),
     },
     {
-      title: "Status",
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Trạng thái</span>,
       dataIndex: "status",
       key: "status",
       render: (status: string) => {
-        const colorMap: Record<string, string> = {
-          PENDING: "blue",
-          ACCEPTED: "green",
-          REJECTED: "red",
-          CANCELLED: "orange",
+        // Map backend status to UI status if they differ, otherwise pass through
+        const statusMap: Record<string, string> = {
+          PENDING: "Pending",
+          ACCEPTED: "Verified",
+          REJECTED: "Rejected",
+          CANCELLED: "Inactive",
         };
-        return <Tag color={colorMap[status] || "default"}>{status}</Tag>;
+        return <Badge status={statusMap[status] || status}>{status}</Badge>;
       },
     },
     {
-      title: "Created Date",
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Ngày tạo</span>,
       dataIndex: "createdAt",
       key: "createdAt",
-      render: (date: string) => new Date(date).toLocaleDateString(),
+      render: (date: string) => (
+        <div className="flex flex-col">
+          <span className="font-bold text-slate-700">{new Date(date).toLocaleDateString()}</span>
+          <span className="text-[10px] text-slate-400">{new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+        </div>
+      ),
     },
     {
-      title: "Actions",
+      title: "",
       key: "actions",
-      render: (_: unknown, record: ConsignmentRequestSummary) => (
+      align: "right" as const,
+      render: (_: any, record: ConsignmentRequestSummary) => (
         <Button
-          type="link"
+          type="text"
           icon={<EyeOutlined />}
           onClick={() => navigate(`/seller/consignments/${record.id}`)}
+          className="rounded-xl bg-pink-50 font-bold text-primary hover:!bg-primary hover:!text-white border-none h-10 px-4 flex items-center justify-center"
         >
-          View Details
+          Chi tiết
         </Button>
       ),
     },
   ];
 
+  const stats = [
+    { label: "Yêu cầu đã gửi", value: state.total, icon: <ReconciliationOutlined />, color: "bg-primary/5 text-primary" },
+    { label: "Đã được duyệt", value: state.requests.filter(r => r.status === 'ACCEPTED').length, icon: <AuditOutlined />, color: "bg-emerald-50 text-emerald-500" },
+    { label: "Đang chờ xử lý", value: state.requests.filter(r => r.status === 'PENDING').length, icon: <ClockCircleOutlined />, color: "bg-blue-50 text-blue-500" },
+  ];
+
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Consignment Requests</h1>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => navigate("/seller/consignments/new")}
-          >
-            New Request
-          </Button>
+    <div className="mx-auto max-w-[1440px] space-y-12 pb-20">
+      <div className="flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-end">
+        <div className="space-y-4">
+          <Title className="!m-0 !font-display !text-4xl !font-bold !leading-tight !tracking-tight md:!text-6xl uppercase">Lịch sử ký gửi</Title>
+          <Paragraph className="max-w-lg text-lg font-medium text-slate-400 opacity-80 italic">
+            Theo dõi hành trình của từng món đồ từ lúc gửi yêu cầu cho đến khi được niêm yết chính thức.
+          </Paragraph>
         </div>
+        <Button
+          type="primary"
+          size="large"
+          icon={<PlusOutlined />}
+          onClick={() => navigate("/seller/consignments/new")}
+          className="shadow-luxury"
+        >
+          TẠO YÊU CẦU MỚI
+        </Button>
+      </div>
 
-        {/* Error */}
-        {state.error && (
-          <Card className="mb-6 bg-red-50 border-red-200">
-            <p className="text-red-800">{state.error}</p>
-          </Card>
-        )}
+      <Row gutter={[24, 24]}>
+        {stats.map((s, i) => (
+          <Col key={i} xs={24} sm={8}>
+            <Card className="rounded-[2rem] border-pink-100/50 bg-white/50 shadow-sm backdrop-blur-md transition-soft hover:shadow-luxury">
+              <div className="flex items-center gap-5">
+                <div className={`flex h-14 w-14 items-center justify-center rounded-2xl text-2xl ${s.color}`}>
+                  {s.icon}
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{s.label}</div>
+                  <div className="font-display text-3xl font-bold text-slate-800">{s.value}</div>
+                </div>
+              </div>
+            </Card>
+          </Col>
+        ))}
+      </Row>
 
-        {/* Table */}
-        <Card className="shadow-sm">
+      <Card className="rounded-[2.5rem] border-pink-100/40 bg-white p-4 shadow-sm">
+        <Spin spinning={state.isLoading && state.requests.length === 0}>
           <Table
             columns={columns}
-            dataSource={state.requests.map((req) => ({ ...req, key: req.id }))}
+            dataSource={state.requests.map(r => ({ ...r, key: r.id }))}
             pagination={false}
-            loading={state.isLoading}
+            className="luxury-table"
           />
-
-          {/* Pagination */}
-          <div className="flex justify-center mt-4">
+          <div className="mt-10 flex justify-center">
             <Pagination
               current={state.page + 1}
               pageSize={state.size}
               total={state.total}
-              onChange={(page) => setState((prev) => ({ ...prev, page: page - 1 }))}
+              onChange={(p) => setState(prev => ({ ...prev, page: p - 1 }))}
+              showSizeChanger={false}
+              className="luxury-pagination"
             />
           </div>
-
-          {/* Empty */}
           {state.requests.length === 0 && !state.isLoading && (
-            <Empty
-              description="No consignment requests found"
-              style={{ marginTop: 24 }}
-            />
+            <div className="py-10">
+              <EmptyState
+                title="Chưa có yêu cầu ký gửi"
+                description="Bạn chưa gửi yêu cầu ký gửi sản phẩm nào. Hãy bắt đầu hành trình ký gửi món đồ đầu tiên!"
+                action={
+                  <Button type="primary" onClick={() => navigate("/seller/consignments/new")}>
+                    Gửi yêu cầu ngay
+                  </Button>
+                }
+              />
+            </div>
           )}
-        </Card>
-      </div>
+        </Spin>
+      </Card>
     </div>
   );
 }
