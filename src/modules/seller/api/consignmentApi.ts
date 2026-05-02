@@ -20,7 +20,7 @@ export const consignmentApi = {
     query: ConsignmentQuery
   ): Promise<ApiResponse<PageResponse<ConsignmentRequestSummary>>> => {
     const response = await http.get<ApiResponse<PageResponse<ConsignmentRequestSummary>>>(
-      `${endpoints.consignments}/requests`,
+      endpoints.consignments,
       { params: query }
     );
     return response.data;
@@ -31,7 +31,7 @@ export const consignmentApi = {
    */
   getConsignmentDetail: async (requestId: string): Promise<ApiResponse<ConsignmentRequestDetail>> => {
     const response = await http.get<ApiResponse<ConsignmentRequestDetail>>(
-      `${endpoints.consignments}/requests/${requestId}`
+      `${endpoints.consignments}/${requestId}`
     );
     return response.data;
   },
@@ -40,9 +40,9 @@ export const consignmentApi = {
    * Accept consignment request
    */
   acceptConsignment: async (requestId: string): Promise<ApiResponse<ConsignmentRequestDetail>> => {
-    const response = await http.post<ApiResponse<ConsignmentRequestDetail>>(
-      `${endpoints.consignments}/requests/${requestId}/accept`,
-      {}
+    const response = await http.patch<ApiResponse<ConsignmentRequestDetail>>(
+      `${endpoints.consignments}/${requestId}/status`,
+      { status: "APPROVED" }
     );
     return response.data;
   },
@@ -54,9 +54,9 @@ export const consignmentApi = {
     requestId: string,
     payload: { reason: string }
   ): Promise<ApiResponse<ConsignmentRequestDetail>> => {
-    const response = await http.post<ApiResponse<ConsignmentRequestDetail>>(
-      `${endpoints.consignments}/requests/${requestId}/reject`,
-      payload
+    const response = await http.patch<ApiResponse<ConsignmentRequestDetail>>(
+      `${endpoints.consignments}/${requestId}/status`,
+      { status: "REJECTED", reason: payload.reason }
     );
     return response.data;
   },

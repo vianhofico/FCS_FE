@@ -13,7 +13,7 @@ import {
   TeamOutlined,
 } from "@ant-design/icons";
 
-import { DashboardPage } from "@/modules/dashboard/DashboardPage";
+import ProductListPage from "@/modules/buyer/pages/ProductListPage";
 import { HealthPage } from "@/modules/health/HealthPage";
 import { IamPage } from "@/modules/iam/pages/IamPage";
 import { CatalogPage } from "@/modules/catalog/pages/CatalogPage";
@@ -39,11 +39,10 @@ export const appRoutes: AppRouteItem[] = [
   {
     key: "dashboard",
     path: "/",
-    label: "Dashboard",
+    label: "Trang chủ",
     icon: <DashboardOutlined />,
-    element: <DashboardPage />,
-    backendModule: "common",
-    requireAuth: true,
+    element: <ProductListPage />,
+    backendModule: "buyer",
   },
   {
     key: "health",

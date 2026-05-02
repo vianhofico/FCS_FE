@@ -30,9 +30,7 @@ export const financialApi = {
    * Get seller financial information
    */
   getSellerFinancials: async (sellerId: string): Promise<ApiResponse<SellerFinancials>> => {
-    const response = await http.get<ApiResponse<SellerFinancials>>(
-      `${endpoints.wallets}/seller/${sellerId}`
-    );
+    const response = await http.get<ApiResponse<SellerFinancials>>(`${endpoints.wallets}/${sellerId}`);
     return response.data;
   },
 
@@ -53,7 +51,7 @@ export const financialApi = {
    * Get withdrawal history
    */
   getWithdrawalHistory: async (
-    sellerId: string,
+    walletId: string,
     page: number = 0,
     size: number = 10
   ): Promise<
@@ -67,10 +65,7 @@ export const financialApi = {
       totalElements: number;
     }>
   > => {
-    const response = await http.get(
-      `${endpoints.withdrawals}/seller/${sellerId}`,
-      { params: { page, size } }
-    );
+    const response = await http.get(endpoints.withdrawals, { params: { walletId, page, size } });
     return response.data;
   },
 

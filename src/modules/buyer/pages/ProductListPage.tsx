@@ -181,10 +181,10 @@ export default function BuyerProductListPage() {
   };
 
   const getConditionLabel = (condition: number) => {
-    if (condition >= 90) return "S (New)";
-    if (condition >= 80) return "A (Excellent)";
-    if (condition >= 65) return "B (Good)";
-    return "C (Fair)";
+    if (condition >= 90) return "S (Mới)";
+    if (condition >= 80) return "A (Tuyệt vời)";
+    if (condition >= 65) return "B (Tốt)";
+    return "C (Khá)";
   };
 
   const productGrid = (
@@ -204,7 +204,7 @@ export default function BuyerProductListPage() {
                   />
                 ) : (
                   <div className="flex h-full items-center justify-center bg-slate-100 text-slate-300">
-                    No Image
+                    Không có ảnh
                   </div>
                 )}
                 <div className="absolute top-4 left-4 z-10">

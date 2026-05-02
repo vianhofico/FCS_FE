@@ -17,7 +17,7 @@ import {
   TeamOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { Avatar, Badge, Button, Drawer, Dropdown, Input, Layout, Menu, Space, theme } from "antd";
+import { Avatar, Badge, Button, Drawer, Dropdown, Input, Layout, Menu, Space } from "antd";
 import type { MenuProps } from "antd";
 import { useMemo, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -102,7 +102,6 @@ function getRoleLabel(hasRole: ReturnType<typeof useAuth>["hasRole"], isAuthenti
 }
 
 export function AppLayout() {
-  const { token } = theme.useToken();
   const navigate = useNavigate();
   const location = useLocation();
   const { unread, refresh } = useNotifications();

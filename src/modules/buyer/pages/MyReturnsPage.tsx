@@ -5,12 +5,15 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, Button, Space, Spin, Empty, Table, Tag, Pagination, Select } from "antd";
-import { EyeOutlined, ArrowLeftOutlined } from "@ant-design/icons";
+import { Card, Spin, Table, Pagination, Select, Typography } from "antd";
+import { EyeOutlined, ArrowLeftOutlined, ReconciliationOutlined } from "@ant-design/icons";
 import { returnApi } from "@/modules/order/api/returnApi";
 import type { ReturnRequestSummary } from "@/shared/contracts/returnContract";
 import type { ReturnStatus } from "@/shared/contracts/commonContract";
 import { useAuth } from "@/shared/context/AuthContext";
+import { Badge, Button, EmptyState } from "@/shared/ui";
+
+const { Title, Paragraph } = Typography;
 
 interface MyReturnsPageState {
   returns: ReturnRequestSummary[];
@@ -74,66 +77,64 @@ export default function MyReturnsPage() {
     fetchReturns();
   }, [state.page, state.size, state.statusFilter, user]);
 
-  const getStatusColor = (status: string) => {
-    const colorMap: Record<string, string> = {
-      PENDING: "orange",
-      APPROVED: "blue",
-      REJECTED: "red",
-      COMPLETED: "green",
-      REFUNDED: "green",
-    };
-    return colorMap[status] || "default";
-  };
-
   const columns = [
     {
-      title: "Return ID",
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Mã yêu cầu</span>,
       dataIndex: "id",
       key: "id",
-      render: (id: string) => <span className="font-medium">{id.slice(0, 8)}</span>,
+      render: (id: string) => <span className="font-mono text-xs font-bold text-slate-400">#{id.slice(0, 8).toUpperCase()}</span>,
     },
     {
-      title: "Order ID",
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Đơn hàng</span>,
       dataIndex: "orderId",
       key: "orderId",
-      render: (orderId: string) => orderId.slice(0, 8),
+      render: (orderId: string) => <span className="font-bold text-slate-700">#{orderId.slice(0, 8)}</span>,
     },
     {
-      title: "Items",
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Sản phẩm</span>,
       dataIndex: "itemCount",
       key: "items",
-      render: (count: number) => `${count} item${count > 1 ? "s" : ""}`,
+      render: (count: number) => <span className="font-bold text-slate-600">{count} món</span>,
     },
     {
-      title: "Reason",
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Lý do</span>,
       dataIndex: "reason",
       key: "reason",
+      render: (reason: string) => <span className="text-slate-500 font-medium italic">"{reason}"</span>,
     },
     {
-      title: "Status",
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Trạng thái</span>,
       dataIndex: "status",
       key: "status",
-      render: (status: string) => (
-        <Tag color={getStatusColor(status)}>{status}</Tag>
-      ),
+      render: (status: string) => {
+        const statusMap: Record<string, string> = {
+          PENDING: "Pending",
+          APPROVED: "Verified",
+          REJECTED: "Rejected",
+          COMPLETED: "Verified",
+          REFUNDED: "Verified",
+        };
+        return <Badge status={statusMap[status] || "Pending"}>{status}</Badge>;
+      },
     },
     {
-      title: "Date",
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Ngày tạo</span>,
       dataIndex: "createdAt",
       key: "date",
-      render: (date: string) => new Date(date).toLocaleDateString(),
+      render: (date: string) => <span className="text-slate-500 font-medium">{new Date(date).toLocaleDateString()}</span>,
     },
     {
-      title: "Action",
+      title: "",
       key: "action",
+      align: "right" as const,
       render: (_: unknown, record: ReturnRequestSummary) => (
         <Button
-          type="primary"
-          size="small"
+          type="text"
           icon={<EyeOutlined />}
           onClick={() => navigate(`/buyer/returns/${record.id}`)}
+          className="rounded-xl bg-pink-50 font-bold text-primary hover:!bg-primary hover:!text-white border-none h-10 px-4 flex items-center justify-center"
         >
-          View
+          Chi tiết
         </Button>
       ),
     },
@@ -148,79 +149,93 @@ export default function MyReturnsPage() {
   }
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <Button
-            icon={<ArrowLeftOutlined />}
-            onClick={() => navigate("/buyer/orders")}
-            className="mb-4"
-          >
-            Back to Orders
-          </Button>
-          <h1 className="text-4xl font-bold text-gray-900">My Returns</h1>
+    <div className="mx-auto max-w-[1440px] space-y-12 pb-20">
+      <div className="flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-end">
+        <div className="space-y-4">
+          <Title className="!m-0 !font-display !text-4xl !font-bold !leading-tight !tracking-tight md:!text-6xl uppercase">Yêu cầu hoàn trả</Title>
+          <Paragraph className="max-w-lg text-lg font-medium text-slate-400 opacity-80 italic">
+            Theo dõi trạng thái các yêu cầu đổi trả và hoàn tiền để đảm bảo quyền lợi mua sắm tốt nhất.
+          </Paragraph>
         </div>
+        <Button
+          icon={<ArrowLeftOutlined />}
+          onClick={() => navigate("/buyer/orders")}
+          className="rounded-xl border-pink-100 text-primary font-bold hover:border-primary h-12 px-6"
+        >
+          QUAY LẠI ĐƠN HÀNG
+        </Button>
+      </div>
 
-        {/* Error */}
-        {state.error && (
-          <Card className="mb-6 bg-red-50 border-red-200">
-            <p className="text-red-800">{state.error}</p>
-          </Card>
-        )}
+      {state.error && (
+        <Card className="rounded-[2rem] border-red-100 bg-red-50/50 p-6 text-center shadow-sm">
+          <Paragraph className="!m-0 font-medium text-red-800 italic">{state.error}</Paragraph>
+        </Card>
+      )}
 
-        {/* Filters */}
-        <Card className="mb-6 shadow-sm">
-          <Space>
-            <label className="text-sm font-medium">Filter by Status:</label>
+      <Card className="rounded-[2.5rem] border-pink-100/40 bg-white/80 p-6 shadow-sm backdrop-blur-md">
+        <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <span className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Lọc trạng thái:</span>
             <Select
               value={state.statusFilter}
               onChange={(value) => setState((prev) => ({ ...prev, statusFilter: value, page: 0 }))}
-              placeholder="All returns"
-              style={{ width: 200 }}
+              placeholder="Tất cả yêu cầu"
+              className="h-11 min-w-[200px]"
               allowClear
               options={[
-                { label: "All Returns", value: "" },
-                { label: "Pending", value: "PENDING" },
-                { label: "Approved", value: "APPROVED" },
-                { label: "Rejected", value: "REJECTED" },
-                { label: "Completed", value: "COMPLETED" },
-                { label: "Refunded", value: "REFUNDED" },
+                { label: "Tất cả", value: "" },
+                { label: "Đang chờ", value: "PENDING" },
+                { label: "Đã duyệt", value: "APPROVED" },
+                { label: "Bị từ chối", value: "REJECTED" },
+                { label: "Hoàn tất", value: "COMPLETED" },
+                { label: "Đã hoàn tiền", value: "REFUNDED" },
               ]}
             />
-          </Space>
-        </Card>
+          </div>
+        </div>
 
-        {/* Returns Table */}
-        <Card className="shadow-sm">
-          {state.returns.length > 0 ? (
-            <>
-              <Spin spinning={state.isLoading}>
-                <Table
-                  columns={columns}
-                  dataSource={state.returns.map((ret) => ({ ...ret, key: ret.id }))}
-                  pagination={false}
-                  rowKey="id"
-                />
-              </Spin>
+        {state.returns.length > 0 ? (
+          <>
+            <Spin spinning={state.isLoading}>
+              <Table
+                columns={columns}
+                dataSource={state.returns.map((ret) => ({ ...ret, key: ret.id }))}
+                pagination={false}
+                className="luxury-table"
+              />
+            </Spin>
 
-              {/* Pagination */}
-              <div className="flex justify-center mt-6">
-                <Pagination
-                  current={state.page + 1}
-                  pageSize={state.size}
-                  total={state.totalElements}
-                  onChange={(newPage) =>
-                    setState((prev) => ({ ...prev, page: newPage - 1 }))
-                  }
-                  showSizeChanger={false}
-                />
-              </div>
-            </>
-          ) : (
-            <Empty description="No returns found" />
-          )}
-        </Card>
+            <div className="mt-10 flex justify-center">
+              <Pagination
+                current={state.page + 1}
+                pageSize={state.size}
+                total={state.totalElements}
+                onChange={(newPage) =>
+                  setState((prev) => ({ ...prev, page: newPage - 1 }))
+                }
+                showSizeChanger={false}
+                className="luxury-pagination"
+              />
+            </div>
+          </>
+        ) : (
+          <div className="py-20 text-center">
+            <EmptyState
+              title="Không có yêu cầu nào"
+              description="Bạn chưa có yêu cầu hoàn trả nào trong danh sách."
+            />
+          </div>
+        )}
+      </Card>
+
+      <div className="flex justify-center pt-8">
+        <div className="flex items-center gap-4 rounded-3xl bg-white/50 px-8 py-4 backdrop-blur-md border border-pink-100/50">
+          <ReconciliationOutlined className="text-primary text-xl" />
+          <div>
+            <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Quản lý hoàn trả</div>
+            <div className="font-display text-2xl font-bold text-slate-800">{state.totalElements} Yêu cầu</div>
+          </div>
+        </div>
       </div>
     </div>
   );

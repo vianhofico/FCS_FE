@@ -69,8 +69,8 @@ export const chatApi = {
     payload: Omit<ChatMessageSendRequest, "conversationId">
   ): Promise<ApiResponse<ChatMessage>> => {
     const response = await http.post<ApiResponse<ChatMessage>>(
-      `${endpoints.conversations}/${conversationId}/messages`,
-      payload
+      `${endpoints.conversations}/messages`,
+      { ...payload, conversationId }
     );
     return response.data;
   },

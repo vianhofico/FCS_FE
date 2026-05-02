@@ -11,12 +11,10 @@ import {
   ReconciliationOutlined,
 } from "@ant-design/icons";
 import {
-  Avatar,
   Card,
   Col,
   Pagination,
   Row,
-  Space,
   Spin,
   Table,
   Typography,
@@ -28,8 +26,9 @@ import { consignmentApi } from "@/modules/seller/api/consignmentApi";
 import { useAuth } from "@/shared/context/AuthContext";
 import { Badge, Button, EmptyState } from "@/shared/ui";
 import type { ConsignmentRequestSummary } from "@/shared/contracts/consignmentContract";
+import { ConsignmentRequestStatus } from "@/shared/contracts/commonContract";
 
-const { Title, Text, Paragraph } = Typography;
+const { Title, Paragraph } = Typography;
 
 interface PageState {
   requests: ConsignmentRequestSummary[];
@@ -98,6 +97,9 @@ export default function ConsignmentRequestListPage() {
           ACCEPTED: "Verified",
           REJECTED: "Rejected",
           CANCELLED: "Inactive",
+          SUBMITTED: "Submitted",
+          APPROVED: "Verified",
+          REVIEWING: "OnlineReview",
         };
         return <Badge status={statusMap[status] || status}>{status}</Badge>;
       },
@@ -132,8 +134,8 @@ export default function ConsignmentRequestListPage() {
 
   const stats = [
     { label: "Yêu cầu đã gửi", value: state.total, icon: <ReconciliationOutlined />, color: "bg-primary/5 text-primary" },
-    { label: "Đã được duyệt", value: state.requests.filter(r => r.status === 'ACCEPTED').length, icon: <AuditOutlined />, color: "bg-emerald-50 text-emerald-500" },
-    { label: "Đang chờ xử lý", value: state.requests.filter(r => r.status === 'PENDING').length, icon: <ClockCircleOutlined />, color: "bg-blue-50 text-blue-500" },
+    { label: "Đã được duyệt", value: state.requests.filter(r => r.status === ConsignmentRequestStatus.APPROVED).length, icon: <AuditOutlined />, color: "bg-emerald-50 text-emerald-500" },
+    { label: "Đang chờ xử lý", value: state.requests.filter(r => r.status === ConsignmentRequestStatus.SUBMITTED || r.status === ConsignmentRequestStatus.REVIEWING).length, icon: <ClockCircleOutlined />, color: "bg-blue-50 text-blue-500" },
   ];
 
   return (

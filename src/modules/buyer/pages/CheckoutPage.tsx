@@ -7,7 +7,6 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Card,
-  Button,
   Spin,
   Form,
   Input,
@@ -18,8 +17,9 @@ import {
   Modal,
   Row,
   Col,
+  Typography,
 } from "antd";
-import { ArrowLeftOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, HomeOutlined, SafetyCertificateOutlined } from "@ant-design/icons";
 import { iamApi } from "@/modules/iam/api/iamApi";
 import { orderApi } from "@/modules/order/api/orderApi";
 import type { CartItem, OrderCreateRequest } from "@/shared/contracts/orderContract";
@@ -29,6 +29,9 @@ import { PaymentMethod as PaymentMethodEnum } from "@/shared/contracts/commonCon
 import { useAuth } from "@/shared/context/AuthContext";
 import { createPaymentSession, isOnlinePayment, type PaymentCheckoutSession } from "@/shared/integrations/paymentGateway";
 import { getShippingOptions, type ShippingOption } from "@/shared/integrations/shippingService";
+import { Button } from "@/shared/ui";
+
+const { Title, Text, Paragraph } = Typography;
 
 interface CheckoutPageState {
   cartItems: CartItem[];
@@ -158,21 +161,21 @@ export default function CheckoutPage() {
           showAddressModal: false,
         }));
         form.resetFields();
-        message.success("Address added successfully");
+        message.success("Đã thêm địa chỉ thành công");
       }
     } catch {
-      message.error("Failed to add address");
+      message.error("Lỗi khi thêm địa chỉ");
     }
   };
 
   const handleCreateOrder = async () => {
     if (!state.selectedAddressId) {
-      message.error("Please select a shipping address");
+      message.error("Vui lòng chọn địa chỉ giao hàng");
       return;
     }
 
     if (!user) {
-      message.error("Please log in");
+      message.error("Vui lòng đăng nhập");
       return;
     }
 
@@ -190,7 +193,7 @@ export default function CheckoutPage() {
         null;
 
       if (!selectedShippingOption) {
-        message.error("Please select a shipping option");
+        message.error("Vui lòng chọn phương thức vận chuyển");
         return;
       }
 
@@ -220,15 +223,15 @@ export default function CheckoutPage() {
           });
 
           setState((prev) => ({ ...prev, paymentSession }));
-          message.info(`Payment session ready with ${paymentSession.providerName}`);
+          message.info(`Phiên thanh toán đã sẵn sàng với ${paymentSession.providerName}`);
         } else {
-          message.success("Order created successfully!");
+          message.success("Đã đặt hàng thành công!");
         }
 
         navigate(`/buyer/orders/${response.data.id}`);
       }
     } catch {
-      message.error("Failed to create order");
+      message.error("Lỗi khi tạo đơn hàng");
     } finally {
       setState((prev) => ({ ...prev, isCreatingOrder: false }));
     }
@@ -236,26 +239,28 @@ export default function CheckoutPage() {
 
   const itemColumns = [
     {
-      title: "Product",
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Sản phẩm</span>,
       dataIndex: "productName",
       key: "product",
+      render: (name: string) => <span className="font-bold text-slate-700">{name}</span>,
     },
     {
-      title: "Quantity",
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Số lượng</span>,
       dataIndex: "quantity",
       key: "quantity",
+      render: (qty: number) => <span className="font-bold text-slate-500">x{qty}</span>,
     },
     {
-      title: "Unit Price",
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Đơn giá</span>,
       dataIndex: "salePrice",
       key: "salePrice",
-      render: (salePrice: number) => `$${salePrice.toLocaleString()}`,
+      render: (salePrice: number) => <span className="font-medium text-slate-600">{salePrice.toLocaleString()}₫</span>,
     },
     {
-      title: "Subtotal",
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Tạm tính</span>,
       key: "subtotal",
       render: (_: unknown, record: CartItem) => (
-        <span>${(record.salePrice * record.quantity).toLocaleString()}</span>
+        <span className="font-bold text-primary">{(record.salePrice * record.quantity).toLocaleString()}₫</span>
       ),
     },
   ];
@@ -268,7 +273,7 @@ export default function CheckoutPage() {
     state.shippingOptions.find((option) => option.id === state.selectedShippingOptionId) ||
     state.shippingOptions[0] ||
     null;
-  const shippingFee = selectedShippingOption?.fee ?? 10;
+  const shippingFee = selectedShippingOption?.fee ?? 0;
   const total = subTotal + shippingFee;
 
   if (state.isLoading) {
@@ -280,149 +285,179 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <Button
-            icon={<ArrowLeftOutlined />}
-            onClick={() => navigate("/buyer/cart")}
-            className="mb-4"
-          >
-            Back to Cart
-          </Button>
-          <h1 className="text-4xl font-bold text-gray-900">Checkout</h1>
+    <div className="mx-auto max-w-[1200px] space-y-10 pb-20">
+      <div className="flex items-center justify-between">
+        <Button
+          icon={<ArrowLeftOutlined />}
+          onClick={() => navigate("/buyer/cart")}
+          type="text"
+          className="rounded-xl border-border/60 bg-white/50 text-slate-500 transition-soft hover:border-primary hover:text-primary px-4 py-2 h-auto"
+        >
+          Quay lại giỏ hàng
+        </Button>
+      </div>
+
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <Text className="font-display text-sm font-bold uppercase tracking-[0.25em] text-primary/70">Xác nhận đơn hàng</Text>
+          <div className="h-px flex-1 bg-pink-100/50" />
         </div>
+        <Title className="!m-0 !font-display !text-4xl !font-bold uppercase tracking-tight text-text-dark">Thanh toán</Title>
+      </div>
 
-        {/* Error */}
-        {state.error && (
-          <Card className="mb-6 bg-red-50 border-red-200">
-            <p className="text-red-800">{state.error}</p>
-          </Card>
-        )}
+      {state.error && (
+        <Card className="rounded-[2rem] border-red-100 bg-red-50/50 p-6 text-center shadow-sm">
+          <Paragraph className="!m-0 font-medium text-red-800 italic">{state.error}</Paragraph>
+        </Card>
+      )}
 
-        <Row gutter={[24, 24]}>
+      <Row gutter={[32, 32]}>
+        <Col xs={24} lg={15} className="space-y-8">
           {/* Order Items */}
-          <Col xs={24} lg={14}>
-            <Card title="Order Items" className="shadow-sm">
-              <Table
-                columns={itemColumns}
-                dataSource={state.cartItems.map((item, index) => ({
-                  ...item,
-                  key: index,
-                }))}
-                pagination={false}
-              />
-            </Card>
+          <Card
+            title={<span className="font-display text-lg font-bold uppercase tracking-widest text-text-dark">Danh sách sản phẩm</span>}
+            className="rounded-[2.5rem] border-pink-100/40 bg-white p-4 shadow-sm"
+          >
+            <Table
+              columns={itemColumns}
+              dataSource={state.cartItems.map((item, index) => ({
+                ...item,
+                key: index,
+              }))}
+              pagination={false}
+              className="luxury-table"
+            />
+          </Card>
 
-            {/* Shipping Address */}
-            <Card title="Shipping Address" className="mt-6 shadow-sm">
-              <Radio.Group
-                value={state.selectedAddressId}
-                onChange={(e) => setState((prev) => ({ ...prev, selectedAddressId: e.target.value }))}
-                className="w-full space-y-3"
-              >
-                {state.addresses.map((address) => (
-                  <Radio key={address.id} value={address.id} className="w-full block p-3 border rounded">
-                    <div className="font-semibold">{address.street}</div>
-                    <div className="text-sm text-gray-600">
-                      {address.district}, {address.city}
+          {/* Shipping Address */}
+          <Card
+            title={<span className="font-display text-lg font-bold uppercase tracking-widest text-text-dark">Địa chỉ giao hàng</span>}
+            className="rounded-[2.5rem] border-pink-100/40 bg-white p-8 shadow-sm"
+          >
+            <Radio.Group
+              value={state.selectedAddressId}
+              onChange={(e) => setState((prev) => ({ ...prev, selectedAddressId: e.target.value }))}
+              className="w-full space-y-4"
+            >
+              {state.addresses.map((address) => (
+                <Radio key={address.id} value={address.id} className="luxury-radio w-full block">
+                  <div className="flex items-start gap-4 rounded-3xl border border-pink-50 bg-pink-50/10 p-5 transition-soft hover:bg-white hover:shadow-md">
+                    <HomeOutlined className="mt-1 text-primary/60 text-lg" />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-base font-bold text-slate-800">{address.street}</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-primary/60 bg-primary/5 px-2 py-0.5 rounded-full">
+                          {address.type}
+                        </span>
+                      </div>
+                      <div className="text-sm font-medium text-slate-500 mt-1">
+                        {address.district}, {address.city}
+                      </div>
+                      <div className="text-sm font-bold text-slate-400 mt-2 tracking-wider">{address.phone}</div>
                     </div>
-                    <div className="text-sm text-gray-600">{address.phone}</div>
+                  </div>
+                </Radio>
+              ))}
+            </Radio.Group>
+
+            <Button
+              onClick={() => setState((prev) => ({ ...prev, showAddressModal: true }))}
+              className="mt-8 w-full rounded-2xl border-dashed border-pink-200 text-primary font-bold hover:bg-pink-50 h-14"
+            >
+              + THÊM ĐỊA CHỈ MỚI
+            </Button>
+          </Card>
+
+          {/* Shipping Options */}
+          <Card
+            title={<span className="font-display text-lg font-bold uppercase tracking-widest text-text-dark">Phương thức vận chuyển</span>}
+            className="rounded-[2.5rem] border-pink-100/40 bg-white p-8 shadow-sm"
+          >
+            {state.shippingOptions.length > 0 ? (
+              <Radio.Group
+                value={state.selectedShippingOptionId}
+                onChange={(event) => setState((prev) => ({ ...prev, selectedShippingOptionId: event.target.value }))}
+                className="w-full space-y-4"
+              >
+                {state.shippingOptions.map((option) => (
+                  <Radio key={option.id} value={option.id} className="luxury-radio w-full block">
+                    <div className="flex items-center justify-between rounded-3xl border border-pink-50 bg-pink-50/10 p-5 transition-soft hover:bg-white hover:shadow-md">
+                      <div>
+                        <div className="text-base font-bold text-slate-800">
+                          {option.provider} - {option.serviceLevel}
+                        </div>
+                        <div className="text-xs font-medium text-slate-400 mt-1 italic">Thời gian dự kiến: {option.etaDays} ngày</div>
+                      </div>
+                      <div className="text-lg font-bold text-primary">{option.fee.toLocaleString()}₫</div>
+                    </div>
                   </Radio>
                 ))}
               </Radio.Group>
+            ) : (
+              <div className="py-6 text-center italic text-slate-400">Vui lòng chọn địa chỉ để hiển thị các phương thức vận chuyển.</div>
+            )}
+          </Card>
 
-              <Button
-                onClick={() => setState((prev) => ({ ...prev, showAddressModal: true }))}
-                className="mt-4 w-full"
-              >
-                + Add New Address
-              </Button>
-            </Card>
+          {/* Payment Method */}
+          <Card
+            title={<span className="font-display text-lg font-bold uppercase tracking-widest text-text-dark">Phương thức thanh toán</span>}
+            className="rounded-[2.5rem] border-pink-100/40 bg-white p-8 shadow-sm"
+          >
+            <Radio.Group
+              value={state.paymentMethod}
+              onChange={(e) => setState((prev) => ({ ...prev, paymentMethod: e.target.value }))}
+              className="w-full space-y-4"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[
+                  { value: PaymentMethodEnum.COD, label: "Thanh toán khi nhận hàng (COD)", desc: "Trả tiền mặt khi Shipper giao tới." },
+                  { value: PaymentMethodEnum.VNPAY, label: "Cổng thanh toán VNPAY", desc: "Thanh toán qua QR, ATM, Thẻ quốc tế." },
+                  { value: PaymentMethodEnum.MOMO, label: "Ví điện tử MOMO", desc: "Nhanh chóng, tiện lợi qua ứng dụng MoMo." },
+                  { value: PaymentMethodEnum.BANK_TRANSFER, label: "Chuyển khoản ngân hàng", desc: "Chuyển trực tiếp tới STK của Re:Wear." },
+                ].map((item) => (
+                  <Radio key={item.value} value={item.value} className="luxury-radio-box block h-full">
+                    <div className="h-full rounded-3xl border border-pink-50 bg-pink-50/10 p-5 transition-soft hover:bg-white hover:shadow-md">
+                      <div className="font-bold text-slate-800">{item.label}</div>
+                      <div className="text-[10px] font-medium text-slate-400 mt-1 uppercase tracking-widest">{item.desc}</div>
+                    </div>
+                  </Radio>
+                ))}
+              </div>
+            </Radio.Group>
+          </Card>
+        </Col>
 
-            {/* Shipping Options */}
-            <Card title="Shipping Options" className="mt-6 shadow-sm">
-              {state.shippingOptions.length > 0 ? (
-                <Radio.Group
-                  value={state.selectedShippingOptionId}
-                  onChange={(event) => setState((prev) => ({ ...prev, selectedShippingOptionId: event.target.value }))}
-                  className="w-full space-y-3"
-                >
-                  {state.shippingOptions.map((option) => (
-                    <Radio key={option.id} value={option.id} className="w-full block p-3 border rounded">
-                      <div className="font-semibold">
-                        {option.provider} - {option.serviceLevel}
-                      </div>
-                      <div className="text-sm text-gray-600">ETA {option.etaDays} day(s)</div>
-                      <div className="text-sm text-gray-600">Fee: ${option.fee.toLocaleString()}</div>
-                    </Radio>
-                  ))}
-                </Radio.Group>
-              ) : (
-                <p className="text-gray-500">Select an address to load shipping quotes.</p>
-              )}
-            </Card>
+        {/* Price Summary Sidebar */}
+        <Col xs={24} lg={9}>
+          <div className="sticky top-32 space-y-8">
+            <Card
+              title={<span className="font-display text-xl font-bold uppercase tracking-widest text-text-dark">Tóm tắt đơn hàng</span>}
+              className="rounded-[2.5rem] border-pink-100/40 bg-white p-8 shadow-luxury"
+            >
+              <div className="space-y-5">
+                <div className="flex justify-between font-medium text-slate-500">
+                  <span>Tạm tính:</span>
+                  <span className="font-bold text-slate-700">{subTotal.toLocaleString()}₫</span>
+                </div>
+                <div className="flex justify-between font-medium text-slate-500">
+                  <span>Phí vận chuyển:</span>
+                  <span className="font-bold text-slate-700">{shippingFee.toLocaleString()}₫</span>
+                </div>
 
-            {/* Payment Method */}
-            <Card title="Payment Method" className="mt-6 shadow-sm">
-              <Radio.Group
-                value={state.paymentMethod}
-                onChange={(e) => setState((prev) => ({ ...prev, paymentMethod: e.target.value }))}
-                className="space-y-3"
-              >
-                <div>
-                  <Radio value={PaymentMethodEnum.COD}>
-                    <span className="font-semibold">Cash on Delivery</span>
-                    <p className="text-sm text-gray-600 ml-6">Pay when you receive the package</p>
-                  </Radio>
-                </div>
-                <div>
-                  <Radio value={PaymentMethodEnum.VNPAY}>
-                    <span className="font-semibold">VNPAY</span>
-                    <p className="text-sm text-gray-600 ml-6">Pay online via VNPAY</p>
-                  </Radio>
-                </div>
-                <div>
-                  <Radio value={PaymentMethodEnum.MOMO}>
-                    <span className="font-semibold">MOMO</span>
-                    <p className="text-sm text-gray-600 ml-6">Pay via MOMO app</p>
-                  </Radio>
-                </div>
-                <div>
-                  <Radio value={PaymentMethodEnum.BANK_TRANSFER}>
-                    <span className="font-semibold">Bank Transfer</span>
-                    <p className="text-sm text-gray-600 ml-6">Transfer to our bank account</p>
-                  </Radio>
-                </div>
-              </Radio.Group>
-            </Card>
-          </Col>
-
-          {/* Price Summary */}
-          <Col xs={24} lg={10}>
-            <Card title="Order Summary" className="shadow-sm sticky top-6">
-              <div className="space-y-4">
-                <div className="flex justify-between">
-                  <span>Subtotal:</span>
-                  <span className="font-semibold">${subTotal.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Shipping:</span>
-                  <span className="font-semibold">${shippingFee.toLocaleString()}</span>
-                </div>
                 {selectedShippingOption && (
-                  <div className="rounded-lg bg-slate-50 p-3 text-sm text-slate-700">
-                    <div className="font-semibold">{selectedShippingOption.provider}</div>
-                    <div>
-                      {selectedShippingOption.serviceLevel} - ETA {selectedShippingOption.etaDays} day(s)
+                  <div className="rounded-2xl bg-pink-50/30 p-4 text-[11px] font-bold uppercase tracking-widest text-primary/70">
+                    <div className="flex justify-between">
+                      <span>{selectedShippingOption.provider}</span>
+                      <span>{selectedShippingOption.serviceLevel}</span>
                     </div>
                   </div>
                 )}
-                <Divider />
-                <div className="flex justify-between text-xl font-bold">
-                  <span>Total:</span>
-                  <span className="text-green-600">${total.toLocaleString()}</span>
+
+                <Divider className="my-6 border-pink-100/50" />
+
+                <div className="flex justify-between items-end">
+                  <span className="font-display text-lg font-black uppercase tracking-tight text-slate-800">Tổng thanh toán</span>
+                  <span className="font-display text-3xl font-black text-primary tracking-tight">{total.toLocaleString()}₫</span>
                 </div>
 
                 <Button
@@ -431,71 +466,74 @@ export default function CheckoutPage() {
                   block
                   loading={state.isCreatingOrder}
                   onClick={handleCreateOrder}
-                  className="mt-6"
+                  className="mt-8 h-16 rounded-2xl font-black shadow-luxury text-lg"
                 >
-                  Place Order
+                  ĐẶT HÀNG NGAY
                 </Button>
 
                 {state.paymentSession && (
-                  <Card size="small" className="mt-4">
-                    <p className="font-semibold">Payment Session Ready</p>
-                    <p className="text-sm text-gray-600">Provider: {state.paymentSession.providerName}</p>
-                    <p className="text-sm text-gray-600">
-                      Expires: {new Date(state.paymentSession.expiresAt).toLocaleString()}
-                    </p>
-                    <Button
-                      className="mt-2"
-                      onClick={() => window.open(state.paymentSession?.redirectUrl || "", "_blank", "noopener,noreferrer")}
-                    >
-                      Open Payment Gateway
-                    </Button>
+                  <Card size="small" className="mt-6 border-emerald-100 bg-emerald-50/30 rounded-2xl">
+                    <div className="space-y-2">
+                      <div className="text-xs font-bold text-emerald-700 uppercase tracking-widest">Cổng thanh toán đã sẵn sàng</div>
+                      <div className="text-[10px] text-slate-500">Nhà cung cấp: {state.paymentSession.providerName}</div>
+                      <Button
+                        type="primary"
+                        block
+                        className="bg-emerald-500 hover:bg-emerald-600 border-none rounded-xl h-10 mt-2 font-bold"
+                        onClick={() => window.open(state.paymentSession?.redirectUrl || "", "_blank", "noopener,noreferrer")}
+                      >
+                        MỞ CỔNG THANH TOÁN
+                      </Button>
+                    </div>
                   </Card>
                 )}
 
-                <Button
-                  size="large"
-                  block
-                  onClick={() => navigate("/buyer/cart")}
-                >
-                  Cancel
-                </Button>
+                <div className="flex items-center gap-3 rounded-2xl border border-primary/10 bg-primary/5 p-4 mt-6">
+                  <SafetyCertificateOutlined className="text-primary text-xl" />
+                  <p className="text-[9px] leading-relaxed font-bold text-primary/70 uppercase tracking-widest m-0">
+                    Giao dịch an toàn & bảo mật. Cam kết hàng chính hãng 100%.
+                  </p>
+                </div>
               </div>
             </Card>
-          </Col>
-        </Row>
-      </div>
+          </div>
+        </Col>
+      </Row>
 
       {/* Add Address Modal */}
       <Modal
-        title="Add New Address"
+        title={<Title level={4} className="!m-0 !font-display uppercase tracking-tight">Thêm địa chỉ mới</Title>}
         open={state.showAddressModal}
         onCancel={() => setState((prev) => ({ ...prev, showAddressModal: false }))}
-        footer={[
-          <Button key="cancel" onClick={() => setState((prev) => ({ ...prev, showAddressModal: false }))}>
-            Cancel
-          </Button>,
-          <Button key="submit" type="primary" onClick={() => form.submit()}>
-            Add Address
-          </Button>,
-        ]}
+        footer={null}
+        className="luxury-modal"
+        centered
       >
         <Form
           form={form}
           layout="vertical"
           onFinish={handleAddressCreate}
+          className="mt-6"
+          size="large"
         >
-          <Form.Item name="street" label="Street" rules={[{ required: true }]}>
-            <Input placeholder="123 Main Street" />
+          <Form.Item name="street" label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Số nhà & Tên đường</span>} rules={[{ required: true, message: "Vui lòng nhập địa chỉ" }]}>
+            <Input placeholder="123 Nguyễn Huệ" className="rounded-2xl border-pink-100" />
           </Form.Item>
-          <Form.Item name="district" label="District" rules={[{ required: true }]}>
-            <Input placeholder="District name" />
+          <div className="grid grid-cols-2 gap-4">
+            <Form.Item name="district" label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Quận / Huyện</span>} rules={[{ required: true, message: "Vui lòng nhập quận/huyện" }]}>
+              <Input placeholder="Quận 1" className="rounded-2xl border-pink-100" />
+            </Form.Item>
+            <Form.Item name="city" label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Tỉnh / Thành phố</span>} rules={[{ required: true, message: "Vui lòng nhập tỉnh/thành" }]}>
+              <Input placeholder="TP. Hồ Chí Minh" className="rounded-2xl border-pink-100" />
+            </Form.Item>
+          </div>
+          <Form.Item name="phone" label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Số điện thoại nhận hàng</span>} rules={[{ required: true, message: "Vui lòng nhập số điện thoại" }]}>
+            <Input placeholder="09xx xxx xxx" className="rounded-2xl border-pink-100" />
           </Form.Item>
-          <Form.Item name="city" label="City" rules={[{ required: true }]}>
-            <Input placeholder="City name" />
-          </Form.Item>
-          <Form.Item name="phone" label="Phone" rules={[{ required: true }]}>
-            <Input placeholder="Phone number" />
-          </Form.Item>
+          <div className="mt-10 flex gap-4">
+            <Button block size="large" onClick={() => setState((prev) => ({ ...prev, showAddressModal: false }))}>HỦY BỎ</Button>
+            <Button type="primary" block size="large" htmlType="submit">LƯU ĐỊA CHỈ</Button>
+          </div>
         </Form>
       </Modal>
     </div>

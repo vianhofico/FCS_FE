@@ -3,9 +3,29 @@
  * Main admin overview and quick stats
  */
 
-import { useState, useEffect } from "react";
-import { Card, Row, Col, Spin, Statistic, Progress, Empty, Table } from "antd";
-import { ArrowUpOutlined } from "@ant-design/icons";
+import {
+  CheckCircleOutlined,
+  GlobalOutlined,
+  TeamOutlined,
+  WalletOutlined,
+} from "@ant-design/icons";
+import {
+  Avatar,
+  Button,
+  Card,
+  Col,
+  Empty,
+  Progress,
+  Row,
+  Space,
+  Spin,
+  Table,
+  Tag,
+  Typography,
+} from "antd";
+import { useEffect, useState } from "react";
+
+const { Title, Text } = Typography;
 
 interface DashboardStats {
   totalUsers: number;
@@ -20,6 +40,7 @@ interface Activity {
   id: string;
   action: string;
   timestamp: string;
+  user: string;
 }
 
 export default function AdminDashboardPage() {
@@ -38,132 +59,160 @@ export default function AdminDashboardPage() {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-
+        // Mock data
         setStats({
           totalUsers: 1523,
           activeOrders: 234,
-          totalRevenue: 325000,
+          totalRevenue: 325000000,
           systemHealth: 99.9,
-          pendingApprovals: 5,
+          pendingApprovals: 12,
           criticalAlerts: 0,
         });
 
         setActivities([
-          { id: "a1", action: "New user registration", timestamp: new Date().toISOString() },
-          { id: "a2", action: "Order completed", timestamp: new Date(Date.now() - 3600000).toISOString() },
-          { id: "a3", action: "System backup completed", timestamp: new Date(Date.now() - 7200000).toISOString() },
+          { id: "a1", action: "Đăng ký người dùng mới", timestamp: new Date().toISOString(), user: "Phạm Minh" },
+          { id: "a2", action: "Đơn hàng hoàn tất", timestamp: new Date(Date.now() - 3600000).toISOString(), user: "Lê Hằng" },
+          { id: "a3", action: "Sao lưu hệ thống", timestamp: new Date(Date.now() - 7200000).toISOString(), user: "System" },
         ]);
-
         setIsLoading(false);
       } catch {
         setIsLoading(false);
       }
     };
-
     fetchData();
   }, []);
 
   const columns = [
-    { title: "Action", dataIndex: "action", key: "action" },
-    { title: "Timestamp", dataIndex: "timestamp", key: "timestamp", render: (date: string) => new Date(date).toLocaleString() },
+    {
+      title: <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Hoạt động</span>,
+      dataIndex: "action",
+      key: "action",
+      render: (text: string) => <span className="font-bold text-slate-700">{text}</span>,
+    },
+    {
+      title: <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Người thực hiện</span>,
+      dataIndex: "user",
+      key: "user",
+      render: (text: string) => (
+        <Space>
+          <Avatar size="small" className="bg-primary/10 text-primary font-bold">{text[0]}</Avatar>
+          <span className="text-sm font-medium text-slate-500">{text}</span>
+        </Space>
+      ),
+    },
+    {
+      title: <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Thời gian</span>,
+      dataIndex: "timestamp",
+      key: "timestamp",
+      align: "right" as const,
+      render: (date: string) => (
+        <span className="text-xs font-bold text-slate-400">{new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+      ),
+    },
   ];
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Spin size="large" />
-      </div>
-    );
-  }
+  if (isLoading) return <div className="flex min-h-screen items-center justify-center"><Spin size="large" /></div>;
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">Admin Dashboard</h1>
-
-        <Row gutter={[24, 24]} className="mb-6">
-          <Col xs={24} sm={6}>
-            <Card className="shadow-sm">
-              <Statistic
-                title="Total Users"
-                value={stats.totalUsers}
-                prefix={<ArrowUpOutlined style={{ color: "#52c41a" }} />}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={6}>
-            <Card className="shadow-sm">
-              <Statistic title="Active Orders" value={stats.activeOrders} />
-            </Card>
-          </Col>
-          <Col xs={24} sm={6}>
-            <Card className="shadow-sm">
-              <Statistic title="Total Revenue" value={stats.totalRevenue} prefix="$" />
-            </Card>
-          </Col>
-          <Col xs={24} sm={6}>
-            <Card className="shadow-sm">
-              <Statistic title="System Health" value={stats.systemHealth} suffix="%" />
-            </Card>
-          </Col>
-        </Row>
-
-        <Row gutter={[24, 24]} className="mb-6">
-          <Col xs={24} sm={12}>
-            <Card title="System Status" className="shadow-sm">
-              <Row gutter={[16, 16]}>
-                <Col xs={24} sm={12}>
-                  <p className="text-sm text-gray-600 mb-2">Overall Health</p>
-                  <Progress type="circle" percent={99.9} />
-                </Col>
-                <Col xs={24} sm={12}>
-                  <Row gutter={[0, 16]}>
-                    <Col xs={24}>
-                      <p className="text-xs text-gray-600">Pending Approvals</p>
-                      <p className="font-semibold text-lg">{stats.pendingApprovals}</p>
-                    </Col>
-                    <Col xs={24}>
-                      <p className="text-xs text-gray-600">Critical Alerts</p>
-                      <p className="font-semibold text-lg text-red-600">{stats.criticalAlerts}</p>
-                    </Col>
-                  </Row>
-                </Col>
-              </Row>
-            </Card>
-          </Col>
-
-          <Col xs={24} sm={12}>
-            <Card title="Quick Links" className="shadow-sm">
-              <Row gutter={[16, 16]}>
-                <Col xs={24}>
-                  <button className="w-full p-2 text-left hover:bg-gray-100 rounded">
-                    View System Logs
-                  </button>
-                </Col>
-                <Col xs={24}>
-                  <button className="w-full p-2 text-left hover:bg-gray-100 rounded">
-                    Manage Users
-                  </button>
-                </Col>
-                <Col xs={24}>
-                  <button className="w-full p-2 text-left hover:bg-gray-100 rounded">
-                    System Settings
-                  </button>
-                </Col>
-              </Row>
-            </Card>
-          </Col>
-        </Row>
-
-        <Card title="Recent Activities" className="shadow-sm">
-          <Table
-            columns={columns}
-            dataSource={activities.map((a) => ({ ...a, key: a.id }))}
-            pagination={false}
-          />
-          {activities.length === 0 && <Empty description="No activities" />}
-        </Card>
+    <div className="mx-auto max-w-[1440px] space-y-12 pb-20">
+      <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
+        <div className="space-y-4">
+          <div className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-white">
+            <GlobalOutlined className="text-primary" /> Admin Central
+          </div>
+          <Title className="!m-0 !font-display !text-4xl !font-black !leading-tight !tracking-tight md:!text-6xl uppercase text-slate-900">Điều hành hệ thống</Title>
+        </div>
+        <Space size="middle">
+          <Button size="large" className="rounded-2xl border-slate-200 font-bold uppercase tracking-widest text-[10px] h-12 px-8">Xuất báo cáo</Button>
+          <Button type="primary" size="large" className="h-12 rounded-2xl px-8 font-bold shadow-luxury uppercase tracking-widest text-[10px]">Cài đặt hệ thống</Button>
+        </Space>
       </div>
+
+      {/* Main Stats */}
+      <Row gutter={[24, 24]}>
+        {[
+          { label: "Người dùng", value: stats.totalUsers, icon: <TeamOutlined />, color: "text-blue-500", bg: "bg-blue-50", trend: "+12%" },
+          { label: "Doanh thu", value: `${(stats.totalRevenue / 1000000).toFixed(1)}M`, icon: <WalletOutlined />, color: "text-emerald-500", bg: "bg-emerald-50", trend: "+8.5%" },
+          { label: "Đơn hàng", value: stats.activeOrders, icon: <CheckCircleOutlined />, color: "text-primary", bg: "bg-primary/5", trend: "+24%" },
+          { label: "Sức khỏe hệ thống", value: `${stats.systemHealth}%`, icon: <GlobalOutlined />, color: "text-indigo-500", bg: "bg-indigo-50", trend: "Ổn định" },
+        ].map((s, i) => (
+          <Col key={i} xs={24} sm={12} lg={6}>
+            <Card className="overflow-hidden rounded-[2.5rem] border-border/40 bg-white shadow-sm transition-soft hover:shadow-md">
+              <div className="flex items-start justify-between">
+                <div className={`flex h-14 w-14 items-center justify-center rounded-2xl text-2xl ${s.bg} ${s.color}`}>
+                  {s.icon}
+                </div>
+                <Tag color="success" className="m-0 border-none px-2 font-black text-[10px]">{s.trend}</Tag>
+              </div>
+              <div className="mt-6 space-y-1">
+                <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">{s.label}</div>
+                <div className="font-display text-4xl font-black text-slate-900 tracking-tight">{s.value}</div>
+              </div>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+
+      <Row gutter={[24, 24]}>
+        {/* System Monitoring */}
+        <Col xs={24} lg={10}>
+          <Card 
+            className="h-full rounded-[3rem] border-border/60 bg-white/70 p-4 shadow-sm backdrop-blur-md"
+            title={<span className="font-display text-xl font-black uppercase tracking-widest">Giám sát hệ thống</span>}
+          >
+            <div className="flex flex-col items-center py-10">
+              <Progress 
+                type="dashboard" 
+                percent={stats.systemHealth} 
+                strokeColor={{ '0%': '#d94a7a', '100%': '#f08ab1' }}
+                strokeWidth={8}
+                size={220}
+                format={p => <div className="flex flex-col"><span className="font-display text-5xl font-black text-slate-900">{p}%</span><span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Excellent</span></div>}
+              />
+              <div className="mt-12 grid w-full grid-cols-2 gap-4">
+                <div className="rounded-[2rem] bg-bg-secondary/50 p-6 text-center">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Chờ duyệt</div>
+                  <div className="font-display text-3xl font-black text-primary">{stats.pendingApprovals}</div>
+                </div>
+                <div className="rounded-[2rem] bg-rose-50/50 p-6 text-center">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Cảnh báo</div>
+                  <div className="font-display text-3xl font-black text-rose-500">{stats.criticalAlerts}</div>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </Col>
+
+        {/* Recent Activity */}
+        <Col xs={24} lg={14}>
+          <Card 
+            className="h-full rounded-[3rem] border-border/60 bg-white p-4 shadow-sm"
+            title={<span className="font-display text-xl font-black uppercase tracking-widest">Hoạt động gần đây</span>}
+            extra={<Button type="link" className="font-bold text-primary">Xem tất cả</Button>}
+          >
+            <Table 
+              columns={columns} 
+              dataSource={activities} 
+              pagination={false} 
+              className="luxury-table" 
+              rowKey="id"
+            />
+            {activities.length === 0 && <div className="py-20"><Empty description="Không có hoạt động mới" /></div>}
+            
+            <div className="mt-8 rounded-3xl bg-slate-900 p-8 text-white">
+              <div className="flex items-center justify-between">
+                <div className="space-y-2">
+                  <Title level={4} className="!m-0 !font-display !text-white uppercase tracking-tight">Tối ưu hiệu suất</Title>
+                  <Text className="text-slate-400 text-xs font-medium">Hệ thống của bạn đang chạy ở trạng thái tốt nhất.</Text>
+                </div>
+                <div className="h-12 w-12 rounded-2xl bg-white/10 flex items-center justify-center text-primary text-2xl">
+                  <CheckCircleOutlined />
+                </div>
+              </div>
+            </div>
+          </Card>
+        </Col>
+      </Row>
     </div>
   );
 }

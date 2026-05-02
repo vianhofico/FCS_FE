@@ -4,8 +4,11 @@
  */
 
 import { useState, useEffect } from "react";
-import { Card, Row, Col, Spin, Empty, Statistic, Table, Button } from "antd";
-import { DownloadOutlined } from "@ant-design/icons";
+import { Card, Row, Col, Spin, Table, Typography } from "antd";
+import { DownloadOutlined, BarChartOutlined, FileTextOutlined } from "@ant-design/icons";
+import { Button, EmptyState } from "@/shared/ui";
+
+const { Title, Paragraph } = Typography;
 
 interface Report {
   id: string;
@@ -47,13 +50,13 @@ export default function ReportingPage() {
         const mockReports: Report[] = [
           {
             id: "r1",
-            title: "Monthly Sales Report",
+            title: "Báo cáo doanh số tháng",
             type: "SALES",
             generatedAt: new Date().toISOString(),
           },
           {
             id: "r2",
-            title: "User Activity Report",
+            title: "Báo cáo hoạt động người dùng",
             type: "ACTIVITY",
             generatedAt: new Date(Date.now() - 86400000).toISOString(),
           },
@@ -93,20 +96,40 @@ export default function ReportingPage() {
   };
 
   const columns = [
-    { title: "Report Title", dataIndex: "title", key: "title" },
-    { title: "Type", dataIndex: "type", key: "type" },
-    { title: "Generated", dataIndex: "generatedAt", key: "date", render: (date: string) => new Date(date).toLocaleDateString() },
     {
-      title: "Actions",
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Tên báo cáo</span>,
+      dataIndex: "title",
+      key: "title",
+      render: (title: string) => <span className="font-bold text-slate-700">{title}</span>,
+    },
+    {
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Loại</span>,
+      dataIndex: "type",
+      key: "type",
+      render: (type: string) => (
+        <span className="inline-flex items-center rounded-lg bg-slate-50 px-2.5 py-1 text-xs font-bold text-slate-500 border border-slate-100">
+          {type}
+        </span>
+      ),
+    },
+    {
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Ngày tạo</span>,
+      dataIndex: "generatedAt",
+      key: "date",
+      render: (date: string) => <span className="font-medium text-slate-500">{new Date(date).toLocaleDateString()}</span>,
+    },
+    {
+      title: "",
       key: "actions",
+      align: "right" as const,
       render: (_: unknown, record: Report) => (
         <Button
-          type="link"
+          type="text"
           icon={<DownloadOutlined />}
           onClick={() => handleExportReport(record.id)}
-          size="small"
+          className="text-primary hover:!bg-pink-50 rounded-xl font-bold"
         >
-          Export
+          Xuất file
         </Button>
       ),
     },
@@ -120,50 +143,74 @@ export default function ReportingPage() {
     );
   }
 
+  const stats = [
+    { label: "Tổng đơn hàng", value: state.stats.totalOrders, color: "bg-blue-50 text-blue-500", suffix: "" },
+    { label: "Người dùng", value: state.stats.totalUsers, color: "bg-purple-50 text-purple-500", suffix: "" },
+    { label: "Doanh thu", value: state.stats.totalRevenue.toLocaleString(), color: "bg-emerald-50 text-emerald-500", suffix: "₫" },
+    { label: "Niêm yết", value: state.stats.activeListings, color: "bg-amber-50 text-amber-500", suffix: "" },
+  ];
+
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">Reporting</h1>
-
-        <Row gutter={[24, 24]} className="mb-6">
-          <Col xs={24} sm={6}>
-            <Card className="shadow-sm">
-              <Statistic title="Total Orders" value={state.stats.totalOrders} />
-            </Card>
-          </Col>
-          <Col xs={24} sm={6}>
-            <Card className="shadow-sm">
-              <Statistic title="Total Users" value={state.stats.totalUsers} />
-            </Card>
-          </Col>
-          <Col xs={24} sm={6}>
-            <Card className="shadow-sm">
-              <Statistic title="Total Revenue" value={state.stats.totalRevenue} prefix="$" />
-            </Card>
-          </Col>
-          <Col xs={24} sm={6}>
-            <Card className="shadow-sm">
-              <Statistic title="Active Listings" value={state.stats.activeListings} />
-            </Card>
-          </Col>
-        </Row>
-
-        {state.error && (
-          <Card className="mb-6 bg-red-50 border-red-200">
-            <p className="text-red-800">{state.error}</p>
-          </Card>
-        )}
-
-        <Card title="Available Reports" className="shadow-sm">
-          <Table
-            columns={columns}
-            dataSource={state.reports.map((r) => ({ ...r, key: r.id }))}
-            pagination={false}
-            loading={state.isLoading}
-          />
-          {state.reports.length === 0 && <Empty description="No reports available" />}
-        </Card>
+    <div className="mx-auto max-w-[1440px] space-y-12 pb-20">
+      <div className="flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-end">
+        <div className="space-y-4">
+          <Title className="!m-0 !font-display !text-4xl !font-bold !leading-tight !tracking-tight md:!text-6xl uppercase">Báo cáo hệ thống</Title>
+          <Paragraph className="max-w-lg text-lg font-medium text-slate-400 opacity-80 italic">
+            Phân tích dữ liệu kinh doanh, theo dõi tăng trưởng và xuất các báo cáo chi tiết cho mục đích quản trị.
+          </Paragraph>
+        </div>
+        <div className="flex items-center gap-4 rounded-3xl bg-white/50 px-8 py-4 backdrop-blur-md border border-pink-100/50">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/5 text-primary text-xl">
+            <BarChartOutlined />
+          </div>
+          <div>
+            <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Trạng thái dữ liệu</div>
+            <div className="font-display text-2xl font-bold text-slate-800">Real-time Analytics</div>
+          </div>
+        </div>
       </div>
+
+      <Row gutter={[24, 24]}>
+        {stats.map((s, i) => (
+          <Col key={i} xs={24} sm={12} lg={6}>
+            <Card className="rounded-[2rem] border-pink-100/50 bg-white/50 shadow-sm backdrop-blur-md transition-soft hover:shadow-luxury">
+              <div className="flex items-center gap-5">
+                <div className={`flex h-14 w-14 items-center justify-center rounded-2xl text-xl font-black ${s.color}`}>
+                  {s.value}{s.suffix}
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{s.label}</div>
+                  <div className="font-display text-2xl font-bold text-slate-800">Stats</div>
+                </div>
+              </div>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+
+      <Card className="rounded-[2.5rem] border-pink-100/40 bg-white p-6 shadow-sm">
+        <div className="mb-8 flex items-center gap-4 px-2">
+          <FileTextOutlined className="text-xl text-primary/60" />
+          <Title level={4} className="!m-0 !font-display uppercase tracking-widest text-base">Danh sách báo cáo</Title>
+        </div>
+
+        <Table
+          columns={columns}
+          dataSource={state.reports.map((r) => ({ ...r, key: r.id }))}
+          pagination={false}
+          className="luxury-table"
+        />
+
+        {state.reports.length === 0 && (
+          <div className="py-20 text-center">
+            <EmptyState
+              title="Chưa có báo cáo nào"
+              description="Hệ thống đang tổng hợp dữ liệu, vui lòng quay lại sau."
+            />
+          </div>
+        )}
+      </Card>
     </div>
   );
 }
+

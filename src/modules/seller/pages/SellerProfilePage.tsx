@@ -8,16 +8,18 @@ import {
   Card,
   Form,
   Input,
-  Button,
   Spin,
   message,
-  Space,
   Upload,
   Row,
   Col,
+  Typography,
 } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+import { PlusOutlined } from "@ant-design/icons";
 import { useAuth } from "@/shared/context/AuthContext";
+import { Button } from "@/shared/ui";
+
+const { Title, Text, Paragraph } = Typography;
 
 interface SellerProfile {
   id: string;
@@ -76,7 +78,7 @@ export default function SellerProfilePage() {
         setState((prev) => ({
           ...prev,
           isLoading: false,
-          error: "Failed to load profile",
+          error: "Không thể tải thông tin hồ sơ",
         }));
       }
     };
@@ -89,14 +91,14 @@ export default function SellerProfilePage() {
       setState((prev) => ({ ...prev, isSaving: true }));
 
       // In real scenario, save to API
-      message.success("Profile updated successfully");
+      message.success("Cập nhật hồ sơ thành công");
       setState((prev) => ({
         ...prev,
         profile: { ...(prev.profile ?? state.profile ?? {}), ...values } as SellerProfile,
         isSaving: false,
       }));
     } catch {
-      message.error("Failed to save profile");
+      message.error("Lưu hồ sơ thất bại");
       setState((prev) => ({ ...prev, isSaving: false }));
     }
   };
@@ -110,50 +112,58 @@ export default function SellerProfilePage() {
   }
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">Seller Profile</h1>
+    <div className="mx-auto max-w-[1000px] space-y-12 pb-20">
+      <div className="flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-end">
+        <div className="space-y-4">
+          <Title className="!m-0 !font-display !text-4xl !font-bold !leading-tight !tracking-tight md:!text-6xl uppercase">Hồ sơ người bán</Title>
+          <Paragraph className="max-w-lg text-lg font-medium text-slate-400 opacity-80 italic">
+            Cập nhật thông tin doanh nghiệp và thiết lập tài khoản để tối ưu hóa trải nghiệm bán hàng.
+          </Paragraph>
+        </div>
+      </div>
 
-        {/* Error */}
-        {state.error && (
-          <Card className="mb-6 bg-red-50 border-red-200">
-            <p className="text-red-800">{state.error}</p>
-          </Card>
-        )}
+      {state.error && (
+        <Card className="rounded-[2rem] border-red-100 bg-red-50/50 p-6 text-center shadow-sm">
+          <Paragraph className="!m-0 font-medium text-red-800 italic">{state.error}</Paragraph>
+        </Card>
+      )}
 
-        {/* Profile Form */}
-        <Card className="shadow-sm">
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={handleSave}
-            requiredMark="optional"
-            autoComplete="off"
-          >
-            {/* Business Information */}
-            <h3 className="text-lg font-semibold mb-4">Business Information</h3>
+      <Card className="rounded-[2.5rem] border-pink-100/40 bg-white p-10 shadow-luxury">
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSave}
+          requiredMark={false}
+          autoComplete="off"
+          size="large"
+        >
+          {/* Business Information */}
+          <div className="mb-10">
+            <div className="flex items-center gap-3 mb-8">
+              <Text className="font-display text-sm font-bold uppercase tracking-[0.25em] text-primary/70">Thông tin kinh doanh</Text>
+              <div className="h-px flex-1 bg-pink-100/50" />
+            </div>
 
             <Row gutter={24}>
               <Col xs={24} md={12}>
                 <Form.Item
                   name="businessName"
-                  label="Business Name"
-                  rules={[{ required: true, message: "Please enter business name" }]}
+                  label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Tên doanh nghiệp / Gian hàng</span>}
+                  rules={[{ required: true, message: "Vui lòng nhập tên kinh doanh" }]}
                 >
-                  <Input placeholder="Your business name" />
+                  <Input placeholder="Tên gian hàng của bạn" className="rounded-2xl border-pink-100 h-12" />
                 </Form.Item>
               </Col>
               <Col xs={24} md={12}>
                 <Form.Item
                   name="businessEmail"
-                  label="Business Email"
+                  label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Email liên hệ</span>}
                   rules={[
-                    { required: true, message: "Please enter email" },
-                    { type: "email", message: "Invalid email" },
+                    { required: true, message: "Vui lòng nhập email" },
+                    { type: "email", message: "Email không hợp lệ" },
                   ]}
                 >
-                  <Input type="email" placeholder="business@example.com" />
+                  <Input type="email" placeholder="business@example.com" className="rounded-2xl border-pink-100 h-12" />
                 </Form.Item>
               </Col>
             </Row>
@@ -162,93 +172,107 @@ export default function SellerProfilePage() {
               <Col xs={24} md={12}>
                 <Form.Item
                   name="businessPhone"
-                  label="Business Phone"
-                  rules={[{ required: true, message: "Please enter phone" }]}
+                  label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Số điện thoại</span>}
+                  rules={[{ required: true, message: "Vui lòng nhập số điện thoại" }]}
                 >
-                  <Input placeholder="(555) 123-4567" />
+                  <Input placeholder="09xx xxx xxx" className="rounded-2xl border-pink-100 h-12" />
                 </Form.Item>
               </Col>
               <Col xs={24} md={12}>
                 <Form.Item
                   name="businessAddress"
-                  label="Business Address"
-                  rules={[{ required: true, message: "Please enter address" }]}
+                  label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Địa chỉ</span>}
+                  rules={[{ required: true, message: "Vui lòng nhập địa chỉ" }]}
                 >
-                  <Input placeholder="123 Main St, City, State" />
+                  <Input placeholder="Số nhà, Tên đường, Quận/Huyện, Tỉnh/Thành phố" className="rounded-2xl border-pink-100 h-12" />
                 </Form.Item>
               </Col>
             </Row>
 
             <Form.Item
               name="businessDescription"
-              label="Business Description"
-              rules={[{ required: true, message: "Please enter description" }]}
+              label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Mô tả gian hàng</span>}
+              rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
             >
-              <Input.TextArea rows={4} placeholder="Describe your business..." />
+              <Input.TextArea rows={4} placeholder="Chia sẻ câu chuyện hoặc phong cách thời trang của bạn..." className="rounded-2xl border-pink-100 p-4" />
             </Form.Item>
+          </div>
 
-            {/* Legal Information */}
-            <h3 className="text-lg font-semibold mb-4 mt-8">Legal Information</h3>
+          {/* Legal Information */}
+          <div className="mb-10">
+            <div className="flex items-center gap-3 mb-8">
+              <Text className="font-display text-sm font-bold uppercase tracking-[0.25em] text-primary/70">Thông tin pháp lý</Text>
+              <div className="h-px flex-1 bg-pink-100/50" />
+            </div>
 
             <Row gutter={24}>
               <Col xs={24} md={12}>
                 <Form.Item
                   name="businessLicense"
-                  label="Business License Number"
-                  rules={[{ required: true, message: "Please enter license number" }]}
+                  label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Số giấy phép kinh doanh</span>}
+                  rules={[{ required: true, message: "Vui lòng nhập số giấy phép" }]}
                 >
-                  <Input placeholder="License number" />
+                  <Input placeholder="Mã số giấy phép" className="rounded-2xl border-pink-100 h-12" />
                 </Form.Item>
               </Col>
               <Col xs={24} md={12}>
                 <Form.Item
                   name="taxId"
-                  label="Tax ID / EIN"
-                  rules={[{ required: true, message: "Please enter tax ID" }]}
+                  label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Mã số thuế (MST)</span>}
+                  rules={[{ required: true, message: "Vui lòng nhập mã số thuế" }]}
                 >
-                  <Input placeholder="XX-XXXXXXX" />
+                  <Input placeholder="MST cá nhân hoặc doanh nghiệp" className="rounded-2xl border-pink-100 h-12" />
                 </Form.Item>
               </Col>
             </Row>
+          </div>
 
-            {/* Bank Information */}
-            <h3 className="text-lg font-semibold mb-4 mt-8">Bank Information</h3>
+          {/* Bank Information */}
+          <div className="mb-10">
+            <div className="flex items-center gap-3 mb-8">
+              <Text className="font-display text-sm font-bold uppercase tracking-[0.25em] text-primary/70">Thông tin tài khoản</Text>
+              <div className="h-px flex-1 bg-pink-100/50" />
+            </div>
 
             <Row gutter={24}>
               <Col xs={24} md={12}>
                 <Form.Item
                   name="bankName"
-                  label="Bank Name"
-                  rules={[{ required: true, message: "Please enter bank name" }]}
+                  label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Ngân hàng</span>}
+                  rules={[{ required: true, message: "Vui lòng nhập tên ngân hàng" }]}
                 >
-                  <Input placeholder="Bank name" />
+                  <Input placeholder="Ví dụ: Vietcombank" className="rounded-2xl border-pink-100 h-12" />
                 </Form.Item>
               </Col>
               <Col xs={24} md={12}>
                 <Form.Item
                   name="accountHolder"
-                  label="Account Holder Name"
-                  rules={[{ required: true, message: "Please enter account holder name" }]}
+                  label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Tên chủ tài khoản</span>}
+                  rules={[{ required: true, message: "Vui lòng nhập tên chủ tài khoản" }]}
                 >
-                  <Input placeholder="Full name on account" />
+                  <Input placeholder="VIẾT CHỮ IN HOA KHÔNG DẤU" className="rounded-2xl border-pink-100 h-12" />
                 </Form.Item>
               </Col>
             </Row>
 
             <Form.Item
               name="bankAccountNumber"
-              label="Bank Account Number"
-              rules={[{ required: true, message: "Please enter account number" }]}
+              label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Số tài khoản</span>}
+              rules={[{ required: true, message: "Vui lòng nhập số tài khoản" }]}
             >
-              <Input placeholder="Account number" type="password" />
+              <Input placeholder="Nhập số tài khoản" type="password" className="rounded-2xl border-pink-100 h-12" />
             </Form.Item>
+          </div>
 
-            {/* Profile Image */}
-            <h3 className="text-lg font-semibold mb-4 mt-8">Profile Image</h3>
+          {/* Profile Image */}
+          <div className="mb-10">
+            <div className="flex items-center gap-3 mb-8">
+              <Text className="font-display text-sm font-bold uppercase tracking-[0.25em] text-primary/70">Hình ảnh đại diện</Text>
+              <div className="h-px flex-1 bg-pink-100/50" />
+            </div>
 
             <Form.Item
               name="profileImage"
-              label="Profile Image"
               valuePropName="fileList"
               getValueFromEvent={(e) => e?.fileList}
             >
@@ -256,23 +280,38 @@ export default function SellerProfilePage() {
                 maxCount={1}
                 beforeUpload={() => false}
                 accept=".png,.jpg,.jpeg"
+                listType="picture-card"
+                className="luxury-upload"
               >
-                <Button icon={<UploadOutlined />}>Upload Image</Button>
+                <div className="flex flex-col items-center gap-2">
+                  <PlusOutlined className="text-primary text-xl" />
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Tải ảnh lên</div>
+                </div>
               </Upload>
             </Form.Item>
+          </div>
 
-            {/* Actions */}
-            <Form.Item className="mt-8">
-              <Space>
-                <Button type="primary" htmlType="submit" size="large" loading={state.isSaving}>
-                  Save Profile
-                </Button>
-                <Button onClick={() => form.resetFields()}>Reset</Button>
-              </Space>
-            </Form.Item>
-          </Form>
-        </Card>
-      </div>
+          {/* Actions */}
+          <div className="mt-12 flex justify-end gap-4 border-t border-pink-50 pt-8">
+            <Button
+              size="large"
+              onClick={() => form.resetFields()}
+              className="px-10 rounded-2xl font-bold text-slate-400 hover:text-slate-600"
+            >
+              LÀM MỚI
+            </Button>
+            <Button
+              type="primary"
+              htmlType="submit"
+              size="large"
+              loading={state.isSaving}
+              className="px-10 shadow-luxury"
+            >
+              LƯU THAY ĐỔI
+            </Button>
+          </div>
+        </Form>
+      </Card>
     </div>
   );
 }

@@ -4,11 +4,15 @@
  */
 
 import { useState, useEffect } from "react";
-import { Card, Button, Table, Space, Spin, Empty, Tag, Modal, message } from "antd";
-import { DownloadOutlined } from "@ant-design/icons";
+import { Card, Table, Space, Spin, Modal, message, Typography, Pagination } from "antd";
+import { DownloadOutlined, FileDoneOutlined, HistoryOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 import { consignmentApi } from "../api/consignmentApi";
 import type { ConsignmentContract } from "@/shared/contracts/consignmentContract";
 import { useAuth } from "@/shared/context/AuthContext";
+import { Badge, Button, EmptyState } from "@/shared/ui";
+
+const { Title, Paragraph } = Typography;
 
 interface PageState {
   contracts: ConsignmentContract[];
@@ -21,6 +25,7 @@ interface PageState {
 
 export default function ConsignmentContractPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [state, setState] = useState<PageState>({
     contracts: [],
     isLoading: true,
@@ -65,31 +70,31 @@ export default function ConsignmentContractPage() {
 
   const handleDownloadContract = async (contractId: string) => {
     try {
-      message.loading({ content: "Downloading contract...", key: "download" });
+      message.loading({ content: "Đang tải hợp đồng...", key: "download" });
       const response = await consignmentApi.downloadContract(contractId);
 
       if (response.success) {
         // In real scenario, trigger file download
-        message.success({ content: "Contract downloaded", key: "download" });
+        message.success({ content: "Đã tải hợp đồng thành công", key: "download" });
       }
     } catch (err) {
-      message.error(err instanceof Error ? err.message : "Failed to download contract");
+      message.error(err instanceof Error ? err.message : "Tải hợp đồng thất bại");
     }
   };
 
   const handleTerminateContract = (contractId: string) => {
     Modal.confirm({
-      title: "Terminate Contract",
-      content: "Are you sure you want to terminate this contract? This action cannot be undone.",
-      okText: "Yes, Terminate",
+      title: "Chấm dứt hợp đồng",
+      content: "Bạn có chắc chắn muốn chấm dứt hợp đồng này? Hành động này không thể hoàn tác.",
+      okText: "Đồng ý, Chấm dứt",
       okType: "danger",
-      cancelText: "Cancel",
+      cancelText: "Hủy bỏ",
       onOk: async () => {
         try {
           const response = await consignmentApi.terminateContract(contractId);
 
           if (response.success) {
-            message.success("Contract terminated");
+            message.success("Hợp đồng đã được chấm dứt");
             setState((prev) => ({
               ...prev,
               contracts: prev.contracts.map((c) =>
@@ -98,7 +103,7 @@ export default function ConsignmentContractPage() {
             }));
           }
         } catch (err) {
-          message.error(err instanceof Error ? err.message : "Failed to terminate contract");
+          message.error(err instanceof Error ? err.message : "Chấm dứt hợp đồng thất bại");
         }
       },
     });
@@ -114,116 +119,129 @@ export default function ConsignmentContractPage() {
 
   const columns = [
     {
-      title: "Contract ID",
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Mã hợp đồng</span>,
       dataIndex: "id",
       key: "id",
-      render: (text: string) => <span className="font-mono text-sm">{text}</span>,
+      render: (text: string) => <span className="font-mono text-xs font-bold text-slate-400">#{text.slice(-8).toUpperCase()}</span>,
     },
     {
-      title: "Status",
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Trạng thái</span>,
       dataIndex: "status",
       key: "status",
       render: (status: string) => {
-        const colorMap: Record<string, string> = {
-          ACTIVE: "green",
-          SUSPENDED: "orange",
-          TERMINATED: "red",
+        const statusMap: Record<string, string> = {
+          SIGNED: "Verified",
+          PENDING_SIGNATURE: "Pending",
+          REJECTED: "Rejected",
+          TERMINATED: "Rejected",
         };
-        return <Tag color={colorMap[status] || "default"}>{status}</Tag>;
+        return <Badge status={statusMap[status] || "Pending"}>{status}</Badge>;
       },
     },
     {
-      title: "Commission Rate",
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Mức hoa hồng</span>,
       dataIndex: "commissionRate",
       key: "commission",
-      render: (rate: number) => `${rate}%`,
+      render: (rate: number) => <span className="font-bold text-primary">{rate}%</span>,
     },
     {
-      title: "Start Date",
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Ngày bắt đầu</span>,
       dataIndex: "startDate",
       key: "startDate",
-      render: (date: string) => new Date(date).toLocaleDateString(),
+      render: (date: string) => <span className="font-bold text-slate-700">{new Date(date).toLocaleDateString()}</span>,
     },
     {
-      title: "Actions",
+      title: "",
       key: "actions",
+      align: "right" as const,
       render: (_: unknown, record: ConsignmentContract) => (
-        <Space>
+        <Space size="middle">
           <Button
-            type="link"
+            type="text"
             icon={<DownloadOutlined />}
             onClick={() => handleDownloadContract(record.id)}
+            className="text-primary hover:!bg-pink-50 rounded-xl"
           >
-            Download
+            Tải về
           </Button>
-          {record.status === "SIGNED" && (
+          {record.status === "SIGNED" ? (
             <Button
               danger
-              type="link"
+              type="text"
               onClick={() => handleTerminateContract(record.id)}
+              className="hover:!bg-red-50 rounded-xl"
             >
-              Terminate
+              Chấm dứt
             </Button>
-          )}
+          ) : record.status === "PENDING_SIGNATURE" ? (
+            <Button
+              type="primary"
+              onClick={() => navigate(`/seller/consignments/${record.requestId}/sign`)}
+              className="rounded-xl font-bold"
+            >
+              Ký ngay
+            </Button>
+          ) : null}
         </Space>
       ),
     },
   ];
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">Consignment Contracts</h1>
-
-        {/* Error */}
-        {state.error && (
-          <Card className="mb-6 bg-red-50 border-red-200">
-            <p className="text-red-800">{state.error}</p>
-          </Card>
-        )}
-
-        {/* Table */}
-        <Card className="shadow-sm">
-          <Table
-            columns={columns}
-            dataSource={state.contracts.map((contract) => ({ ...contract, key: contract.id }))}
-            pagination={false}
-            loading={state.isLoading}
-          />
-
-          {/* Pagination */}
-          {state.total > state.size && (
-            <div className="flex justify-center mt-4">
-              <div className="flex gap-2">
-                <Button
-                  disabled={state.page === 0}
-                  onClick={() => setState((prev) => ({ ...prev, page: prev.page - 1 }))}
-                >
-                  Previous
-                </Button>
-                <span className="py-2">
-                  Page {state.page + 1} of {Math.ceil(state.total / state.size)}
-                </span>
-                <Button
-                  disabled={state.page >= Math.ceil(state.total / state.size) - 1}
-                  onClick={() => setState((prev) => ({ ...prev, page: prev.page + 1 }))}
-                >
-                  Next
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* Empty */}
-          {state.contracts.length === 0 && !state.isLoading && (
-            <Empty
-              description="No active contracts"
-              style={{ marginTop: 24 }}
-            />
-          )}
-        </Card>
+    <div className="mx-auto max-w-[1440px] space-y-12 pb-20">
+      <div className="flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-end">
+        <div className="space-y-4">
+          <Title className="!m-0 !font-display !text-4xl !font-bold !leading-tight !tracking-tight md:!text-6xl uppercase">Hợp đồng ký gửi</Title>
+          <Paragraph className="max-w-lg text-lg font-medium text-slate-400 opacity-80 italic">
+            Xem và quản lý các thỏa thuận pháp lý giữa bạn và Re:Wear cho từng đợt ký gửi sản phẩm.
+          </Paragraph>
+        </div>
+        <div className="flex items-center gap-4 rounded-3xl bg-white/50 px-8 py-4 backdrop-blur-md border border-pink-100/50">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/5 text-primary text-xl">
+            <FileDoneOutlined />
+          </div>
+          <div>
+            <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Đang hiệu lực</div>
+            <div className="font-display text-2xl font-bold text-slate-800">{state.contracts.filter(c => c.status === 'SIGNED').length} Hợp đồng</div>
+          </div>
+        </div>
       </div>
+
+      <Card className="rounded-[2.5rem] border-pink-100/40 bg-white p-4 shadow-sm">
+        <div className="mb-8 flex items-center gap-4 px-4">
+          <HistoryOutlined className="text-xl text-primary/60" />
+          <Title level={4} className="!m-0 !font-display uppercase tracking-widest text-base">Danh sách thỏa thuận</Title>
+        </div>
+
+        <Table
+          columns={columns}
+          dataSource={state.contracts.map((contract) => ({ ...contract, key: contract.id }))}
+          pagination={false}
+          loading={state.isLoading}
+          className="luxury-table"
+        />
+
+        <div className="mt-10 flex justify-center">
+          <Pagination
+            current={state.page + 1}
+            pageSize={state.size}
+            total={state.total}
+            onChange={(p) => setState(prev => ({ ...prev, page: p - 1 }))}
+            showSizeChanger={false}
+            className="luxury-pagination"
+          />
+        </div>
+
+        {state.contracts.length === 0 && !state.isLoading && (
+          <div className="py-20 text-center">
+            <EmptyState
+              title="Chưa có hợp đồng nào"
+              description="Hợp đồng sẽ được tạo tự động sau khi yêu cầu ký gửi của bạn được phê duyệt."
+              action={<Button type="primary" onClick={() => navigate("/seller/consignments")}>Xem yêu cầu ký gửi</Button>}
+            />
+          </div>
+        )}
+      </Card>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
-import { Result } from "antd";
+import { Button, Result } from "antd";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/shared/context/AuthContext";
 import type { UserRole } from "@/shared/contracts/commonContract";
 
@@ -12,18 +13,20 @@ type RoleGuardProps = GuardProps & {
 };
 
 export function AuthGuard({ children }: GuardProps) {
+  const navigate = useNavigate();
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return <div className="flex items-center justify-center min-h-screen italic text-slate-400">Đang tải...</div>;
   }
 
   if (!isAuthenticated) {
     return (
       <Result
         status="403"
-        title="Unauthorized"
-        subTitle="Please log in to continue."
+        title="Chưa đăng nhập"
+        subTitle="Vui lòng đăng nhập để tiếp tục khám phá Re:Wear."
+        extra={<Button type="primary" onClick={() => navigate("/auth/login")}>Đăng nhập ngay</Button>}
       />
     );
   }
@@ -32,18 +35,20 @@ export function AuthGuard({ children }: GuardProps) {
 }
 
 export function RoleGuard({ children, requiredRoles }: RoleGuardProps) {
+  const navigate = useNavigate();
   const { isAuthenticated, isLoading, hasRole } = useAuth();
 
   if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return <div className="flex items-center justify-center min-h-screen italic text-slate-400">Đang tải...</div>;
   }
 
   if (!isAuthenticated) {
     return (
       <Result
         status="403"
-        title="Unauthorized"
-        subTitle="Please log in to continue."
+        title="Chưa đăng nhập"
+        subTitle="Vui lòng đăng nhập để tiếp tục."
+        extra={<Button type="primary" onClick={() => navigate("/auth/login")}>Đăng nhập ngay</Button>}
       />
     );
   }
@@ -56,8 +61,8 @@ export function RoleGuard({ children, requiredRoles }: RoleGuardProps) {
     return (
       <Result
         status="403"
-        title="Forbidden"
-        subTitle="You do not have permission to access this page."
+        title="Truy cập bị từ chối"
+        subTitle="Bạn không có quyền truy cập vào trang này."
       />
     );
   }

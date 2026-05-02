@@ -16,41 +16,44 @@ import ProductReviewPage from "@/modules/buyer/pages/ProductReviewPage";
 /**
  * Buyer routes
  */
-export const buyerRoutes: RouteObject[] = [
+export const guestBuyerRoutes: RouteObject[] = [
   {
-    path: "products",
+    path: "buyer/products",
     element: <ProductListPage />,
   },
   {
-    path: "products/:productId",
+    path: "buyer/products/:productId",
     element: <ProductDetailPage />,
   },
+];
+
+export const buyerRoutes: RouteObject[] = [
   {
-    path: "products/:productId/review",
+    path: "buyer/products/:productId/review",
     element: <ProductReviewPage />,
   },
   {
-    path: "cart",
+    path: "buyer/cart",
     element: <CartPage />,
   },
   {
-    path: "checkout",
+    path: "buyer/checkout",
     element: <CheckoutPage />,
   },
   {
-    path: "orders",
+    path: "buyer/orders",
     element: <OrderHistoryPage />,
   },
   {
-    path: "orders/:orderId",
+    path: "buyer/orders/:orderId",
     element: <OrderDetailPage />,
   },
   {
-    path: "returns",
+    path: "buyer/returns",
     element: <MyReturnsPage />,
   },
   {
-    path: "returns/:returnId",
+    path: "buyer/returns/:returnId",
     element: <ReturnDetailPage />,
   },
 ];

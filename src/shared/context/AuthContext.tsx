@@ -26,7 +26,7 @@ export interface AuthState {
  * Auth context interface
  */
 interface AuthContextType extends AuthState {
-  login: (identifier: string, password: string) => Promise<void>;
+  login: (identifier: string, password: string) => Promise<UserProfile>;
   logout: () => void;
   refreshAccessToken: () => Promise<void>;
   updateProfile: (profile: UserProfile) => void;
@@ -102,7 +102,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem(AUTH_STORAGE_KEYS.ACCESS_TOKEN, accessToken);
         localStorage.setItem(AUTH_STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
         localStorage.setItem(AUTH_STORAGE_KEYS.USER, JSON.stringify(userProfile));
+        return userProfile;
       }
+
+      throw new Error(response.message || "Login failed");
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : "Login failed";
       setState((prev) => ({

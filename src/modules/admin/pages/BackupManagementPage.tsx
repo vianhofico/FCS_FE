@@ -4,8 +4,11 @@
  */
 
 import { useState, useEffect } from "react";
-import { Card, Button, Table, Spin, Empty, Tag, Modal, message, Space, Row, Col, Statistic } from "antd";
-import { DownloadOutlined, DeleteOutlined, UploadOutlined } from "@ant-design/icons";
+import { Card, Table, Spin, Modal, message, Space, Row, Col, Typography } from "antd";
+import { DownloadOutlined, DeleteOutlined, CloudSyncOutlined, DatabaseOutlined } from "@ant-design/icons";
+import { Badge, Button, EmptyState } from "@/shared/ui";
+
+const { Title, Paragraph } = Typography;
 
 interface Backup {
   id: string;
@@ -74,13 +77,14 @@ export default function BackupManagementPage() {
 
   const handlePerformBackup = () => {
     Modal.confirm({
-      title: "Perform Backup",
-      content: "Start a new backup? This may take several minutes.",
-      okText: "Start",
+      title: "Sao lưu hệ thống",
+      content: "Bắt đầu tạo bản sao lưu mới? Quá trình này có thể mất vài phút.",
+      okText: "Bắt đầu",
+      cancelText: "Hủy",
       onOk: async () => {
         try {
           setPerformingBackup(true);
-          message.success("Backup started successfully");
+          message.success("Đã bắt đầu quá trình sao lưu");
           setState((prev) => ({
             ...prev,
             backups: [
@@ -106,13 +110,14 @@ export default function BackupManagementPage() {
 
   const handleRestoreBackup = () => {
     Modal.confirm({
-      title: "Restore Backup",
-      content: "Are you sure? This will overwrite current data.",
-      okText: "Restore",
+      title: "Phục hồi hệ thống",
+      content: "Bạn có chắc chắn? Thao tác này sẽ ghi đè toàn bộ dữ liệu hiện tại bằng bản sao lưu.",
+      okText: "Phục hồi",
       okType: "danger",
+      cancelText: "Hủy",
       onOk: async () => {
         try {
-          message.success("Backup restored successfully");
+          message.success("Phục hồi hệ thống thành công");
         } catch (err) {
           message.error(err instanceof Error ? err.message : "Failed to restore backup");
         }
@@ -122,13 +127,14 @@ export default function BackupManagementPage() {
 
   const handleDeleteBackup = (backupId: string) => {
     Modal.confirm({
-      title: "Delete Backup",
-      content: "This action cannot be undone.",
-      okText: "Delete",
+      title: "Xóa bản sao lưu",
+      content: "Thao tác này không thể hoàn tác. Bạn có chắc muốn xóa bản sao lưu này?",
+      okText: "Xóa",
       okType: "danger",
+      cancelText: "Hủy",
       onOk: async () => {
         try {
-          message.success("Backup deleted");
+          message.success("Đã xóa bản sao lưu");
           setState((prev) => ({
             ...prev,
             backups: prev.backups.filter((b) => b.id !== backupId),
@@ -141,32 +147,68 @@ export default function BackupManagementPage() {
   };
 
   const columns = [
-    { title: "Backup Name", dataIndex: "name", key: "name" },
-    { title: "Type", dataIndex: "type", key: "type", render: (type: string) => <Tag>{type}</Tag> },
-    { title: "Size (MB)", dataIndex: "size", key: "size", render: (size: number) => (size / 1024).toFixed(2) },
-    { title: "Status", dataIndex: "status", key: "status", render: (status: string) => <Tag color={status === "SUCCESS" ? "green" : "red"}>{status}</Tag> },
-    { title: "Created", dataIndex: "createdAt", key: "createdAt", render: (date: string) => new Date(date).toLocaleDateString() },
     {
-      title: "Actions",
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Tên bản sao lưu</span>,
+      dataIndex: "name",
+      key: "name",
+      render: (name: string) => <span className="font-bold text-slate-700">{name}</span>,
+    },
+    {
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Loại</span>,
+      dataIndex: "type",
+      key: "type",
+      render: (type: string) => (
+        <span className="inline-flex items-center rounded-lg bg-slate-50 px-2.5 py-1 text-xs font-bold text-slate-500 border border-slate-100">
+          {type}
+        </span>
+      ),
+    },
+    {
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Dung lượng</span>,
+      dataIndex: "size",
+      key: "size",
+      render: (size: number) => <span className="font-mono text-xs font-bold text-slate-400">{(size / 1024).toFixed(2)} MB</span>,
+    },
+    {
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Trạng thái</span>,
+      dataIndex: "status",
+      key: "status",
+      render: (status: string) => {
+        const statusMap: Record<string, string> = {
+          SUCCESS: "Verified",
+          FAILED: "Rejected",
+        };
+        return <Badge status={statusMap[status] || "Verified"}>{status}</Badge>;
+      },
+    },
+    {
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Ngày tạo</span>,
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (date: string) => <span className="text-slate-500 font-medium">{new Date(date).toLocaleDateString()}</span>,
+    },
+    {
+      title: "",
       key: "actions",
+      align: "right" as const,
       render: (_: unknown, record: Backup) => (
-        <Space size="small">
+        <Space size="middle">
           <Button
-            type="link"
+            type="text"
             icon={<DownloadOutlined />}
             onClick={() => handleRestoreBackup()}
-            size="small"
+            className="text-primary hover:!bg-pink-50 rounded-xl font-bold"
           >
-            Restore
+            Phục hồi
           </Button>
           <Button
             danger
-            type="link"
+            type="text"
             icon={<DeleteOutlined />}
             onClick={() => handleDeleteBackup(record.id)}
-            size="small"
+            className="hover:!bg-red-50 rounded-xl font-bold"
           >
-            Delete
+            Xóa
           </Button>
         </Space>
       ),
@@ -181,58 +223,84 @@ export default function BackupManagementPage() {
     );
   }
 
+  const stats = [
+    { label: "Tổng bản lưu", value: state.stats.total, color: "bg-slate-50 text-slate-500" },
+    { label: "Thành công", value: state.stats.successful, color: "bg-emerald-50 text-emerald-500" },
+    { label: "Thất bại", value: state.stats.failed, color: "bg-red-50 text-red-500" },
+  ];
+
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">Backup Management</h1>
-
-        <Row gutter={[24, 24]} className="mb-6">
-          <Col xs={24} sm={8}>
-            <Card className="shadow-sm">
-              <Statistic title="Total Backups" value={state.stats.total} />
-            </Card>
-          </Col>
-          <Col xs={24} sm={8}>
-            <Card className="shadow-sm">
-              <Statistic title="Successful" value={state.stats.successful} valueStyle={{ color: "#52c41a" }} />
-            </Card>
-          </Col>
-          <Col xs={24} sm={8}>
-            <Card className="shadow-sm">
-              <Statistic title="Failed" value={state.stats.failed} valueStyle={{ color: "#ff4d4f" }} />
-            </Card>
-          </Col>
-        </Row>
-
-        {state.error && (
-          <Card className="mb-6 bg-red-50 border-red-200">
-            <p className="text-red-800">{state.error}</p>
-          </Card>
-        )}
-
-        <Card
-          title="Backups"
-          className="shadow-sm"
-          extra={
-            <Button
-              type="primary"
-              icon={<UploadOutlined />}
-              onClick={handlePerformBackup}
-              loading={performingBackup}
-            >
-              Perform Backup
-            </Button>
-          }
-        >
-          <Table
-            columns={columns}
-            dataSource={state.backups.map((b) => ({ ...b, key: b.id }))}
-            pagination={false}
-            loading={state.isLoading}
-          />
-          {state.backups.length === 0 && <Empty description="No backups" />}
-        </Card>
+    <div className="mx-auto max-w-[1440px] space-y-12 pb-20">
+      <div className="flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-end">
+        <div className="space-y-4">
+          <Title className="!m-0 !font-display !text-4xl !font-bold !leading-tight !tracking-tight md:!text-6xl uppercase">Quản lý sao lưu</Title>
+          <Paragraph className="max-w-lg text-lg font-medium text-slate-400 opacity-80 italic">
+            Đảm bảo an toàn dữ liệu bằng cách quản lý các bản sao lưu định kỳ và quy trình phục hồi hệ thống khi cần thiết.
+          </Paragraph>
+        </div>
+        <div className="flex items-center gap-4 rounded-3xl bg-white/50 px-8 py-4 backdrop-blur-md border border-pink-100/50">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/5 text-primary text-xl">
+            <CloudSyncOutlined />
+          </div>
+          <div>
+            <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">An toàn dữ liệu</div>
+            <div className="font-display text-2xl font-bold text-slate-800">Business Continuity</div>
+          </div>
+        </div>
       </div>
+
+      <Row gutter={[24, 24]}>
+        {stats.map((s, i) => (
+          <Col key={i} xs={24} sm={8}>
+            <Card className="rounded-[2rem] border-pink-100/50 bg-white/50 shadow-sm backdrop-blur-md transition-soft hover:shadow-luxury">
+              <div className="flex items-center gap-5">
+                <div className={`flex h-14 w-14 items-center justify-center rounded-2xl text-2xl font-black ${s.color}`}>
+                  {s.value}
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{s.label}</div>
+                  <div className="font-display text-2xl font-bold text-slate-800">Backups</div>
+                </div>
+              </div>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+
+      <Card className="rounded-[2.5rem] border-pink-100/40 bg-white p-6 shadow-sm">
+        <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-center md:justify-between px-2">
+          <div className="flex items-center gap-4">
+            <DatabaseOutlined className="text-xl text-primary/60" />
+            <Title level={4} className="!m-0 !font-display uppercase tracking-widest text-base">Danh sách bản lưu</Title>
+          </div>
+          <Button
+            type="primary"
+            icon={<CloudSyncOutlined />}
+            onClick={handlePerformBackup}
+            loading={performingBackup}
+            className="rounded-2xl h-12 px-8 font-bold shadow-luxury"
+          >
+            Tạo bản sao lưu ngay
+          </Button>
+        </div>
+
+        <Table
+          columns={columns}
+          dataSource={state.backups.map((b) => ({ ...b, key: b.id }))}
+          pagination={false}
+          className="luxury-table"
+        />
+
+        {state.backups.length === 0 && (
+          <div className="py-20 text-center">
+            <EmptyState
+              title="Chưa có bản sao lưu"
+              description="Hãy bắt đầu tạo bản sao lưu đầu tiên để bảo vệ dữ liệu hệ thống."
+            />
+          </div>
+        )}
+      </Card>
     </div>
   );
 }
+

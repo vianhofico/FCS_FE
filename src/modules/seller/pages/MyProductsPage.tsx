@@ -3,14 +3,38 @@
  * View and manage seller's consigned products
  */
 
-import { useState, useEffect } from "react";
+import {
+  DeleteOutlined,
+  EditOutlined,
+  EyeOutlined,
+  PlusOutlined,
+  SearchOutlined,
+  ShoppingOutlined,
+} from "@ant-design/icons";
+import {
+  Avatar,
+  Card,
+  Col,
+  Input,
+  Pagination,
+  Popconfirm,
+  Row,
+  Select,
+  Space,
+  Spin,
+  Table,
+  Typography,
+} from "antd";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, Button, Table, Space, Spin, Empty, Pagination, Tag, Input, Select } from "antd";
-import { PlusOutlined, EyeOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+
 import { productApi } from "@/modules/product/api/productApi";
-import type { ProductSummary } from "@/shared/contracts/productContract";
-import type { ProductStatus } from "@/shared/contracts/commonContract";
 import { useAuth } from "@/shared/context/AuthContext";
+import { Badge, Button, EmptyState } from "@/shared/ui";
+import type { ProductStatus } from "@/shared/contracts/commonContract";
+import type { ProductSummary } from "@/shared/contracts/productContract";
+
+const { Title, Paragraph } = Typography;
 
 interface PageState {
   products: ProductSummary[];
@@ -43,7 +67,6 @@ export default function MyProductsPage() {
 
   useEffect(() => {
     if (!user) return;
-
     const fetchProducts = async () => {
       try {
         setState((prev) => ({ ...prev, isLoading: true }));
@@ -63,197 +86,185 @@ export default function MyProductsPage() {
           }));
         }
       } catch {
-        const errorMsg = "Failed to load products";
-        setState((prev) => ({
-          ...prev,
-          isLoading: false,
-          error: errorMsg,
-        }));
+        setState((prev) => ({ ...prev, isLoading: false, error: "Không thể tải danh sách sản phẩm" }));
       }
     };
-
     fetchProducts();
   }, [user, state.page, state.size, state.filters]);
 
-  if (state.isLoading && state.products.length === 0) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Spin size="large" />
-      </div>
-    );
-  }
-
   const columns = [
     {
-      title: "Product",
-      dataIndex: "name",
-      key: "name",
-      render: (name: string, record: ProductSummary) => (
-        <div>
-          <p className="font-semibold">{name}</p>
-          <p className="text-sm text-gray-500">SKU: {record.sku}</p>
+      title: <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Sản phẩm</span>,
+      key: "product",
+      render: (_: any, record: ProductSummary) => (
+        <div className="flex items-center gap-4 py-2">
+          <Avatar
+            shape="square"
+            size={64}
+            src={record.imageUrl}
+            className="rounded-2xl border border-border/40 bg-bg-secondary shadow-sm"
+          />
+          <div>
+            <p className="font-display text-base font-black text-slate-800">{record.name}</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-primary/70">{record.sku}</p>
+          </div>
         </div>
       ),
     },
     {
-      title: "Image",
-      dataIndex: "imageUrl",
-      key: "image",
-      render: (imageUrl?: string) =>
-        imageUrl ? (
-          <img src={imageUrl} alt="product" className="w-12 h-12 object-cover rounded" />
-        ) : (
-          <div className="w-12 h-12 bg-gray-200 rounded" />
-        ),
+      title: <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Giá bán</span>,
+      key: "price",
+      render: (_: any, record: ProductSummary) => (
+        <span className="font-display text-lg font-black text-slate-700">{record.salePrice.toLocaleString()}₫</span>
+      ),
     },
     {
-      title: "Sale Price",
-      dataIndex: "salePrice",
-      key: "salePrice",
-      render: (price: number) => `$${price.toLocaleString()}`,
-    },
-    {
-      title: "Condition",
-      dataIndex: "condition",
+      title: <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Độ mới</span>,
       key: "condition",
-      render: (condition?: number) => condition ? `${condition}/100` : "N/A",
+      render: (_: any, record: ProductSummary) => (
+        <Badge status="Active">{record.condition}/100</Badge>
+      ),
     },
     {
-      title: "Status",
-      dataIndex: "status",
+      title: <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Trạng thái</span>,
       key: "status",
       render: (status: string) => {
-        const colorMap: Record<string, string> = {
-          ACTIVE: "green",
-          INACTIVE: "orange",
-          ARCHIVED: "red",
-          DRAFT: "blue",
+        const statusMap: Record<string, string> = {
+          ACTIVE: "Active",
+          INACTIVE: "Inactive",
+          ARCHIVED: "Rejected",
+          DRAFT: "Pending",
         };
-        return <Tag color={colorMap[status] || "default"}>{status}</Tag>;
+        return (
+          <Badge status={statusMap[status] || "Pending"}>{status}</Badge>
+        );
       },
     },
     {
-      title: "Actions",
+      title: "",
       key: "actions",
-      render: (_: unknown, record: ProductSummary) => (
-        <Space size="small">
+      align: "right" as const,
+      render: (_: any, record: ProductSummary) => (
+        <Space size="middle">
           <Button
-            type="link"
+            type="text"
             icon={<EyeOutlined />}
             onClick={() => navigate(`/seller/products/${record.id}`)}
-            size="small"
-          >
-            View
-          </Button>
+            className="text-slate-400 hover:!text-primary"
+          />
           <Button
-            type="link"
+            type="text"
             icon={<EditOutlined />}
             onClick={() => navigate(`/seller/products/${record.id}/edit`)}
-            size="small"
-          >
-            Edit
-          </Button>
-          <Button
-            danger
-            type="link"
-            icon={<DeleteOutlined />}
-            size="small"
-          >
-            Delete
-          </Button>
+            className="text-slate-400 hover:!text-primary"
+          />
+          <Popconfirm title="Xóa sản phẩm này?" okText="Xác nhận" cancelText="Hủy">
+            <Button type="text" danger icon={<DeleteOutlined />} className="hover:!bg-red-50" />
+          </Popconfirm>
         </Space>
       ),
     },
   ];
 
+  const stats = [
+    { label: "Tổng sản phẩm", value: state.total, icon: <ShoppingOutlined />, color: "bg-blue-50 text-blue-500" },
+    { label: "Đang niêm yết", value: state.products.filter(p => p.status === 'ACTIVE').length, icon: <EyeOutlined />, color: "bg-emerald-50 text-emerald-500" },
+    { label: "Bản nháp", value: state.products.filter(p => p.status === 'DRAFT').length, icon: <EditOutlined />, color: "bg-orange-50 text-orange-500" },
+  ];
+
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">My Products</h1>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => navigate("/seller/products/new")}
-          >
-            Add Product
-          </Button>
+    <div className="mx-auto max-w-[1440px] space-y-12 pb-20">
+      <div className="flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-end">
+        <div className="space-y-4">
+          <Title className="!m-0 !font-display !text-4xl !font-black !leading-tight !tracking-tight md:!text-6xl uppercase">Kho hàng của tôi</Title>
+          <Paragraph className="max-w-lg text-lg font-medium text-slate-400 opacity-80">
+            Quản lý các tuyệt tác thời trang của bạn và theo dõi trạng thái niêm yết trên Re:Wear.
+          </Paragraph>
+        </div>
+        <Button
+          type="primary"
+          size="large"
+          icon={<PlusOutlined />}
+          onClick={() => navigate("/seller/products/new")}
+          className="h-14 rounded-2xl px-10 font-black shadow-luxury uppercase tracking-widest text-xs"
+        >
+          THÊM SẢN PHẨM MỚI
+        </Button>
+      </div>
+
+      <Row gutter={[24, 24]}>
+        {stats.map((s, i) => (
+          <Col key={i} xs={24} sm={8}>
+            <Card className="rounded-[2rem] border-border/40 bg-white/50 shadow-sm backdrop-blur-md">
+              <div className="flex items-center gap-5">
+                <div className={`flex h-14 w-14 items-center justify-center rounded-2xl text-2xl ${s.color}`}>
+                  {s.icon}
+                </div>
+                <div>
+                  <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">{s.label}</div>
+                  <div className="font-display text-3xl font-black text-slate-800">{s.value}</div>
+                </div>
+              </div>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+
+      <Card className="rounded-[2.5rem] border-border/60 bg-white p-4 shadow-sm">
+        <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-center">
+          <Input
+            prefix={<SearchOutlined className="text-primary/40" />}
+            placeholder="Tìm theo tên hoặc SKU..."
+            value={state.filters.search}
+            onChange={(e) => setState(prev => ({ ...prev, filters: { ...prev.filters, search: e.target.value }, page: 0 }))}
+            className="h-12 max-w-sm rounded-2xl bg-bg-main"
+          />
+          <Select
+            placeholder="Tất cả trạng thái"
+            allowClear
+            className="h-12 min-w-[200px]"
+            onChange={(val) => setState(prev => ({ ...prev, filters: { ...prev.filters, status: val || "" }, page: 0 }))}
+            options={[
+              { label: "Đang niêm yết", value: "ACTIVE" },
+              { label: "Tạm ẩn", value: "INACTIVE" },
+              { label: "Đã lưu trữ", value: "ARCHIVED" },
+              { label: "Bản nháp", value: "DRAFT" },
+            ]}
+          />
         </div>
 
-        {/* Filters */}
-        <Card className="mb-6 shadow-sm">
-          <Space className="w-full" size="large" wrap>
-            <Input.Search
-              placeholder="Search products..."
-              value={state.filters.search}
-              onChange={(e) =>
-                setState((prev) => ({
-                  ...prev,
-                  filters: { ...prev.filters, search: e.target.value },
-                  page: 0,
-                }))
-              }
-              style={{ width: 200 }}
-            />
-            <Select
-              placeholder="Filter by status"
-              value={state.filters.status || undefined}
-              onChange={(value) =>
-                setState((prev) => ({
-                  ...prev,
-                  filters: { ...prev.filters, status: value },
-                  page: 0,
-                }))
-              }
-              style={{ width: 150 }}
-              allowClear
-              options={[
-                { label: "Active", value: "ACTIVE" },
-                { label: "Inactive", value: "INACTIVE" },
-                { label: "Archived", value: "ARCHIVED" },
-                { label: "Draft", value: "DRAFT" },
-              ]}
-            />
-          </Space>
-        </Card>
-
-        {/* Error */}
-        {state.error && (
-          <Card className="mb-6 bg-red-50 border-red-200">
-            <p className="text-red-800">{state.error}</p>
-          </Card>
-        )}
-
-        {/* Table */}
-        <Card className="shadow-sm">
+        <Spin spinning={state.isLoading && state.products.length === 0}>
           <Table
             columns={columns}
-            dataSource={state.products.map((product) => ({ ...product, key: product.id }))}
+            dataSource={state.products.map(p => ({ ...p, key: p.id }))}
             pagination={false}
-            loading={state.isLoading}
-            scroll={{ x: 800 }}
+            className="luxury-table"
           />
-
-          {/* Pagination */}
-          <div className="flex justify-center mt-4">
+          <div className="mt-10 flex justify-center">
             <Pagination
               current={state.page + 1}
               pageSize={state.size}
               total={state.total}
-              onChange={(page) => setState((prev) => ({ ...prev, page: page - 1 }))}
+              onChange={(p) => setState(prev => ({ ...prev, page: p - 1 }))}
+              showSizeChanger={false}
+              className="luxury-pagination"
             />
           </div>
-
-          {/* Empty */}
           {state.products.length === 0 && !state.isLoading && (
-            <Empty
-              description="No products found"
-              style={{ marginTop: 24 }}
-            />
+            <div className="py-20 text-center">
+              <EmptyState
+                title="Chưa có sản phẩm nào trong kho"
+                description="Hãy bắt đầu hành trình ký gửi món đồ đầu tiên của bạn để làm mới phong cách cho cộng đồng."
+                action={
+                  <Button type="primary" onClick={() => navigate("/seller/products/new")}>
+                    Đăng bán ngay
+                  </Button>
+                }
+              />
+            </div>
           )}
-        </Card>
-      </div>
+        </Spin>
+      </Card>
     </div>
   );
 }

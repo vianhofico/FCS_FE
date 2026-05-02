@@ -6,19 +6,19 @@
 import { useState, useEffect } from "react";
 import {
   Card,
-  Button,
   Table,
   Spin,
-  Empty,
-  Tag,
   Modal,
   message,
   Space,
   Row,
   Col,
-  Statistic,
+  Typography,
 } from "antd";
-import { CheckOutlined } from "@ant-design/icons";
+import { CheckOutlined, AlertOutlined, SafetyOutlined } from "@ant-design/icons";
+import { Badge, Button, EmptyState } from "@/shared/ui";
+
+const { Title, Paragraph } = Typography;
 
 interface Dispute {
   id: string;
@@ -67,7 +67,7 @@ export default function DisputeResolutionPage() {
             orderId: "o1",
             buyerId: "b1",
             sellerId: "s1",
-            reason: "Product quality issue",
+            reason: "Vấn đề chất lượng sản phẩm",
             status: "PENDING",
             createdAt: new Date().toISOString(),
           },
@@ -98,12 +98,13 @@ export default function DisputeResolutionPage() {
 
   const handleResolveDispute = (disputeId: string, resolution: string) => {
     Modal.confirm({
-      title: "Resolve Dispute",
-      content: `Resolution: ${resolution}`,
-      okText: "Confirm",
+      title: "Giải quyết khiếu nại",
+      content: `Hình thức giải quyết: ${resolution}`,
+      okText: "Xác nhận",
+      cancelText: "Hủy",
       onOk: async () => {
         try {
-          message.success("Dispute resolved");
+          message.success("Đã giải quyết khiếu nại");
           setState((prev) => ({
             ...prev,
             disputes: prev.disputes.map((d) =>
@@ -119,50 +120,58 @@ export default function DisputeResolutionPage() {
 
   const columns = [
     {
-      title: "Dispute ID",
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Mã khiếu nại</span>,
       dataIndex: "id",
       key: "id",
+      render: (id: string) => <span className="font-mono text-xs font-bold text-slate-400">#{id.toUpperCase()}</span>,
     },
     {
-      title: "Order ID",
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Mã đơn hàng</span>,
       dataIndex: "orderId",
       key: "orderId",
+      render: (id: string) => <span className="font-bold text-slate-700">#{id}</span>,
     },
     {
-      title: "Reason",
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Lý do</span>,
       dataIndex: "reason",
       key: "reason",
+      render: (reason: string) => <span className="font-medium text-slate-600">{reason}</span>,
     },
     {
-      title: "Status",
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Trạng thái</span>,
       dataIndex: "status",
       key: "status",
-      render: (status: string) => (
-        <Tag color={status === "PENDING" ? "orange" : "green"}>{status}</Tag>
-      ),
+      render: (status: string) => {
+        const statusMap: Record<string, string> = {
+          PENDING: "Pending",
+          RESOLVED: "Verified",
+        };
+        return <Badge status={statusMap[status] || "Pending"}>{status}</Badge>;
+      },
     },
     {
-      title: "Actions",
+      title: "",
       key: "actions",
+      align: "right" as const,
       render: (_: unknown, record: Dispute) => (
-        <Space size="small">
+        <Space size="middle">
           {record.status === "PENDING" && (
             <>
               <Button
-                type="link"
+                type="text"
                 icon={<CheckOutlined />}
-                onClick={() => handleResolveDispute(record.id, "Favor Buyer")}
-                size="small"
+                onClick={() => handleResolveDispute(record.id, "Bênh vực Người mua")}
+                className="text-emerald-500 hover:!bg-emerald-50 rounded-xl font-bold"
               >
-                Favor Buyer
+                Ưu tiên Người mua
               </Button>
               <Button
-                type="link"
+                type="text"
                 icon={<CheckOutlined />}
-                onClick={() => handleResolveDispute(record.id, "Favor Seller")}
-                size="small"
+                onClick={() => handleResolveDispute(record.id, "Bênh vực Người bán")}
+                className="text-primary hover:!bg-pink-50 rounded-xl font-bold"
               >
-                Favor Seller
+                Ưu tiên Người bán
               </Button>
             </>
           )}
@@ -179,46 +188,73 @@ export default function DisputeResolutionPage() {
     );
   }
 
+  const stats = [
+    { label: "Tổng khiếu nại", value: state.stats.total, color: "bg-slate-50 text-slate-500" },
+    { label: "Chưa giải quyết", value: state.stats.pending, color: "bg-amber-50 text-amber-500" },
+    { label: "Đã xử lý", value: state.stats.resolved, color: "bg-emerald-50 text-emerald-500" },
+  ];
+
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">Dispute Resolution</h1>
-
-        {/* Stats */}
-        <Row gutter={[24, 24]} className="mb-6">
-          <Col xs={24} sm={8}>
-            <Card className="shadow-sm">
-              <Statistic title="Total Disputes" value={state.stats.total} />
-            </Card>
-          </Col>
-          <Col xs={24} sm={8}>
-            <Card className="shadow-sm">
-              <Statistic title="Pending" value={state.stats.pending} valueStyle={{ color: "#faad14" }} />
-            </Card>
-          </Col>
-          <Col xs={24} sm={8}>
-            <Card className="shadow-sm">
-              <Statistic title="Resolved" value={state.stats.resolved} valueStyle={{ color: "#52c41a" }} />
-            </Card>
-          </Col>
-        </Row>
-
-        {state.error && (
-          <Card className="mb-6 bg-red-50 border-red-200">
-            <p className="text-red-800">{state.error}</p>
-          </Card>
-        )}
-
-        <Card className="shadow-sm">
-          <Table
-            columns={columns}
-            dataSource={state.disputes.map((dispute) => ({ ...dispute, key: dispute.id }))}
-            pagination={false}
-            loading={state.isLoading}
-          />
-          {state.disputes.length === 0 && <Empty description="No disputes" />}
-        </Card>
+    <div className="mx-auto max-w-[1440px] space-y-12 pb-20">
+      <div className="flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-end">
+        <div className="space-y-4">
+          <Title className="!m-0 !font-display !text-4xl !font-bold !leading-tight !tracking-tight md:!text-6xl uppercase">Giải quyết khiếu nại</Title>
+          <Paragraph className="max-w-lg text-lg font-medium text-slate-400 opacity-80 italic">
+            Xử lý các tranh chấp giữa người mua và người bán để đảm bảo tính công bằng và minh bạch trong mọi giao dịch.
+          </Paragraph>
+        </div>
+        <div className="flex items-center gap-4 rounded-3xl bg-white/50 px-8 py-4 backdrop-blur-md border border-pink-100/50">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/5 text-primary text-xl">
+            <SafetyOutlined />
+          </div>
+          <div>
+            <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Trung tâm hỗ trợ</div>
+            <div className="font-display text-2xl font-bold text-slate-800">Dispute Center</div>
+          </div>
+        </div>
       </div>
+
+      <Row gutter={[24, 24]}>
+        {stats.map((s, i) => (
+          <Col key={i} xs={24} sm={8}>
+            <Card className="rounded-[2rem] border-pink-100/50 bg-white/50 shadow-sm backdrop-blur-md transition-soft hover:shadow-luxury">
+              <div className="flex items-center gap-5">
+                <div className={`flex h-14 w-14 items-center justify-center rounded-2xl text-2xl font-black ${s.color}`}>
+                  {s.value}
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{s.label}</div>
+                  <div className="font-display text-2xl font-bold text-slate-800">Cases</div>
+                </div>
+              </div>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+
+      <Card className="rounded-[2.5rem] border-pink-100/40 bg-white p-6 shadow-sm">
+        <div className="mb-8 flex items-center gap-4 px-2">
+          <AlertOutlined className="text-xl text-primary/60" />
+          <Title level={4} className="!m-0 !font-display uppercase tracking-widest text-base">Danh sách tranh chấp</Title>
+        </div>
+
+        <Table
+          columns={columns}
+          dataSource={state.disputes.map((dispute) => ({ ...dispute, key: dispute.id }))}
+          pagination={false}
+          className="luxury-table"
+        />
+
+        {state.disputes.length === 0 && (
+          <div className="py-20 text-center">
+            <EmptyState
+              title="Mọi thứ đều ổn"
+              description="Hiện không có khiếu nại nào cần xử lý."
+            />
+          </div>
+        )}
+      </Card>
     </div>
   );
 }
+

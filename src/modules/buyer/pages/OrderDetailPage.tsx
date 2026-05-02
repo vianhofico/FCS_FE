@@ -7,22 +7,16 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Card,
-  Button,
-  Spin,
-  Empty,
-  Space,
   Divider,
   Steps,
   Table,
-  Tag,
-  Statistic,
-  Row,
   Col,
   Modal,
   Form,
   Input,
   Select,
   message,
+  Typography,
 } from "antd";
 import {
   ArrowLeftOutlined,
@@ -30,6 +24,9 @@ import {
   UndoOutlined,
   ExclamationCircleOutlined,
   CheckCircleOutlined,
+  ShoppingOutlined,
+  CreditCardOutlined,
+  CarOutlined,
 } from "@ant-design/icons";
 import { orderApi } from "@/modules/order/api/orderApi";
 import { returnApi } from "@/modules/order/api/returnApi";
@@ -37,6 +34,9 @@ import type { OrderDetail, OrderItem } from "@/shared/contracts/orderContract";
 import { useAuth } from "@/shared/context/AuthContext";
 import TimelineWidget from "@/shared/components/TimelineWidget";
 import { buildTrackingUrl } from "@/shared/integrations/shippingService";
+import { Badge, Button, EmptyState } from "@/shared/ui";
+
+const { Title, Text, Paragraph } = Typography;
 
 interface OrderDetailPageState {
   order: OrderDetail | null;
@@ -216,337 +216,325 @@ export default function OrderDetailPage() {
     });
   };
 
-  if (state.isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Spin size="large" />
-      </div>
-    );
-  }
-
   if (!state.order) {
     return (
-      <div className="p-6 max-w-4xl mx-auto">
-        {state.error && (
-          <Card className="bg-red-50 border-red-200">
-            <p className="text-red-800">{state.error}</p>
-          </Card>
-        )}
-        {!state.error && <Empty description="Order not found" />}
+      <div className="mx-auto max-w-4xl space-y-6">
         <Button
           icon={<ArrowLeftOutlined />}
           onClick={() => navigate("/buyer/orders")}
-          className="mt-6"
+          type="text"
+          className="rounded-xl border-border/60 bg-white/50 text-slate-500 transition-soft hover:border-primary hover:text-primary px-4 py-2 h-auto"
         >
-          Back to Orders
+          Quay lại đơn hàng
         </Button>
+        {state.error ? (
+          <Card className="rounded-[2rem] border-red-100 bg-red-50/50 p-6 text-center shadow-sm">
+            <Paragraph className="!m-0 font-medium text-red-800 italic">{state.error}</Paragraph>
+          </Card>
+        ) : (
+          <EmptyState
+            title="Không tìm thấy đơn hàng"
+            description="Thông tin đơn hàng có thể đã bị thay đổi hoặc không tồn tại."
+          />
+        )}
       </div>
     );
   }
 
+  const order = state.order;
+  const statusMap: Record<string, string> = {
+    PENDING: "Pending",
+    CONFIRMED: "Verified",
+    SHIPPED: "Processing",
+    DELIVERED: "Verified",
+    COMPLETED: "Verified",
+    CANCELLED: "Rejected",
+    REFUNDED: "Inactive",
+  };
+
   const itemColumns = [
     {
-      title: "Product",
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Sản phẩm</span>,
       dataIndex: "productName",
       key: "product",
+      render: (name: string, record: OrderItem) => (
+        <div className="flex items-center gap-4 py-2 group cursor-pointer" onClick={() => navigate(`/buyer/products/${record.productId}`)}>
+          <div className="h-16 w-12 overflow-hidden rounded-lg bg-bg-secondary shadow-sm">
+            {record.productImage ? (
+              <img src={record.productImage} alt={name} className="h-full w-full object-cover transition-transform group-hover:scale-110" />
+            ) : (
+              <div className="flex h-full items-center justify-center text-[10px] text-slate-300 italic">No Img</div>
+            )}
+          </div>
+          <span className="font-bold text-slate-700 transition-soft group-hover:text-primary">{name}</span>
+        </div>
+      ),
     },
     {
-      title: "Quantity",
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Số lượng</span>,
       dataIndex: "quantity",
       key: "quantity",
+      render: (qty: number) => <span className="font-bold text-slate-500">x{qty}</span>,
     },
     {
-      title: "Unit Price",
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Đơn giá</span>,
       dataIndex: "unitPrice",
       key: "price",
-      render: (price: number) => `$${price.toLocaleString()}`,
+      render: (price: number) => <span className="font-medium text-slate-600">{price.toLocaleString()}₫</span>,
     },
     {
-      title: "Subtotal",
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Thành tiền</span>,
       dataIndex: "subtotal",
       key: "subtotal",
-      render: (subtotal: number) => `$${subtotal.toLocaleString()}`,
+      render: (subtotal: number) => <span className="font-bold text-primary">{subtotal.toLocaleString()}₫</span>,
     },
   ];
 
-  const statusIndex = ORDER_STATUS_STEPS[state.order.status] || 0;
+  const statusIndex = ORDER_STATUS_STEPS[order.status] || 0;
   const timelineItems = [
     {
       id: "created",
-      title: "Order created",
-      description: `Order ${state.order.orderCode}`,
-      createdAt: state.order.createdAt,
+      title: "Đơn hàng được khởi tạo",
+      description: `Mã đơn hàng: ${order.orderCode}`,
+      createdAt: order.createdAt,
     },
     {
       id: "status",
-      title: `Current status: ${state.order.status}`,
-      description: `Payment method: ${state.order.paymentMethod}`,
-      createdAt: state.order.updatedAt,
+      title: `Trạng thái: ${order.status}`,
+      description: `Phương thức thanh toán: ${order.paymentMethod}`,
+      createdAt: order.updatedAt,
     },
-    ...(state.order.trackingNumber
+    ...(order.trackingNumber
       ? [
           {
             id: "tracking",
-            title: "Tracking assigned",
-            description: state.order.shippingProvider,
-            createdAt: state.order.updatedAt,
+            title: "Đơn hàng đang được vận chuyển",
+            description: `Đơn vị: ${order.shippingProvider}`,
+            createdAt: order.updatedAt,
           },
         ]
       : []),
   ];
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <Button
-            icon={<ArrowLeftOutlined />}
-            onClick={() => navigate("/buyer/orders")}
-            className="mb-4"
-          >
-            Back to Orders
-          </Button>
-          <h1 className="text-4xl font-bold text-gray-900">Order #{state.order.id.slice(0, 8)}</h1>
-        </div>
-
-        {/* Status Timeline */}
-        <Card className="mb-6 shadow-sm">
-          <Steps
-            current={statusIndex}
-            items={[
-              { title: "Pending", description: "Order placed" },
-              { title: "Confirmed", description: "Payment confirmed" },
-              { title: "Shipped", description: "On the way" },
-              { title: "Delivered", description: "Delivered" },
-            ]}
-          />
-        </Card>
-
-        <div className="mb-6">
-          <TimelineWidget items={timelineItems} title="Order Timeline" />
-        </div>
-
-        {/* Order Summary */}
-        <Card className="mb-6 shadow-sm">
-          <Row gutter={24}>
-            <Col xs={24} sm={12} md={6}>
-              <Statistic title="Order Date" value={new Date(state.order.createdAt || "").toLocaleDateString()} />
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <span className="text-gray-600">Status: </span>
-              <Tag color="blue">{state.order.status}</Tag>
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <span className="text-gray-600">Payment: </span>
-              <Tag color="green">{state.order.paymentMethod}</Tag>
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Statistic title="Total" value={`$${state.order.totalAmount.toLocaleString()}`} />
-            </Col>
-          </Row>
-        </Card>
-
-        {/* Items */}
-        <Card title="Order Items" className="mb-6 shadow-sm">
-          <Table
-            columns={itemColumns}
-            dataSource={(state.order.items || []).map((item: OrderItem, index: number) => ({
-              ...item,
-              key: index,
-            }))}
-            pagination={false}
-          />
-        </Card>
-
-        {/* Shipping Address */}
-        <Card title="Shipping Address" className="mb-6 shadow-sm">
-          {state.order.shippingAddress ? (
-            <div className="space-y-2">
-              <p className="font-semibold">{state.order.shippingAddress.fullName}</p>
-              <p>{state.order.shippingAddress.street}</p>
-              <p>
-                {state.order.shippingAddress.ward}, {state.order.shippingAddress.district}, {state.order.shippingAddress.city}
-              </p>
-              <p className="text-gray-600">{state.order.shippingAddress.phone}</p>
-            </div>
-          ) : (
-            <Empty description="No shipping address" />
-          )}
-        </Card>
-
-        {state.order.trackingNumber && (
-          <Card title="Shipping Tracking" className="mb-6 shadow-sm">
-            <Space direction="vertical" size={8}>
-              <div>
-                <span className="text-gray-600">Provider: </span>
-                <Tag color="blue">{state.order.shippingProvider || "Carrier"}</Tag>
-              </div>
-              <div>
-                <span className="text-gray-600">Tracking Number: </span>
-                <span className="font-mono">{state.order.trackingNumber}</span>
-              </div>
-              {buildTrackingUrl(state.order.shippingProvider, state.order.trackingNumber) && (
-                <Button
-                  onClick={() =>
-                    window.open(
-                      buildTrackingUrl(state.order.shippingProvider, state.order.trackingNumber) || "",
-                      "_blank",
-                      "noopener,noreferrer"
-                    )
-                  }
-                >
-                  Track Shipment
-                </Button>
-              )}
-            </Space>
-          </Card>
-        )}
-
-        {/* Price Summary */}
-        <Card className="mb-6 shadow-sm">
-          <Row justify="end" gutter={16} className="mb-4">
-            <Col span={12}>
-              <div className="flex justify-between mb-3">
-                <span>Subtotal:</span>
-                <span>${state.order.subTotal.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between mb-3">
-                <span>Shipping:</span>
-                <span>${state.order.shippingFee.toLocaleString()}</span>
-              </div>
-              {state.order.discountAmount > 0 && (
-                <div className="flex justify-between mb-3 text-green-600">
-                  <span>Discount:</span>
-                  <span>-${state.order.discountAmount.toLocaleString()}</span>
-                </div>
-              )}
-              <Divider />
-              <div className="flex justify-between font-bold text-lg">
-                <span>Total:</span>
-                <span>${state.order.totalAmount.toLocaleString()}</span>
-              </div>
-            </Col>
-          </Row>
-        </Card>
-
-        {/* Action Buttons */}
-        <Card className="shadow-sm">
-          <Space wrap>
-            <Button icon={<DownloadOutlined />}>Download Invoice</Button>
-
-            {state.order.status === "PENDING" && (
-              <Button danger onClick={handleCancelOrder}>
-                Cancel Order
-              </Button>
-            )}
-
-            {state.order.status === "DELIVERED" && (
-              <Button
-                type="primary"
-                icon={<CheckCircleOutlined />}
-                loading={state.isConfirmingReceipt}
-                onClick={handleConfirmReceipt}
-              >
-                Confirm Receipt
-              </Button>
-            )}
-
-            {state.order.status === "COMPLETED" && (
-              <Button
-                type="primary"
-                onClick={() => {
-                  if (state.order?.items && state.order.items.length > 0) {
-                    navigate(`/buyer/products/${state.order.items[0].productId}/review`);
-                  }
-                }}
-              >
-                Leave Review
-              </Button>
-            )}
-
-            {(state.order.status === "DELIVERED" || state.order.status === "SHIPPED") && (
-              <Button
-                type="primary"
-                danger
-                icon={<UndoOutlined />}
-                onClick={handleReturnClick}
-              >
-                Request Return
-              </Button>
-            )}
-          </Space>
-        </Card>
+    <div className="mx-auto max-w-[1200px] space-y-10 pb-20">
+      <div className="flex items-center justify-between">
+        <Button
+          icon={<ArrowLeftOutlined />}
+          onClick={() => navigate("/buyer/orders")}
+          type="text"
+          className="rounded-xl border-border/60 bg-white/50 text-slate-500 transition-soft hover:border-primary hover:text-primary px-4 py-2 h-auto"
+        >
+          Quay lại danh sách
+        </Button>
+        <Badge status={statusMap[order.status] || "Pending"}>{order.status}</Badge>
       </div>
 
-      {/* Return Modal */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <Text className="font-display text-sm font-bold uppercase tracking-[0.25em] text-primary/70">Thông tin đơn hàng</Text>
+          <div className="h-px flex-1 bg-pink-100/50" />
+        </div>
+        <Title className="!m-0 !font-display !text-4xl !font-bold uppercase tracking-tight text-text-dark">Mã: {order.orderCode}</Title>
+      </div>
+
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        <Col span={24} className="lg:col-span-2 space-y-8">
+          <Card className="rounded-[2.5rem] border-pink-100/40 bg-white p-8 shadow-sm">
+            <Steps
+              current={statusIndex}
+              className="luxury-steps"
+              items={[
+                { title: "Chờ duyệt", description: "Đã đặt hàng" },
+                { title: "Xác nhận", description: "Đã thanh toán" },
+                { title: "Giao hàng", description: "Đang vận chuyển" },
+                { title: "Hoàn tất", description: "Đã nhận hàng" },
+              ]}
+            />
+          </Card>
+
+          <Card
+            title={<span className="font-display text-lg font-bold uppercase tracking-widest text-text-dark">Sản phẩm đã chọn</span>}
+            className="rounded-[2.5rem] border-pink-100/40 bg-white p-4 shadow-sm"
+          >
+            <Table
+              columns={itemColumns}
+              dataSource={(order.items || []).map((item: OrderItem, index: number) => ({
+                ...item,
+                key: index,
+              }))}
+              pagination={false}
+              className="luxury-table"
+            />
+          </Card>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <Card
+              title={<span className="font-display text-base font-bold uppercase tracking-widest text-text-dark flex items-center gap-3"><CarOutlined className="text-primary/60" /> Thông tin nhận hàng</span>}
+              className="rounded-[2.5rem] border-pink-100/40 bg-white p-6 shadow-sm"
+            >
+              {order.shippingAddress ? (
+                <div className="space-y-4">
+                  <div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Người nhận</div>
+                    <div className="text-base font-bold text-slate-700">{order.shippingAddress.fullName}</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Địa chỉ</div>
+                    <div className="text-sm font-medium text-slate-600">
+                      {order.shippingAddress.street}, {order.shippingAddress.ward}, {order.shippingAddress.district}, {order.shippingAddress.city}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Số điện thoại</div>
+                    <div className="text-sm font-bold text-primary tracking-wider">{order.shippingAddress.phone}</div>
+                  </div>
+                </div>
+              ) : (
+                <div className="italic text-slate-400">Không có thông tin địa chỉ.</div>
+              )}
+            </Card>
+
+            <Card
+              title={<span className="font-display text-base font-bold uppercase tracking-widest text-text-dark flex items-center gap-3"><CreditCardOutlined className="text-primary/60" /> Thanh toán & Vận chuyển</span>}
+              className="rounded-[2.5rem] border-pink-100/40 bg-white p-6 shadow-sm"
+            >
+              <div className="space-y-6">
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Phương thức thanh toán</div>
+                  <Badge status="Verified">{order.paymentMethod}</Badge>
+                </div>
+                {order.trackingNumber && (
+                  <div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Thông tin vận chuyển</div>
+                    <div className="flex flex-col gap-2">
+                      <div className="text-sm font-bold text-slate-700">{order.shippingProvider}</div>
+                      <div className="font-mono text-xs text-primary">{order.trackingNumber}</div>
+                      {buildTrackingUrl(order.shippingProvider, order.trackingNumber) && (
+                        <Button
+                          type="primary"
+                          size="small"
+                          className="mt-2 h-9 rounded-xl text-[10px] font-bold"
+                          onClick={() => window.open(buildTrackingUrl(order.shippingProvider, order.trackingNumber) || "", "_blank")}
+                        >
+                          THEO DÕI HÀNH TRÌNH
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </Card>
+          </div>
+        </Col>
+
+        <Col span={24} className="lg:col-span-1 space-y-8">
+          <div className="sticky top-32 space-y-8">
+            <Card className="rounded-[2.5rem] border-pink-100/40 bg-white p-8 shadow-luxury">
+              <TimelineWidget items={timelineItems} title="Hành trình đơn hàng" />
+            </Card>
+
+            <Card className="rounded-[2.5rem] border-pink-100/40 bg-white p-8 shadow-sm">
+              <div className="space-y-4">
+                <div className="flex justify-between text-sm text-slate-500 font-medium">
+                  <span>Tạm tính:</span>
+                  <span>{order.subTotal.toLocaleString()}₫</span>
+                </div>
+                <div className="flex justify-between text-sm text-slate-500 font-medium">
+                  <span>Phí vận chuyển:</span>
+                  <span>{order.shippingFee.toLocaleString()}₫</span>
+                </div>
+                {order.discountAmount > 0 && (
+                  <div className="flex justify-between text-sm text-emerald-500 font-bold">
+                    <span>Giảm giá:</span>
+                    <span>-{order.discountAmount.toLocaleString()}₫</span>
+                  </div>
+                )}
+                <Divider className="my-4 border-pink-100/50" />
+                <div className="flex justify-between items-end">
+                  <span className="font-display text-lg font-black uppercase tracking-tight text-slate-800">Tổng cộng</span>
+                  <span className="font-display text-2xl font-black text-primary tracking-tight">{order.totalAmount.toLocaleString()}₫</span>
+                </div>
+
+                <div className="pt-8 space-y-3">
+                  {order.status === "PENDING" && (
+                    <Button danger block size="large" onClick={handleCancelOrder} className="h-12 rounded-xl font-bold border-red-100 text-red-500">
+                      HỦY ĐƠN HÀNG
+                    </Button>
+                  )}
+
+                  {order.status === "DELIVERED" && (
+                    <Button type="primary" block size="large" icon={<CheckCircleOutlined />} loading={state.isConfirmingReceipt} onClick={handleConfirmReceipt} className="h-14 rounded-2xl font-black shadow-luxury">
+                      ĐÃ NHẬN ĐƯỢC HÀNG
+                    </Button>
+                  )}
+
+                  {order.status === "COMPLETED" && (
+                    <Button type="primary" block size="large" icon={<ShoppingOutlined />} onClick={() => order.items?.[0] && navigate(`/buyer/products/${order.items[0].productId}/review`)} className="h-14 rounded-2xl font-black shadow-luxury">
+                      VIẾT ĐÁNH GIÁ
+                    </Button>
+                  )}
+
+                  {(order.status === "DELIVERED" || order.status === "SHIPPED") && (
+                    <Button danger block type="text" icon={<UndoOutlined />} onClick={handleReturnClick} className="font-bold text-red-400 hover:text-red-500">
+                      Yêu cầu trả hàng/hoàn tiền
+                    </Button>
+                  )}
+
+                  <Button icon={<DownloadOutlined />} block type="text" className="font-bold text-slate-400 hover:text-primary">
+                    Tải hóa đơn (PDF)
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          </div>
+        </Col>
+      </div>
+
       <Modal
-        title="Request Return"
+        title={<Title level={4} className="!m-0 !font-display uppercase tracking-tight">Yêu cầu trả hàng</Title>}
         open={state.returnModalVisible}
         onCancel={handleReturnCancel}
-        footer={[
-          <Button key="cancel" onClick={handleReturnCancel}>
-            Cancel
-          </Button>,
-          <Button
-            key="submit"
-            type="primary"
-            loading={state.isSubmittingReturn}
-            onClick={handleReturnSubmit}
-          >
-            Submit Return Request
-          </Button>,
-        ]}
+        footer={null}
+        className="luxury-modal"
+        centered
       >
-        <Form layout="vertical">
-          <Form.Item label="Select Items to Return" required>
+        <Form layout="vertical" className="mt-6" size="large">
+          <Form.Item label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Sản phẩm cần trả</span>} required>
             <Select
               mode="multiple"
-              placeholder="Select items"
+              placeholder="Chọn sản phẩm"
+              className="luxury-select w-full"
               value={state.returnForm.itemIds}
-              onChange={(value) =>
-                setState((prev) => ({
-                  ...prev,
-                  returnForm: { ...prev.returnForm, itemIds: value },
-                }))
-              }
-              options={(state.order.items || []).map((item: OrderItem) => ({
-                label: item.productName,
-                value: item.id,
-              }))}
+              onChange={(value) => setState((prev) => ({ ...prev, returnForm: { ...prev.returnForm, itemIds: value } }))}
+              options={(order.items || []).map((item: OrderItem) => ({ label: item.productName, value: item.id }))}
             />
           </Form.Item>
 
-          <Form.Item label="Return Reason" required>
+          <Form.Item label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Lý do trả hàng</span>} required>
             <Select
-              placeholder="Select reason"
+              placeholder="Chọn lý do"
+              className="luxury-select w-full"
               value={state.returnForm.reason}
-              onChange={(value) =>
-                setState((prev) => ({
-                  ...prev,
-                  returnForm: { ...prev.returnForm, reason: value },
-                }))
-              }
-              options={RETURN_REASONS.map((reason) => ({
-                label: reason,
-                value: reason,
-              }))}
+              onChange={(value) => setState((prev) => ({ ...prev, returnForm: { ...prev.returnForm, reason: value } }))}
+              options={RETURN_REASONS.map((reason) => ({ label: reason, value: reason }))}
             />
           </Form.Item>
 
-          <Form.Item label="Description">
+          <Form.Item label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Mô tả chi tiết</span>}>
             <Input.TextArea
-              placeholder="Describe the issue..."
+              placeholder="Vui lòng cung cấp thêm thông tin về tình trạng sản phẩm..."
+              className="rounded-2xl border-pink-100 p-4"
               value={state.returnForm.description}
-              onChange={(e) =>
-                setState((prev) => ({
-                  ...prev,
-                  returnForm: { ...prev.returnForm, description: e.target.value },
-                }))
-              }
+              onChange={(e) => setState((prev) => ({ ...prev, returnForm: { ...prev.returnForm, description: e.target.value } }))}
               rows={4}
             />
           </Form.Item>
+
+          <div className="mt-10 flex gap-4">
+            <Button block onClick={handleReturnCancel}>BỎ QUA</Button>
+            <Button type="primary" block loading={state.isSubmittingReturn} onClick={handleReturnSubmit}>GỬI YÊU CẦU</Button>
+          </div>
         </Form>
       </Modal>
     </div>

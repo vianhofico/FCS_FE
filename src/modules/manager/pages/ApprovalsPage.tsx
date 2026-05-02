@@ -6,19 +6,19 @@
 import { useState, useEffect } from "react";
 import {
   Card,
-  Button,
   Table,
   Spin,
-  Empty,
-  Tag,
   Modal,
   message,
   Space,
   Row,
   Col,
-  Statistic,
+  Typography,
 } from "antd";
-import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
+import { CheckOutlined, CloseOutlined, SafetyCertificateOutlined } from "@ant-design/icons";
+import { Badge, Button, EmptyState } from "@/shared/ui";
+
+const { Title, Paragraph } = Typography;
 
 interface ApprovalRequest {
   id: string;
@@ -104,12 +104,13 @@ export default function ApprovalsPage() {
 
   const handleApprove = (id: string) => {
     Modal.confirm({
-      title: "Approve Request",
-      content: "Are you sure you want to approve this request?",
-      okText: "Approve",
+      title: "Phê duyệt yêu cầu",
+      content: "Bạn có chắc chắn muốn phê duyệt yêu cầu này không?",
+      okText: "Phê duyệt",
+      cancelText: "Hủy",
       onOk: async () => {
         try {
-          message.success("Request approved");
+          message.success("Đã phê duyệt yêu cầu");
           setState((prev) => ({
             ...prev,
             approvals: prev.approvals.map((a) =>
@@ -117,7 +118,7 @@ export default function ApprovalsPage() {
             ),
           }));
         } catch (err) {
-          message.error(err instanceof Error ? err.message : "Failed to approve");
+          message.error(err instanceof Error ? err.message : "Phê duyệt thất bại");
         }
       },
     });
@@ -125,13 +126,14 @@ export default function ApprovalsPage() {
 
   const handleReject = (id: string) => {
     Modal.confirm({
-      title: "Reject Request",
-      content: "Are you sure you want to reject this request?",
-      okText: "Reject",
+      title: "Từ chối yêu cầu",
+      content: "Bạn có chắc chắn muốn từ chối yêu cầu này không?",
+      okText: "Từ chối",
       okType: "danger",
+      cancelText: "Hủy",
       onOk: async () => {
         try {
-          message.success("Request rejected");
+          message.success("Đã từ chối yêu cầu");
           setState((prev) => ({
             ...prev,
             approvals: prev.approvals.map((a) =>
@@ -139,7 +141,7 @@ export default function ApprovalsPage() {
             ),
           }));
         } catch (err) {
-          message.error(err instanceof Error ? err.message : "Failed to reject");
+          message.error(err instanceof Error ? err.message : "Từ chối thất bại");
         }
       },
     });
@@ -147,57 +149,59 @@ export default function ApprovalsPage() {
 
   const columns = [
     {
-      title: "Type",
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Loại phê duyệt</span>,
       dataIndex: "type",
       key: "type",
-      render: (type: string) => <Tag>{type}</Tag>,
+      render: (type: string) => <span className="font-bold text-slate-700">{type}</span>,
     },
     {
-      title: "Requester",
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Người yêu cầu</span>,
       dataIndex: "requester",
       key: "requester",
+      render: (email: string) => <span className="text-slate-500 font-medium">{email}</span>,
     },
     {
-      title: "Description",
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Nội dung</span>,
       dataIndex: "description",
       key: "description",
     },
     {
-      title: "Status",
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Trạng thái</span>,
       dataIndex: "status",
       key: "status",
       render: (status: string) => {
-        const colorMap: Record<string, string> = {
-          PENDING: "orange",
-          APPROVED: "green",
-          REJECTED: "red",
+        const statusMap: Record<string, string> = {
+          PENDING: "Pending",
+          APPROVED: "Verified",
+          REJECTED: "Rejected",
         };
-        return <Tag color={colorMap[status] || "default"}>{status}</Tag>;
+        return <Badge status={statusMap[status] || "Pending"}>{status}</Badge>;
       },
     },
     {
-      title: "Actions",
+      title: "",
       key: "actions",
+      align: "right" as const,
       render: (_: unknown, record: ApprovalRequest) => (
-        <Space size="small">
+        <Space size="middle">
           {record.status === "PENDING" && (
             <>
               <Button
-                type="link"
+                type="text"
                 icon={<CheckOutlined />}
                 onClick={() => handleApprove(record.id)}
-                size="small"
+                className="text-emerald-500 hover:!bg-emerald-50 rounded-xl font-bold"
               >
-                Approve
+                Phê duyệt
               </Button>
               <Button
                 danger
-                type="link"
+                type="text"
                 icon={<CloseOutlined />}
                 onClick={() => handleReject(record.id)}
-                size="small"
+                className="hover:!bg-red-50 rounded-xl font-bold"
               >
-                Reject
+                Từ chối
               </Button>
             </>
           )}
@@ -214,46 +218,63 @@ export default function ApprovalsPage() {
     );
   }
 
+  const stats = [
+    { label: "Tổng yêu cầu", value: state.stats.total, color: "bg-slate-50 text-slate-500" },
+    { label: "Đang chờ xử lý", value: state.stats.pending, color: "bg-blue-50 text-blue-500" },
+    { label: "Đã phê duyệt", value: state.stats.approved, color: "bg-emerald-50 text-emerald-500" },
+  ];
+
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">Approvals</h1>
-
-        {/* Stats */}
-        <Row gutter={[24, 24]} className="mb-6">
-          <Col xs={24} sm={8}>
-            <Card className="shadow-sm">
-              <Statistic title="Total" value={state.stats.total} />
-            </Card>
-          </Col>
-          <Col xs={24} sm={8}>
-            <Card className="shadow-sm">
-              <Statistic title="Pending" value={state.stats.pending} valueStyle={{ color: "#faad14" }} />
-            </Card>
-          </Col>
-          <Col xs={24} sm={8}>
-            <Card className="shadow-sm">
-              <Statistic title="Approved" value={state.stats.approved} valueStyle={{ color: "#52c41a" }} />
-            </Card>
-          </Col>
-        </Row>
-
-        {state.error && (
-          <Card className="mb-6 bg-red-50 border-red-200">
-            <p className="text-red-800">{state.error}</p>
-          </Card>
-        )}
-
-        <Card className="shadow-sm">
-          <Table
-            columns={columns}
-            dataSource={state.approvals.map((approval) => ({ ...approval, key: approval.id }))}
-            pagination={false}
-            loading={state.isLoading}
-          />
-          {state.approvals.length === 0 && <Empty description="No pending approvals" />}
-        </Card>
+    <div className="mx-auto max-w-[1440px] space-y-12 pb-20">
+      <div className="flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-end">
+        <div className="space-y-4">
+          <Title className="!m-0 !font-display !text-4xl !font-bold !leading-tight !tracking-tight md:!text-6xl uppercase">Phê duyệt hệ thống</Title>
+          <Paragraph className="max-w-lg text-lg font-medium text-slate-400 opacity-80 italic">
+            Quản lý và kiểm soát các yêu cầu xác minh người bán, cập nhật hoa hồng và các thay đổi quan trọng khác.
+          </Paragraph>
+        </div>
+        <div className="flex items-center gap-4 rounded-3xl bg-white/50 px-8 py-4 backdrop-blur-md border border-pink-100/50">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/5 text-primary text-xl">
+            <SafetyCertificateOutlined />
+          </div>
+          <div>
+            <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Độ tin cậy hệ thống</div>
+            <div className="font-display text-2xl font-bold text-slate-800">High Integrity</div>
+          </div>
+        </div>
       </div>
+
+      <Row gutter={[24, 24]}>
+        {stats.map((s, i) => (
+          <Col key={i} xs={24} sm={8}>
+            <Card className="rounded-[2rem] border-pink-100/50 bg-white/50 shadow-sm backdrop-blur-md transition-soft hover:shadow-luxury">
+              <div className="flex items-center gap-5">
+                <div className={`flex h-14 w-14 items-center justify-center rounded-2xl text-2xl font-black ${s.color}`}>
+                  {s.value}
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{s.label}</div>
+                  <div className="font-display text-2xl font-bold text-slate-800">Requests</div>
+                </div>
+              </div>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+
+      <Card className="rounded-[2.5rem] border-pink-100/40 bg-white p-4 shadow-sm">
+        <Table
+          columns={columns}
+          dataSource={state.approvals.map((approval) => ({ ...approval, key: approval.id }))}
+          pagination={false}
+          className="luxury-table"
+        />
+        {state.approvals.length === 0 && (
+          <div className="py-20 text-center">
+            <EmptyState title="Tất cả đã hoàn tất" description="Không có yêu cầu phê duyệt nào đang chờ xử lý." />
+          </div>
+        )}
+      </Card>
     </div>
   );
 }

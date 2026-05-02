@@ -1,26 +1,19 @@
-/**
- * Register Page
- * Handles user registration
- */
-
+import { LockOutlined, MailOutlined, UserOutlined } from "@ant-design/icons";
+import { Alert, Card, Form, Input, Space, Spin } from "antd";
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { Form, Input, Button, Card, Alert, Space, Spin, Select } from "antd";
-import { UserOutlined, LockOutlined, MailOutlined } from "@ant-design/icons";
+import { Link, useNavigate } from "react-router-dom";
+
 import { authApi } from "@/modules/iam/api/authApi";
-import { UserRole } from "@/shared/contracts/commonContract";
+import { Button } from "@/shared/ui";
 
 interface RegisterFormValues {
   username: string;
   email: string;
   password: string;
   confirmPassword: string;
-  role: string;
+  phone?: string;
 }
 
-/**
- * Register page component
- */
 export default function RegisterPage() {
   const [form] = Form.useForm<RegisterFormValues>();
   const navigate = useNavigate();
@@ -36,13 +29,12 @@ export default function RegisterPage() {
         username: values.username,
         email: values.email,
         password: values.password,
-        role: values.role as UserRole,
+        phone: values.phone,
       });
 
       if (response.success) {
-        // Redirect to login after successful registration
         navigate("/auth/login", {
-          state: { message: "Registration successful! Please log in." },
+          state: { message: "Đăng ký thành công! Vui lòng đăng nhập." },
         });
       }
     } catch (err) {
@@ -54,161 +46,153 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
-      <Card className="w-full max-w-md shadow-lg">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">Create Account</h1>
-          <p className="text-gray-600 text-sm mt-2">Join Fashion Consignment Community</p>
+    <div className="relative flex min-h-[85vh] items-center justify-center px-4 py-10">
+      {/* Background Decorative Elements */}
+      <div className="pointer-events-none absolute -right-10 top-20 h-72 w-72 rounded-full bg-primary/5 blur-3xl" />
+      <div className="pointer-events-none absolute -left-20 bottom-10 h-80 w-80 rounded-full bg-accent/10 blur-3xl" />
+
+      <Card className="w-full max-w-lg overflow-hidden border-pink-100/50 bg-white/80 shadow-luxury backdrop-blur-xl rounded-[2.5rem]">
+        <div className="relative text-center">
+          <div className="mb-6 flex justify-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-[1.25rem] bg-pink-50 text-primary shadow-sm border border-pink-100/50">
+              <MailOutlined className="text-3xl" />
+            </div>
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight text-text-dark font-display uppercase">Tham gia Re:Wear</h1>
+          <p className="mt-2 font-medium text-text-light italic">Bắt đầu hành trình ký gửi thời trang bền vững</p>
         </div>
 
-        <Spin spinning={isLoading} delay={200}>
-          <Form<RegisterFormValues>
-            form={form}
-            layout="vertical"
-            onFinish={handleSubmit}
-            autoComplete="off"
-            disabled={isLoading}
-          >
-            {error && (
-              <Form.Item noStyle>
-                <Alert
-                  message="Registration Failed"
-                  description={error}
-                  type="error"
-                  showIcon
-                  closable
-                  onClose={() => setError(null)}
-                  className="mb-4"
+        <div className="mt-10">
+          <Spin spinning={isLoading} delay={200}>
+            <Form<RegisterFormValues>
+              form={form}
+              layout="vertical"
+              onFinish={handleSubmit}
+              autoComplete="off"
+              disabled={isLoading}
+              requiredMark={false}
+              size="large"
+            >
+              {error && (
+                <div className="mb-6">
+                  <Alert
+                    message="Lỗi đăng ký"
+                    description={error}
+                    type="error"
+                    showIcon
+                    closable
+                    onClose={() => setError(null)}
+                    className="rounded-xl border-red-100 bg-red-50/50"
+                  />
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 gap-x-6 md:grid-cols-2">
+                <Form.Item
+                  name="username"
+                  label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Tên đăng nhập</span>}
+                  rules={[
+                    { required: true, message: "Vui lòng nhập tên đăng nhập" },
+                    { min: 3, message: "Tên đăng nhập phải ít nhất 3 ký tự" },
+                    { pattern: /^[a-zA-Z0-9_]+$/, message: "Chỉ chứa chữ, số và dấu gạch dưới" },
+                  ]}
+                >
+                  <Input
+                    prefix={<UserOutlined className="text-primary/40" />}
+                    placeholder="lux_user"
+                    className="rounded-2xl border-pink-100 bg-white shadow-sm transition-soft hover:border-primary/40 focus:border-primary h-12"
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  name="email"
+                  label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Email</span>}
+                  rules={[
+                    { required: true, message: "Vui lòng nhập email" },
+                    { type: "email", message: "Email không đúng định dạng" },
+                  ]}
+                >
+                  <Input
+                    prefix={<MailOutlined className="text-primary/40" />}
+                    placeholder="email@example.com"
+                    className="rounded-2xl border-pink-100 bg-white shadow-sm transition-soft hover:border-primary/40 focus:border-primary h-12"
+                  />
+                </Form.Item>
+              </div>
+
+              <Form.Item
+                name="phone"
+                label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Số điện thoại (tùy chọn)</span>}
+              >
+                <Input
+                  placeholder="09xx xxx xxx"
+                  className="rounded-2xl border-pink-100 bg-white shadow-sm transition-soft hover:border-primary/40 focus:border-primary h-12"
                 />
               </Form.Item>
-            )}
 
-            <Form.Item
-              name="username"
-              label="Username"
-              rules={[
-                { required: true, message: "Please enter a username" },
-                {
-                  min: 3,
-                  message: "Username must be at least 3 characters",
-                },
-                {
-                  pattern: /^[a-zA-Z0-9_]+$/,
-                  message: "Username can only contain letters, numbers, and underscores",
-                },
-              ]}
-            >
-              <Input
-                prefix={<UserOutlined />}
-                placeholder="Choose a username"
-                size="large"
-                disabled={isLoading}
-              />
-            </Form.Item>
-
-            <Form.Item
-              name="email"
-              label="Email"
-              rules={[
-                { required: true, message: "Please enter your email" },
-                {
-                  type: "email",
-                  message: "Please enter a valid email address",
-                },
-              ]}
-            >
-              <Input
-                prefix={<MailOutlined />}
-                placeholder="Enter your email"
-                type="email"
-                size="large"
-                disabled={isLoading}
-              />
-            </Form.Item>
-
-            <Form.Item
-              name="role"
-              label="Register As"
-              rules={[{ required: true, message: "Please select a role" }]}
-            >
-              <Select
-                placeholder="Select your role"
-                size="large"
-                disabled={isLoading}
-                options={[
-                  { label: "Buyer - Browse and purchase products", value: UserRole.BUYER },
-                  { label: "Seller - Consign products for sale", value: UserRole.SELLER },
-                  { label: "Manager - Manage operations", value: UserRole.MANAGER },
-                ]}
-              />
-            </Form.Item>
-
-            <Form.Item
-              name="password"
-              label="Password"
-              rules={[
-                { required: true, message: "Please enter a password" },
-                {
-                  min: 8,
-                  message: "Password must be at least 8 characters",
-                },
-              ]}
-            >
-              <Input.Password
-                prefix={<LockOutlined />}
-                placeholder="Create a strong password"
-                size="large"
-                disabled={isLoading}
-              />
-            </Form.Item>
-
-            <Form.Item
-              name="confirmPassword"
-              label="Confirm Password"
-              dependencies={["password"]}
-              rules={[
-                { required: true, message: "Please confirm your password" },
-                ({ getFieldValue }) => ({
-                  validator(_, value) {
-                    if (!value || getFieldValue("password") === value) {
-                      return Promise.resolve();
-                    }
-                    return Promise.reject(new Error("Passwords do not match"));
-                  },
-                }),
-              ]}
-            >
-              <Input.Password
-                prefix={<LockOutlined />}
-                placeholder="Confirm your password"
-                size="large"
-                disabled={isLoading}
-              />
-            </Form.Item>
-
-            <Form.Item noStyle>
-              <Space direction="vertical" className="w-full" size="large">
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  size="large"
-                  block
-                  loading={isLoading}
-                  disabled={isLoading}
+              <div className="grid grid-cols-1 gap-x-6 md:grid-cols-2">
+                <Form.Item
+                  name="password"
+                  label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Mật khẩu</span>}
+                  rules={[
+                    { required: true, message: "Vui lòng nhập mật khẩu" },
+                    { min: 8, message: "Mật khẩu phải ít nhất 8 ký tự" },
+                  ]}
                 >
-                  Create Account
-                </Button>
+                  <Input.Password
+                    prefix={<LockOutlined className="text-primary/40" />}
+                    placeholder="••••••••"
+                    className="rounded-2xl border-pink-100 bg-white shadow-sm transition-soft hover:border-primary/40 focus:border-primary h-12"
+                  />
+                </Form.Item>
 
-                <div className="text-center text-sm text-gray-600">
-                  Already have an account?{" "}
-                  <Link to="/auth/login" className="text-blue-600 hover:text-blue-700 font-semibold">
-                    Sign in here
-                  </Link>
-                </div>
-              </Space>
-            </Form.Item>
-          </Form>
-        </Spin>
+                <Form.Item
+                  name="confirmPassword"
+                  label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Xác nhận mật khẩu</span>}
+                  dependencies={["password"]}
+                  rules={[
+                    { required: true, message: "Vui lòng xác nhận mật khẩu" },
+                    ({ getFieldValue }) => ({
+                      validator(_, value) {
+                        if (!value || getFieldValue("password") === value) {
+                          return Promise.resolve();
+                        }
+                        return Promise.reject(new Error("Mật khẩu không khớp"));
+                      },
+                    }),
+                  ]}
+                >
+                  <Input.Password
+                    prefix={<LockOutlined className="text-primary/40" />}
+                    placeholder="••••••••"
+                    className="rounded-2xl border-pink-100 bg-white shadow-sm transition-soft hover:border-primary/40 focus:border-primary h-12"
+                  />
+                </Form.Item>
+              </div>
+
+              <Form.Item noStyle>
+                <Space direction="vertical" className="w-full" size="large">
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    block
+                    className="mt-4 shadow-luxury"
+                    loading={isLoading}
+                  >
+                    TẠO TÀI KHOẢN
+                  </Button>
+
+                  <div className="text-center">
+                    <span className="text-sm font-medium text-text-light">Đã có tài khoản? </span>
+                    <Link to="/auth/login" className="text-sm font-bold text-primary hover:text-primary-hover">
+                      Đăng nhập tại đây
+                    </Link>
+                  </div>
+                </Space>
+              </Form.Item>
+            </Form>
+          </Spin>
+        </div>
       </Card>
     </div>
   );

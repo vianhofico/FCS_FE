@@ -4,12 +4,15 @@
  */
 
 import { useState, useEffect } from "react";
-import { Card, Row, Col, Spin, Empty, Statistic, Table, DatePicker, Button, Space } from "antd";
-import { DownloadOutlined } from "@ant-design/icons";
+import { Card, Row, Col, Spin, Table, DatePicker, Space, Typography } from "antd";
+import { DownloadOutlined, LineChartOutlined, ShoppingCartOutlined, TrophyOutlined, WalletOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { orderApi } from "@/modules/order/api/orderApi";
 import type { OrderSummary } from "@/shared/contracts/orderContract";
 import { useAuth } from "@/shared/context/AuthContext";
+import { Badge, Button, EmptyState } from "@/shared/ui";
+
+const { Title, Paragraph } = Typography;
 
 interface PageState {
   orders: OrderSummary[];
@@ -99,27 +102,40 @@ export default function SalesReportPage() {
 
   const columns = [
     {
-      title: "Order ID",
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Mã đơn hàng</span>,
       dataIndex: "id",
       key: "id",
-      render: (text: string) => <span className="font-mono text-sm">{text}</span>,
+      render: (text: string) => <span className="font-mono text-xs font-bold text-slate-400">#{text.slice(-8).toUpperCase()}</span>,
     },
     {
-      title: "Total Amount",
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Tổng giá trị</span>,
       dataIndex: "totalAmount",
       key: "totalAmount",
-      render: (amount: number) => `$${amount.toLocaleString()}`,
+      render: (amount: number) => <span className="text-base font-bold text-slate-700">{amount.toLocaleString()}₫</span>,
     },
     {
-      title: "Status",
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Trạng thái</span>,
       dataIndex: "status",
       key: "status",
+      render: (status: string) => {
+        const statusMap: Record<string, string> = {
+          DELIVERED: "Verified",
+          PENDING: "Pending",
+          CANCELLED: "Rejected",
+        };
+        return <Badge status={statusMap[status] || "Pending"}>{status}</Badge>;
+      },
     },
     {
-      title: "Date",
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Ngày tạo</span>,
       dataIndex: "createdAt",
       key: "createdAt",
-      render: (date: string) => new Date(date).toLocaleDateString(),
+      render: (date: string) => (
+        <div className="flex flex-col">
+          <span className="font-bold text-slate-700">{new Date(date).toLocaleDateString()}</span>
+          <span className="text-[10px] text-slate-400">{new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+        </div>
+      ),
     },
   ];
 
@@ -131,21 +147,37 @@ export default function SalesReportPage() {
     );
   }
 
-  return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Sales Report</h1>
-          <Button icon={<DownloadOutlined />} onClick={handleExportReport}>
-            Export Report
-          </Button>
-        </div>
+  const stats = [
+    { label: "Số đơn hàng", value: state.stats.totalOrders, icon: <ShoppingCartOutlined />, color: "bg-blue-50 text-blue-500" },
+    { label: "Tổng doanh thu", value: state.stats.totalRevenue, icon: <WalletOutlined />, color: "bg-primary/5 text-primary" },
+    { label: "Giá trị trung bình", value: state.stats.averageOrderValue, icon: <LineChartOutlined />, color: "bg-emerald-50 text-emerald-500" },
+    { label: "Tỷ lệ tăng trưởng", value: "12%", icon: <TrophyOutlined />, color: "bg-orange-50 text-orange-500" },
+  ];
 
-        {/* Date Range */}
-        <Card className="mb-6 shadow-sm">
-          <Space>
-            <span>Date Range:</span>
+  return (
+    <div className="mx-auto max-w-[1440px] space-y-12 pb-20">
+      <div className="flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-end">
+        <div className="space-y-4">
+          <Title className="!m-0 !font-display !text-4xl !font-bold !leading-tight !tracking-tight md:!text-6xl uppercase">Báo cáo kinh doanh</Title>
+          <Paragraph className="max-w-lg text-lg font-medium text-slate-400 opacity-80 italic">
+            Phân tích hiệu quả kinh doanh và theo dõi sự phát triển của gian hàng thời trang của bạn.
+          </Paragraph>
+        </div>
+        <Button
+          type="primary"
+          size="large"
+          icon={<DownloadOutlined />}
+          onClick={handleExportReport}
+          className="shadow-luxury"
+        >
+          XUẤT BÁO CÁO (CSV)
+        </Button>
+      </div>
+
+      <Card className="rounded-[2rem] border-pink-100/40 bg-white/80 p-6 shadow-sm backdrop-blur-md">
+        <Space size="large" className="w-full justify-between sm:justify-start">
+          <div className="flex items-center gap-3">
+            <span className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Khoảng thời gian:</span>
             <DatePicker.RangePicker
               value={state.dateRange}
               onChange={(dates) =>
@@ -154,66 +186,48 @@ export default function SalesReportPage() {
                   dateRange: [dates?.[0] || null, dates?.[1] || null],
                 }))
               }
+              className="luxury-datepicker"
             />
-          </Space>
-        </Card>
+          </div>
+        </Space>
+      </Card>
 
-        {/* Statistics */}
-        <Row gutter={[24, 24]} className="mb-6">
-          <Col xs={24} sm={12} md={6}>
-            <Card className="shadow-sm">
-              <Statistic title="Total Orders" value={state.stats.totalOrders} />
+      <Row gutter={[24, 24]}>
+        {stats.map((s, i) => (
+          <Col key={i} xs={24} sm={12} md={6}>
+            <Card className="rounded-[2rem] border-pink-100/50 bg-white/50 shadow-sm backdrop-blur-md transition-soft hover:shadow-luxury">
+              <div className="flex items-center gap-5">
+                <div className={`flex h-14 w-14 items-center justify-center rounded-2xl text-2xl ${s.color}`}>
+                  {s.icon}
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{s.label}</div>
+                  <div className="font-display text-2xl font-bold text-slate-800">
+                    {typeof s.value === 'number' ? `${s.value.toLocaleString()}₫` : s.value}
+                  </div>
+                </div>
+              </div>
             </Card>
           </Col>
-          <Col xs={24} sm={12} md={6}>
-            <Card className="shadow-sm">
-              <Statistic
-                title="Total Revenue"
-                value={state.stats.totalRevenue}
-                prefix="$"
-                valueStyle={{ fontSize: "1.5rem" }}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} md={6}>
-            <Card className="shadow-sm">
-              <Statistic
-                title="Average Order Value"
-                value={state.stats.averageOrderValue}
-                prefix="$"
-                valueStyle={{ fontSize: "1.5rem" }}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} md={6}>
-            <Card className="shadow-sm">
-              <Statistic
-                title="Total Sales"
-                value={state.stats.totalSales}
-                valueStyle={{ fontSize: "1.5rem" }}
-              />
-            </Card>
-          </Col>
-        </Row>
+        ))}
+      </Row>
 
-        {/* Error */}
-        {state.error && (
-          <Card className="mb-6 bg-red-50 border-red-200">
-            <p className="text-red-800">{state.error}</p>
-          </Card>
+      <Card
+        title={<span className="font-display text-xl font-bold uppercase tracking-widest text-text-dark">Đơn hàng gần đây</span>}
+        className="rounded-[2.5rem] border-pink-100/40 bg-white p-4 shadow-sm"
+      >
+        <Table
+          columns={columns}
+          dataSource={state.orders.slice(0, 10).map((order) => ({ ...order, key: order.id }))}
+          pagination={false}
+          className="luxury-table"
+        />
+        {state.orders.length === 0 && (
+          <div className="py-10">
+            <EmptyState title="Chưa có dữ liệu bán hàng" description="Dữ liệu kinh doanh của bạn sẽ hiển thị tại đây khi có đơn hàng đầu tiên." />
+          </div>
         )}
-
-        {/* Table */}
-        <Card title="Recent Orders" className="shadow-sm">
-          <Table
-            columns={columns}
-            dataSource={state.orders.slice(0, 10).map((order) => ({ ...order, key: order.id }))}
-            pagination={false}
-            loading={state.isLoading}
-          />
-          {state.orders.length === 0 && <Empty description="No sales data" />}
-        </Card>
-      </div>
+      </Card>
     </div>
   );
 }

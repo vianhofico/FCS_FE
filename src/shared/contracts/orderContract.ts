@@ -12,6 +12,7 @@ export type CartItem = {
   userId: string;
   productId: string;
   productName: string;
+  productImage?: string;
   sku: string;
   salePrice: number;
   quantity: number;
@@ -44,6 +45,7 @@ export type OrderItem = {
   id: string;
   productId: string;
   productName: string;
+  productImage?: string;
   sku: string;
   salePrice: number;
   quantity: number;

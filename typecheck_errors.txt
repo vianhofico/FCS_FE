@@ -1,0 +1,2 @@
+src/modules/seller/pages/ConsignmentContractSignPage.tsx(128,133): error TS17002: Expected corresponding JSX closing tag for 'Text'.
+src/modules/seller/pages/ConsignmentContractSignPage.tsx(134,139): error TS17002: Expected corresponding JSX closing tag for 'Text'.

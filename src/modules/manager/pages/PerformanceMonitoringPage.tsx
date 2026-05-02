@@ -4,8 +4,10 @@
  */
 
 import { useState } from "react";
-import { Card, Row, Col, Spin, Empty, Statistic, Table, Progress } from "antd";
+import { Card, Row, Col, Spin, Empty, Statistic, Table, Progress, Typography } from "antd";
 import { ArrowUpOutlined } from "@ant-design/icons";
+
+const { Title, Paragraph } = Typography;
 
 interface MetricData {
   name: string;
@@ -17,31 +19,40 @@ interface MetricData {
 export default function PerformanceMonitoringPage() {
   const [isLoading] = useState(false);
   const [metrics] = useState<MetricData[]>([
-    { name: "Server Uptime", value: 99.9, unit: "%", status: "good" },
-    { name: "API Response Time", value: 145, unit: "ms", status: "good" },
-    { name: "Database Performance", value: 95, unit: "%", status: "good" },
-    { name: "Cache Hit Rate", value: 88, unit: "%", status: "warning" },
+    { name: "Thời gian hoạt động", value: 99.9, unit: "%", status: "good" },
+    { name: "Thời gian phản hồi API", value: 145, unit: "ms", status: "good" },
+    { name: "Hiệu suất Database", value: 95, unit: "%", status: "good" },
+    { name: "Tỷ lệ Cache Hit", value: 88, unit: "%", status: "warning" },
   ]);
 
   const columns = [
-    { title: "Metric", dataIndex: "name", key: "name" },
+    { title: "Chỉ số", dataIndex: "name", key: "name" },
     {
-      title: "Value",
+      title: "Giá trị",
       dataIndex: "value",
       key: "value",
-      render: (value: number) => <span>{value}</span>,
+      render: (value: number, record: MetricData) => <span>{value}{record.unit}</span>,
     },
     {
-      title: "Status",
+      title: "Trạng thái",
       dataIndex: "status",
       key: "status",
       render: (status: string) => {
         const colorMap: Record<string, string> = {
-          good: "green",
-          warning: "orange",
-          critical: "red",
+          good: "#52c41a",
+          warning: "#faad14",
+          critical: "#ff4d4f",
         };
-        return <span style={{ color: colorMap[status] }}>●</span>;
+        const labelMap: Record<string, string> = {
+          good: "Tốt",
+          warning: "Cảnh báo",
+          critical: "Nghiêm trọng",
+        };
+        return (
+          <span className="flex items-center gap-2 font-bold" style={{ color: colorMap[status] }}>
+            <span className="text-[10px]">●</span> {labelMap[status]}
+          </span>
+        );
       },
     },
   ];
@@ -55,95 +66,94 @@ export default function PerformanceMonitoringPage() {
   }
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">Performance Monitoring</h1>
-
-        <Row gutter={[24, 24]} className="mb-6">
-          <Col xs={24} sm={6}>
-            <Card className="shadow-sm">
-              <Statistic
-                title="System Status"
-                value="Healthy"
-                valueStyle={{ color: "#52c41a" }}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={6}>
-            <Card className="shadow-sm">
-              <Statistic
-                title="Active Users"
-                value={1523}
-                prefix={<ArrowUpOutlined style={{ color: "#52c41a" }} />}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={6}>
-            <Card className="shadow-sm">
-              <Statistic
-                title="Error Rate"
-                value={0.2}
-                suffix="%"
-                valueStyle={{ color: "#faad14" }}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={6}>
-            <Card className="shadow-sm">
-              <Statistic title="Load" value={65} suffix="%" />
-            </Card>
-          </Col>
-        </Row>
-
-        <Row gutter={[24, 24]} className="mb-6">
-          <Col xs={24} md={12}>
-            <Card title="Server Performance" className="shadow-sm">
-              <Row gutter={[16, 16]}>
-                <Col xs={24}>
-                  <p className="text-sm text-gray-600 mb-2">CPU Usage</p>
-                  <Progress percent={45} />
-                </Col>
-                <Col xs={24}>
-                  <p className="text-sm text-gray-600 mb-2">Memory Usage</p>
-                  <Progress percent={62} />
-                </Col>
-                <Col xs={24}>
-                  <p className="text-sm text-gray-600 mb-2">Disk Usage</p>
-                  <Progress percent={78} status="active" />
-                </Col>
-              </Row>
-            </Card>
-          </Col>
-
-          <Col xs={24} md={12}>
-            <Card title="API Endpoints" className="shadow-sm">
-              <Row gutter={[16, 16]}>
-                <Col xs={24} sm={12}>
-                  <Statistic title="Total Requests" value={125432} />
-                </Col>
-                <Col xs={24} sm={12}>
-                  <Statistic title="Successful" value={124658} valueStyle={{ color: "#52c41a" }} />
-                </Col>
-                <Col xs={24} sm={12}>
-                  <Statistic title="Failed" value={774} valueStyle={{ color: "#ff4d4f" }} />
-                </Col>
-                <Col xs={24} sm={12}>
-                  <Statistic title="Avg Response" value={145} suffix="ms" />
-                </Col>
-              </Row>
-            </Card>
-          </Col>
-        </Row>
-
-        <Card title="Metrics" className="shadow-sm">
-          <Table
-            columns={columns}
-            dataSource={metrics.map((m, i) => ({ ...m, key: i }))}
-            pagination={false}
-          />
-          {metrics.length === 0 && <Empty description="No metrics available" />}
-        </Card>
+    <div className="mx-auto max-w-[1440px] space-y-12 pb-20">
+      <div className="flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-end">
+        <div className="space-y-4">
+          <Title className="!m-0 !font-display !text-4xl !font-bold !leading-tight !tracking-tight md:!text-6xl uppercase">Giám sát hệ thống</Title>
+          <Paragraph className="max-w-lg text-lg font-medium text-slate-400 opacity-80 italic">
+            Theo dõi sức khỏe hệ thống, hiệu suất API và các chỉ số vận hành quan trọng trong thời gian thực.
+          </Paragraph>
+        </div>
       </div>
+
+      <Row gutter={[24, 24]}>
+        {[
+          { title: "Trạng thái hệ thống", value: "Hoạt động tốt", color: "text-emerald-500", suffix: "" },
+          { title: "Người dùng trực tuyến", value: 1523, color: "text-blue-500", suffix: "", prefix: <ArrowUpOutlined /> },
+          { title: "Tỷ lệ lỗi", value: 0.2, color: "text-amber-500", suffix: "%" },
+          { title: "Tải hệ thống", value: 65, color: "text-slate-700", suffix: "%" },
+        ].map((s, i) => (
+          <Col key={i} xs={24} sm={12} md={6}>
+            <Card className="rounded-[2rem] border-pink-100/50 bg-white/50 shadow-sm backdrop-blur-md transition-soft hover:shadow-luxury">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">{s.title}</div>
+              <div className={`font-display text-2xl font-bold ${s.color}`}>
+                {s.prefix}{s.value}{s.suffix}
+              </div>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+
+      <Row gutter={[24, 24]}>
+        <Col xs={24} md={12}>
+          <Card
+            title={<span className="font-display text-xl font-bold uppercase tracking-widest text-text-dark">Tài nguyên máy chủ</span>}
+            className="rounded-[2.5rem] border-pink-100/40 bg-white p-4 shadow-sm"
+          >
+            <div className="space-y-8">
+              {[
+                { label: "Sử dụng CPU", percent: 45 },
+                { label: "Sử dụng RAM", percent: 62 },
+                { label: "Dung lượng ổ đĩa", percent: 78, status: "active" as const },
+              ].map((item, i) => (
+                <div key={i}>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">{item.label}</p>
+                  <Progress percent={item.percent} strokeColor={item.percent > 70 ? "#ff4d4f" : "#primary"} strokeWidth={12} className="luxury-progress" />
+                </div>
+              ))}
+            </div>
+          </Card>
+        </Col>
+
+        <Col xs={24} md={12}>
+          <Card
+            title={<span className="font-display text-xl font-bold uppercase tracking-widest text-text-dark">Hiệu suất API</span>}
+            className="rounded-[2.5rem] border-pink-100/40 bg-white p-4 shadow-sm"
+          >
+            <Row gutter={[16, 40]}>
+              <Col span={12}>
+                <Statistic title={<span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Tổng yêu cầu</span>} value={125432} valueStyle={{ fontWeight: 900 }} />
+              </Col>
+              <Col span={12}>
+                <Statistic title={<span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Thành công</span>} value={124658} valueStyle={{ color: "#52c41a", fontWeight: 900 }} />
+              </Col>
+              <Col span={12}>
+                <Statistic title={<span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Thất bại</span>} value={774} valueStyle={{ color: "#ff4d4f", fontWeight: 900 }} />
+              </Col>
+              <Col span={12}>
+                <Statistic title={<span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Thời gian TB</span>} value={145} suffix="ms" valueStyle={{ fontWeight: 900 }} />
+              </Col>
+            </Row>
+          </Card>
+        </Col>
+      </Row>
+
+      <Card
+        title={<span className="font-display text-xl font-bold uppercase tracking-widest text-text-dark">Chỉ số vận hành</span>}
+        className="rounded-[2.5rem] border-pink-100/40 bg-white p-4 shadow-sm"
+      >
+        <Table
+          columns={columns}
+          dataSource={metrics.map((m, i) => ({ ...m, key: i }))}
+          pagination={false}
+          className="luxury-table"
+        />
+        {metrics.length === 0 && (
+          <div className="py-10 text-center">
+            <Empty description="Không có chỉ số nào" />
+          </div>
+        )}
+      </Card>
     </div>
   );
 }

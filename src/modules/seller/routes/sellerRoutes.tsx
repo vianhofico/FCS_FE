@@ -9,7 +9,7 @@ import SellerProfilePage from "@/modules/seller/pages/SellerProfilePage";
 
 export const sellerRoutes: RouteObject[] = [
   {
-    path: "consignments",
+    path: "seller/consignments",
     children: [
       {
         index: true,
@@ -22,23 +22,23 @@ export const sellerRoutes: RouteObject[] = [
     ],
   },
   {
-    path: "contracts",
+    path: "seller/contracts",
     element: <ConsignmentContractPage />,
   },
   {
-    path: "products",
+    path: "seller/products",
     element: <MyProductsPage />,
   },
   {
-    path: "sales",
+    path: "seller/sales",
     element: <SalesReportPage />,
   },
   {
-    path: "financial",
+    path: "seller/financial",
     element: <FinancialPage />,
   },
   {
-    path: "profile",
+    path: "seller/profile",
     element: <SellerProfilePage />,
   },
 ];

@@ -1,0 +1,70 @@
+src/app/layout/AppLayout.tsx(105,9): error TS6133: 'token' is declared but its value is never read.
+src/modules/admin/pages/AdminDashboardPage.tsx(7,3): error TS6133: 'ArrowUpOutlined' is declared but its value is never read.
+src/modules/admin/pages/AdminDashboardPage.tsx(8,3): error TS6133: 'BellOutlined' is declared but its value is never read.
+src/modules/admin/pages/AdminDashboardPage.tsx(16,3): error TS6133: 'Badge' is declared but its value is never read.
+src/modules/admin/pages/AdminDashboardPage.tsx(31,22): error TS6133: 'Paragraph' is declared but its value is never read.
+src/modules/admin/pages/AuditLogsPage.tsx(7,58): error TS6133: 'Space' is declared but its value is never read.
+src/modules/admin/pages/AuditLogsPage.tsx(8,61): error TS2724: '"@ant-design/icons"' has no exported member named 'ShieldOutlined'. Did you mean 'IeOutlined'?
+src/modules/admin/pages/BackupManagementPage.tsx(8,81): error TS6133: 'HistoryOutlined' is declared but its value is never read.
+src/modules/admin/pages/SecurityPage.tsx(7,83): error TS6133: 'Space' is declared but its value is never read.
+src/modules/admin/pages/SystemConfigurationPage.tsx(7,98): error TS6133: 'Space' is declared but its value is never read.
+src/modules/buyer/pages/AddressBookPage.tsx(15,16): error TS6133: 'Text' is declared but its value is never read.
+src/modules/buyer/pages/CartPage.tsx(9,3): error TS6133: 'HeartOutlined' is declared but its value is never read.
+src/modules/buyer/pages/CartPage.tsx(18,3): error TS6133: 'Empty' is declared but its value is never read.
+src/modules/buyer/pages/CartPage.tsx(23,3): error TS6133: 'Space' is declared but its value is never read.
+src/modules/buyer/pages/CartPage.tsx(35,22): error TS6133: 'Paragraph' is declared but its value is never read.
+src/modules/buyer/pages/CartPage.tsx(102,21): error TS2339: Property 'productImage' does not exist on type 'CartItem'.
+src/modules/buyer/pages/CartPage.tsx(103,32): error TS2339: Property 'productImage' does not exist on type 'CartItem'.
+src/modules/buyer/pages/MyReturnsPage.tsx(8,16): error TS6133: 'Space' is declared but its value is never read.
+src/modules/buyer/pages/MyReturnsPage.tsx(16,16): error TS6133: 'Text' is declared but its value is never read.
+src/modules/buyer/pages/OrderDetailPage.tsx(10,3): error TS6133: 'Spin' is declared but its value is never read.
+src/modules/buyer/pages/OrderDetailPage.tsx(11,3): error TS6133: 'Space' is declared but its value is never read.
+src/modules/buyer/pages/OrderDetailPage.tsx(15,3): error TS6133: 'Row' is declared but its value is never read.
+src/modules/buyer/pages/OrderDetailPage.tsx(266,21): error TS2339: Property 'productImage' does not exist on type 'OrderItem'.
+src/modules/buyer/pages/OrderDetailPage.tsx(267,32): error TS2339: Property 'productImage' does not exist on type 'OrderItem'.
+src/modules/buyer/pages/OrderHistoryPage.tsx(8,16): error TS6133: 'Space' is declared but its value is never read.
+src/modules/buyer/pages/OrderHistoryPage.tsx(9,42): error TS6133: 'ShoppingCartOutlined' is declared but its value is never read.
+src/modules/buyer/pages/OrderHistoryPage.tsx(16,16): error TS6133: 'Text' is declared but its value is never read.
+src/modules/buyer/pages/ProductDetailPage.tsx(24,3): error TS6133: 'Space' is declared but its value is never read.
+src/modules/buyer/pages/ProductReviewPage.tsx(16,3): error TS6133: 'Space' is declared but its value is never read.
+src/modules/buyer/pages/ProductReviewPage.tsx(19,29): error TS6133: 'DeleteOutlined' is declared but its value is never read.
+src/modules/buyer/pages/ProductReviewPage.tsx(99,9): error TS6133: 'handleRemoveMedia' is declared but its value is never read.
+src/modules/buyer/pages/ProductReviewPage.tsx(194,8): error TS2304: Cannot find name 'Row'.
+src/modules/buyer/pages/ProductReviewPage.tsx(195,10): error TS2304: Cannot find name 'Col'.
+src/modules/buyer/pages/ProductReviewPage.tsx(289,11): error TS2304: Cannot find name 'Col'.
+src/modules/buyer/pages/ProductReviewPage.tsx(291,10): error TS2304: Cannot find name 'Col'.
+src/modules/buyer/pages/ProductReviewPage.tsx(314,17): error TS2304: Cannot find name 'ShoppingCartOutlined'.
+src/modules/buyer/pages/ProductReviewPage.tsx(318,11): error TS2304: Cannot find name 'Col'.
+src/modules/buyer/pages/ProductReviewPage.tsx(319,9): error TS2304: Cannot find name 'Row'.
+src/modules/buyer/pages/ReturnDetailPage.tsx(11,3): error TS6133: 'Space' is declared but its value is never read.
+src/modules/buyer/pages/ReturnDetailPage.tsx(30,22): error TS6133: 'Paragraph' is declared but its value is never read.
+src/modules/iam/pages/LoginPage.tsx(116,50): error TS2322: Type '{ children: string; to: string; size: string; className: string; }' is not assignable to type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'.
+  Property 'size' does not exist on type 'IntrinsicAttributes & LinkProps & RefAttributes<HTMLAnchorElement>'.
+src/modules/manager/pages/ApprovalsPage.tsx(21,16): error TS6133: 'Text' is declared but its value is never read.
+src/modules/manager/pages/OrderModerationPage.tsx(10,3): error TS6133: 'FilterOutlined' is declared but its value is never read.
+src/modules/manager/pages/OrderModerationPage.tsx(17,3): error TS6133: 'Col' is declared but its value is never read.
+src/modules/manager/pages/OrderModerationPage.tsx(22,3): error TS6133: 'Row' is declared but its value is never read.
+src/modules/manager/pages/OrderModerationPage.tsx(35,17): error TS6133: 'Button' is declared but its value is never read.
+src/modules/manager/pages/OrderModerationPage.tsx(37,16): error TS6133: 'Text' is declared but its value is never read.
+src/modules/seller/pages/ConsignmentContractPage.tsx(14,16): error TS6133: 'Text' is declared but its value is never read.
+src/modules/seller/pages/ConsignmentContractPage.tsx(195,131): error TS2367: This comparison appears to be unintentional because the types '"DRAFT" | "REJECTED" | "PENDING_SIGNATURE" | "TERMINATED"' and '"ACTIVE"' have no overlap.
+src/modules/seller/pages/ConsignmentContractPage.tsx(230,61): error TS2552: Cannot find name 'navigate'. Did you mean 'navigator'?
+src/modules/seller/pages/ConsignmentContractSignPage.tsx(8,38): error TS6133: 'Space' is declared but its value is never read.
+src/modules/seller/pages/ConsignmentContractSignPage.tsx(14,3): error TS6133: 'CheckCircleFilled' is declared but its value is never read.
+src/modules/seller/pages/ConsignmentContractSignPage.tsx(19,41): error TS6196: 'ConsignmentContract' is declared but never used.
+src/modules/seller/pages/ConsignmentMultiStepPage.tsx(7,36): error TS6133: 'Row' is declared but its value is never read.
+src/modules/seller/pages/ConsignmentMultiStepPage.tsx(7,65): error TS6133: 'Space' is declared but its value is never read.
+src/modules/seller/pages/ConsignmentMultiStepPage.tsx(13,3): error TS6133: 'PlusOutlined' is declared but its value is never read.
+src/modules/seller/pages/ConsignmentRequestDetailPage.tsx(10,3): error TS6133: 'Spin' is declared but its value is never read.
+src/modules/seller/pages/ConsignmentRequestDetailPage.tsx(16,3): error TS6133: 'Statistic' is declared but its value is never read.
+src/modules/seller/pages/ConsignmentRequestListPage.tsx(14,3): error TS6133: 'Avatar' is declared but its value is never read.
+src/modules/seller/pages/ConsignmentRequestListPage.tsx(19,3): error TS6133: 'Space' is declared but its value is never read.
+src/modules/seller/pages/ConsignmentRequestListPage.tsx(32,16): error TS6133: 'Text' is declared but its value is never read.
+src/modules/seller/pages/ConsignmentRequestListPage.tsx(135,65): error TS2367: This comparison appears to be unintentional because the types 'ConsignmentRequestStatus' and '"ACCEPTED"' have no overlap.
+src/modules/seller/pages/ConsignmentRequestListPage.tsx(136,66): error TS2367: This comparison appears to be unintentional because the types 'ConsignmentRequestStatus' and '"PENDING"' have no overlap.
+src/modules/seller/pages/FinancialPage.tsx(26,16): error TS6133: 'Text' is declared but its value is never read.
+src/modules/seller/pages/MyProductsPage.tsx(37,16): error TS6133: 'Text' is declared but its value is never read.
+src/modules/seller/pages/SalesReportPage.tsx(15,16): error TS6133: 'Text' is declared but its value is never read.
+src/modules/seller/pages/SellerProfilePage.tsx(13,3): error TS6133: 'Space' is declared but its value is never read.
+src/modules/seller/pages/SellerProfilePage.tsx(19,1): error TS6192: All imports in import declaration are unused.
+src/modules/seller/pages/SellerProfilePage.tsx(288,20): error TS2552: Cannot find name 'PlusOutlined'. Did you mean 'UserOutlined'?
