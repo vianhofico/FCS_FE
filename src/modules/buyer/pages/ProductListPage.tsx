@@ -3,13 +3,34 @@
  * Browse and search products with comprehensive filtering and sorting
  */
 
-import { useState, useEffect } from "react";
-import { Row, Col, Card, Input, Button, Slider, Space, Spin, Empty, Pagination, Tag, Select } from "antd";
-import { SearchOutlined, ShoppingCartOutlined, ClearOutlined } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
-import { productApi } from "@/modules/product/api/productApi";
-import type { ProductSummary, ProductQuery, ProductBrand, ProductCategory } from "@/shared/contracts/productContract";
+import {
+  ClearOutlined,
+  FilterOutlined,
+  SearchOutlined,
+  ShoppingCartOutlined,
+  SortAscendingOutlined,
+} from "@ant-design/icons";
+import {
+  Card,
+  Col,
+  Drawer,
+  Input,
+  Pagination,
+  Row,
+  Select,
+  Slider,
+  Space,
+  Spin,
+  Typography,
+} from "antd";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
+import { productApi } from "@/modules/product/api/productApi";
+import { Badge, Button, EmptyState, GradeBadge } from "@/shared/ui";
+import type { ProductCategory, ProductQuery, ProductSummary } from "@/shared/contracts/productContract";
+
+const { Title, Text, Paragraph } = Typography;
 
 interface BuyerProductListPageState {
   products: ProductSummary[];
@@ -20,18 +41,17 @@ interface BuyerProductListPageState {
   totalElements: number;
   totalPages: number;
   filters: Omit<ProductQuery, "page" | "size">;
-  brands: ProductBrand[];
   categories: ProductCategory[];
-  brandsLoading: boolean;
   categoriesLoading: boolean;
   sortBy: string; // "newest" | "price_asc" | "price_desc"
 }
 
-/**
- * Buyer Product List Page component
- */
+const HERO_IMAGE = "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80";
+
 export default function BuyerProductListPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [state, setState] = useState<BuyerProductListPageState>({
     products: [],
     isLoading: true,
@@ -41,41 +61,26 @@ export default function BuyerProductListPage() {
     totalElements: 0,
     totalPages: 0,
     filters: {
-      keyword: "",
+      keyword: searchParams.get("q") || "",
       minPrice: 0,
       maxPrice: 10000000,
       minCondition: 0,
       maxCondition: 100,
-      status: undefined,
+      status: "ACTIVE",
       brandId: undefined,
       categoryId: undefined,
     },
-    brands: [],
     categories: [],
-    brandsLoading: false,
     categoriesLoading: false,
     sortBy: "newest",
   });
 
-  // Load brands and categories on mount
+  // Load categories on mount
   useEffect(() => {
-    const loadBrandsAndCategories = async () => {
+    const loadCategories = async () => {
       try {
-        setState((prev) => ({ ...prev, brandsLoading: true, categoriesLoading: true }));
-
-        const [brandsRes, categoriesRes] = await Promise.all([
-          productApi.getBrands(),
-          productApi.getCategories(),
-        ]);
-
-        if (brandsRes.success && brandsRes.data) {
-          setState((prev) => ({
-            ...prev,
-            brands: Array.isArray(brandsRes.data) ? brandsRes.data : brandsRes.data.content || [],
-            brandsLoading: false,
-          }));
-        }
-
+        setState((prev) => ({ ...prev, categoriesLoading: true }));
+        const categoriesRes = await productApi.getCategories();
         if (categoriesRes.success && categoriesRes.data) {
           setState((prev) => ({
             ...prev,
@@ -84,12 +89,11 @@ export default function BuyerProductListPage() {
           }));
         }
       } catch (err) {
-        console.error("Failed to load brands/categories:", err);
-        setState((prev) => ({ ...prev, brandsLoading: false, categoriesLoading: false }));
+        console.error("Failed to load categories:", err);
+        setState((prev) => ({ ...prev, categoriesLoading: false }));
       }
     };
-
-    loadBrandsAndCategories();
+    loadCategories();
   }, []);
 
   // Load products on filters or page change
@@ -127,11 +131,7 @@ export default function BuyerProductListPage() {
         }
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : "Failed to load products";
-        setState((prev) => ({
-          ...prev,
-          isLoading: false,
-          error: errorMsg,
-        }));
+        setState((prev) => ({ ...prev, isLoading: false, error: errorMsg }));
       }
     };
 
@@ -154,34 +154,10 @@ export default function BuyerProductListPage() {
     }));
   };
 
-  const handleConditionChange = (values: [number, number]) => {
-    setState((prev) => ({
-      ...prev,
-      filters: { ...prev.filters, minCondition: values[0], maxCondition: values[1] },
-      page: 0,
-    }));
-  };
-
-  const handleBrandChange = (brandId: string | undefined) => {
-    setState((prev) => ({
-      ...prev,
-      filters: { ...prev.filters, brandId },
-      page: 0,
-    }));
-  };
-
   const handleCategoryChange = (categoryId: string | undefined) => {
     setState((prev) => ({
       ...prev,
       filters: { ...prev.filters, categoryId },
-      page: 0,
-    }));
-  };
-
-  const handleSortChange = (sortBy: string) => {
-    setState((prev) => ({
-      ...prev,
-      sortBy,
       page: 0,
     }));
   };
@@ -195,7 +171,7 @@ export default function BuyerProductListPage() {
         maxPrice: 10000000,
         minCondition: 0,
         maxCondition: 100,
-        status: undefined,
+        status: "ACTIVE",
         brandId: undefined,
         categoryId: undefined,
       },
@@ -204,236 +180,248 @@ export default function BuyerProductListPage() {
     }));
   };
 
-  const handlePageChange = (newPage: number) => {
-    setState((prev) => ({ ...prev, page: newPage - 1 }));
-  };
-
-  const handleProductClick = (productId: string) => {
-    navigate(`/buyer/products/${productId}`);
-  };
-
   const getConditionLabel = (condition: number) => {
-    if (condition >= 90) return "Excellent";
-    if (condition >= 75) return "Very Good";
-    if (condition >= 60) return "Good";
-    if (condition >= 45) return "Fair";
-    return "Poor";
+    if (condition >= 90) return "S (New)";
+    if (condition >= 80) return "A (Excellent)";
+    if (condition >= 65) return "B (Good)";
+    return "C (Fair)";
   };
+
+  const productGrid = (
+    <Row gutter={[24, 32]}>
+      {state.products.map((product) => (
+        <Col xs={24} sm={12} md={8} key={product.id}>
+          <Card
+            hoverable
+            className="group overflow-hidden rounded-3xl border-border/40 bg-white transition-premium hover:shadow-luxury"
+            cover={
+              <div className="relative aspect-[3/4] overflow-hidden bg-bg-secondary">
+                {product.imageUrl ? (
+                  <img
+                    alt={product.name}
+                    src={product.imageUrl}
+                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center bg-slate-100 text-slate-300">
+                    No Image
+                  </div>
+                )}
+                <div className="absolute top-4 left-4 z-10">
+                  <GradeBadge grade={getConditionLabel(product.condition || 0).split(" ")[0]} />
+                </div>
+                <div className="absolute inset-0 flex items-center justify-center gap-3 bg-black/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                  <Button
+                    shape="circle"
+                    icon={<ShoppingCartOutlined />}
+                    className="translate-y-4 scale-110 border-none bg-white/90 transition-premium group-hover:translate-y-0 hover:!bg-primary hover:!text-white flex items-center justify-center w-10 h-10"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/buyer/products/${product.id}`);
+                    }}
+                  />
+                </div>
+              </div>
+            }
+            onClick={() => navigate(`/buyer/products/${product.id}`)}
+          >
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Text className="font-display text-[10px] font-bold uppercase tracking-[0.2em] text-primary/70">
+                  {product.sku}
+                </Text>
+                <Badge status="Active">{getConditionLabel(product.condition || 0)}</Badge>
+              </div>
+              <Title level={5} className="!m-0 !line-clamp-1 !font-display !font-bold !text-text-dark group-hover:text-primary transition-soft">
+                {product.name}
+              </Title>
+              <div className="flex items-baseline gap-2">
+                <Text className="text-lg font-black text-primary">
+                  {product.salePrice.toLocaleString()}₫
+                </Text>
+                {product.originalPrice && product.originalPrice > product.salePrice && (
+                  <Text delete className="text-xs font-medium text-slate-300">
+                    {product.originalPrice.toLocaleString()}₫
+                  </Text>
+                )}
+              </div>
+            </div>
+          </Card>
+        </Col>
+      ))}
+    </Row>
+  );
+
+  const filterContent = (
+    <div className="space-y-10">
+      <div>
+        <Title level={5} className="!mb-6 !font-display border-b border-border/60 pb-3">Tìm kiếm</Title>
+        <Input
+          prefix={<SearchOutlined className="text-primary/40" />}
+          placeholder="Tên sản phẩm, thương hiệu..."
+          value={state.filters.keyword}
+          onChange={(e) => handleSearch(e.target.value)}
+          className="rounded-2xl border-border bg-bg-main"
+        />
+      </div>
+
+      <div>
+        <Title level={5} className="!mb-6 !font-display border-b border-border/60 pb-3">Danh mục</Title>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            className={`rounded-full px-4 text-xs font-bold uppercase tracking-wider transition-soft ${
+              !state.filters.categoryId ? "bg-primary text-white border-none" : "border-border text-slate-500"
+            }`}
+            onClick={() => handleCategoryChange(undefined)}
+          >
+            Tất cả
+          </Button>
+          {state.categories.map((cat) => (
+            <Button
+              key={cat.id}
+              className={`rounded-full px-4 text-xs font-bold uppercase tracking-wider transition-soft ${
+                state.filters.categoryId === cat.id ? "bg-primary text-white border-none" : "border-border text-slate-500"
+              }`}
+              onClick={() => handleCategoryChange(cat.id)}
+            >
+              {cat.name}
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <Title level={5} className="!mb-6 !font-display border-b border-border/60 pb-3">Khoảng giá</Title>
+        <Slider
+          range
+          min={0}
+          max={10000000}
+          step={500000}
+          value={[state.filters.minPrice || 0, state.filters.maxPrice || 10000000]}
+          onChange={handlePriceChange}
+          className="luxury-slider"
+        />
+        <div className="mt-4 flex justify-between text-[11px] font-black text-slate-400">
+          <span>{state.filters.minPrice?.toLocaleString()}₫</span>
+          <span>{state.filters.maxPrice?.toLocaleString()}₫</span>
+        </div>
+      </div>
+
+      <Button
+        type="link"
+        danger
+        block
+        icon={<ClearOutlined />}
+        className="font-black uppercase tracking-widest text-xs"
+        onClick={handleResetFilters}
+      >
+        Xóa tất cả bộ lọc
+      </Button>
+    </div>
+  );
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Browse Products</h1>
-          <p className="text-gray-600">Discover amazing fashion items from trusted consignors</p>
+    <div className="space-y-12">
+      {/* Banner Section */}
+      <section className="group relative h-[380px] overflow-hidden rounded-[2.5rem] shadow-luxury">
+        <img src={HERO_IMAGE} alt="Luxury Banner" className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105" />
+        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-transparent">
+          <div className="flex h-full flex-col justify-center px-8 md:px-16 lg:max-w-2xl">
+            <Text className="animate-reveal text-[10px] font-black uppercase tracking-[0.4em] text-primary">Ký gửi thời trang cao cấp</Text>
+            <Title className="!mt-4 !mb-6 !font-display !text-4xl !font-black !leading-tight !tracking-tight md:!text-5xl uppercase animate-reveal delay-100">
+              Phong cách bền vững, <br />
+              <span className="italic font-light text-primary/80 lowercase">giá trị vượt thời gian.</span>
+            </Title>
+            <Paragraph className="animate-reveal delay-200 text-lg font-medium text-slate-500/80">
+              Khám phá những món đồ Local Brand đã qua tuyển chọn kỹ lưỡng, đảm bảo độ mới và phong cách riêng biệt.
+            </Paragraph>
+            <div className="animate-reveal delay-300 mt-6">
+              <Button type="primary" size="large" className="shadow-luxury">Khám phá ngay</Button>
+            </div>
+          </div>
         </div>
+      </section>
 
-        {/* Filters and Search */}
-        <Card className="mb-8 shadow-sm">
-          <Space direction="vertical" size="large" className="w-full">
-            {/* Search */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
-              <Input
-                prefix={<SearchOutlined />}
-                placeholder="Search by name, brand, category..."
-                size="large"
-                onChange={(e) => handleSearch(e.target.value)}
-                className="w-full md:w-1/2"
-              />
+      {/* Main Grid Section */}
+      <div className="flex flex-col gap-10 md:flex-row">
+        {/* Desktop Sidebar Filters */}
+        <aside className="hidden w-72 shrink-0 lg:block">
+          <div className="sticky top-32 rounded-[2rem] border border-border/60 bg-white/50 p-8 backdrop-blur-md">
+            {filterContent}
+          </div>
+        </aside>
+
+        {/* Content Area */}
+        <div className="flex-1 space-y-8">
+          <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
+            <div className="space-y-2">
+              <Title className="!m-0 !font-display !text-3xl !font-black uppercase tracking-tight">Bộ sưu tập mới</Title>
+              <Text className="text-sm font-medium text-slate-400">Đã kiểm định chất lượng: {state.totalElements} sản phẩm</Text>
             </div>
 
-            {/* Filters Grid */}
-            <Row gutter={[16, 16]}>
-              {/* Brand */}
-              <Col xs={24} md={12} lg={6}>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Brand</label>
-                  <Select
-                    placeholder="Select brand"
-                    allowClear
-                    value={state.filters.brandId || undefined}
-                    onChange={handleBrandChange}
-                    loading={state.brandsLoading}
-                    className="w-full"
-                    options={state.brands.map((b) => ({
-                      label: b.name,
-                      value: b.id,
-                    }))}
+            <Space size={12} className="w-full sm:w-auto">
+              <Button
+                icon={<FilterOutlined />}
+                onClick={() => setShowMobileFilters(true)}
+                className="flex h-11 items-center rounded-xl border-border bg-white font-bold text-slate-500 lg:hidden"
+              >
+                Bộ lọc
+              </Button>
+              <Select
+                value={state.sortBy}
+                onChange={(val) => setState(prev => ({ ...prev, sortBy: val, page: 0 }))}
+                className="h-11 min-w-[200px]"
+                suffixIcon={<SortAscendingOutlined className="text-primary" />}
+                options={[
+                  { label: "Mới nhất", value: "newest" },
+                  { label: "Giá: Thấp đến Cao", value: "price_asc" },
+                  { label: "Giá: Cao đến Thấp", value: "price_desc" },
+                ]}
+              />
+            </Space>
+          </div>
+
+          <Spin spinning={state.isLoading} size="large">
+            {state.products.length > 0 ? (
+              <>
+                {productGrid}
+                <div className="mt-16 flex justify-center pb-10">
+                  <Pagination
+                    current={state.page + 1}
+                    pageSize={state.size}
+                    total={state.totalElements}
+                    onChange={(p) => setState(prev => ({ ...prev, page: p - 1 }))}
+                    showSizeChanger={false}
+                    className="luxury-pagination"
                   />
                 </div>
-              </Col>
-
-              {/* Category */}
-              <Col xs={24} md={12} lg={6}>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                  <Select
-                    placeholder="Select category"
-                    allowClear
-                    value={state.filters.categoryId || undefined}
-                    onChange={handleCategoryChange}
-                    loading={state.categoriesLoading}
-                    className="w-full"
-                    options={state.categories.map((c) => ({
-                      label: c.name,
-                      value: c.id,
-                    }))}
-                  />
-                </div>
-              </Col>
-
-              {/* Sort */}
-              <Col xs={24} md={12} lg={6}>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
-                  <Select
-                    value={state.sortBy}
-                    onChange={handleSortChange}
-                    className="w-full"
-                    options={[
-                      { label: "Newest", value: "newest" },
-                      { label: "Price: Low to High", value: "price_asc" },
-                      { label: "Price: High to Low", value: "price_desc" },
-                    ]}
-                  />
-                </div>
-              </Col>
-
-              {/* Reset Filters */}
-              <Col xs={24} md={12} lg={6}>
-                <div className="flex items-end h-full">
-                  <Button
-                    icon={<ClearOutlined />}
-                    onClick={handleResetFilters}
-                    className="w-full"
-                  >
-                    Reset Filters
+              </>
+            ) : (
+              <EmptyState
+                title="Không tìm thấy sản phẩm"
+                description="Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm để tìm thấy món đồ ưng ý."
+                action={
+                  <Button type="primary" onClick={handleResetFilters}>
+                    Xóa tất cả bộ lọc
                   </Button>
-                </div>
-              </Col>
-            </Row>
-
-            <Row gutter={[16, 16]}>
-              {/* Price Range */}
-              <Col xs={24} md={12}>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-4">
-                    Price Range: ${state.filters.minPrice?.toLocaleString()} - ${state.filters.maxPrice?.toLocaleString()}
-                  </label>
-                  <Slider
-                    range
-                    min={0}
-                    max={10000000}
-                    step={100000}
-                    defaultValue={[state.filters.minPrice || 0, state.filters.maxPrice || 10000000]}
-                    onChange={handlePriceChange}
-                  />
-                </div>
-              </Col>
-
-              {/* Condition Range */}
-              <Col xs={24} md={12}>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-4">
-                    Condition: {getConditionLabel(state.filters.minCondition || 0)} -{" "}
-                    {getConditionLabel(state.filters.maxCondition || 100)}
-                  </label>
-                  <Slider
-                    range
-                    min={0}
-                    max={100}
-                    step={5}
-                    marks={{ 0: "Poor", 50: "Fair", 100: "Excellent" }}
-                    defaultValue={[state.filters.minCondition || 0, state.filters.maxCondition || 100]}
-                    onChange={handleConditionChange}
-                  />
-                </div>
-              </Col>
-            </Row>
-          </Space>
-        </Card>
-
-        {/* Error Message */}
-        {state.error && (
-          <Card className="mb-8 bg-red-50 border-red-200">
-            <p className="text-red-800">{state.error}</p>
-          </Card>
-        )}
-
-        {/* Products Grid */}
-        <Spin spinning={state.isLoading}>
-          {state.products.length > 0 ? (
-            <>
-              <Row gutter={[16, 16]} className="mb-8">
-                {state.products.map((product) => (
-                  <Col xs={24} sm={12} md={8} lg={6} key={product.id}>
-                    <Card
-                      hoverable
-                      className="h-full cursor-pointer shadow-sm hover:shadow-lg transition-shadow"
-                      cover={
-                        product.imageUrl ? (
-                          <img alt={product.name} src={product.imageUrl} className="h-48 object-cover" />
-                        ) : (
-                          <div className="h-48 bg-gray-200 flex items-center justify-center">
-                            <span className="text-gray-400">No Image</span>
-                          </div>
-                        )
-                      }
-                      onClick={() => handleProductClick(product.id)}
-                    >
-                      <div className="flex flex-col h-full">
-                        <h3 className="font-semibold text-gray-900 truncate mb-1">{product.name}</h3>
-                        <p className="text-sm text-gray-600 mb-2">{product.sku}</p>
-                        <p className="text-sm text-gray-500 mb-3">
-                          {product.condition && `Condition: ${product.condition}/100`}
-                        </p>
-                        <div className="flex justify-between items-end mt-auto">
-                          <span className="text-lg font-bold text-blue-600">${product.salePrice.toLocaleString()}</span>
-                          <Button
-                            type="primary"
-                            icon={<ShoppingCartOutlined />}
-                            size="small"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/buyer/products/${product.id}`);
-                            }}
-                          >
-                            View
-                          </Button>
-                        </div>
-                        {product.status !== "ACTIVE" && (
-                          <Tag color="red" className="mt-2">
-                            {product.status}
-                          </Tag>
-                        )}
-                      </div>
-                    </Card>
-                  </Col>
-                ))}
-              </Row>
-
-              {/* Pagination */}
-              <div className="flex justify-center mt-8">
-                <Pagination
-                  current={state.page + 1}
-                  pageSize={state.size}
-                  total={state.totalElements}
-                  onChange={handlePageChange}
-                  showSizeChanger={false}
-                />
-              </div>
-            </>
-          ) : (
-            <Empty
-              description="No products found"
-              className="py-12"
-              style={{ marginTop: "100px" }}
-            />
-          )}
-        </Spin>
+                }
+              />
+            )}
+          </Spin>
+        </div>
       </div>
+
+      {/* Mobile Drawer */}
+      <Drawer
+        title={<Title level={4} className="!m-0 !font-display uppercase">Bộ lọc tìm kiếm</Title>}
+        placement="left"
+        onClose={() => setShowMobileFilters(false)}
+        open={showMobileFilters}
+        className="rounded-r-[2rem]"
+        width={320}
+      >
+        <div className="p-2">{filterContent}</div>
+      </Drawer>
     </div>
   );
 }

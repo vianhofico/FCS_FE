@@ -3,31 +3,40 @@
  * View full product details, reviews, and add to cart
  */
 
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
 import {
+  ArrowLeftOutlined,
+  HeartOutlined,
+  MinusOutlined,
+  PlusOutlined,
+  SafetyCertificateOutlined,
+  ShoppingCartOutlined,
+  StarFilled,
+} from "@ant-design/icons";
+import {
+  Avatar,
   Card,
-  Button,
-  Space,
-  Spin,
-  Empty,
-  Row,
   Col,
   Divider,
-  InputNumber,
-  Rate,
-  Tag,
   message,
-  Tabs,
   Progress,
+  Rate,
+  Row,
+  Space,
+  Spin,
+  Typography,
 } from "antd";
-import { ShoppingCartOutlined, ArrowLeftOutlined, EditOutlined } from "@ant-design/icons";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+
+import { orderApi } from "@/modules/order/api/orderApi";
 import { productApi } from "@/modules/product/api/productApi";
 import { reviewApi } from "@/modules/product/api/reviewApi";
-import { orderApi } from "@/modules/order/api/orderApi";
+import { useAuth } from "@/shared/context/AuthContext";
+import { Badge, Button, EmptyState, GradeBadge } from "@/shared/ui";
 import type { ProductDetail } from "@/shared/contracts/productContract";
 import type { ProductReview, ReviewSummary } from "@/shared/contracts/reviewContract";
-import { useAuth } from "@/shared/context/AuthContext";
+
+const { Title, Text, Paragraph } = Typography;
 
 interface ProductDetailPageState {
   product: ProductDetail | null;
@@ -39,13 +48,10 @@ interface ProductDetailPageState {
   error: string | null;
 }
 
-/**
- * Product Detail Page component
- */
 export default function ProductDetailPage() {
   const { productId } = useParams<{ productId: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [state, setState] = useState<ProductDetailPageState>({
     product: null,
     reviews: [],
@@ -56,18 +62,13 @@ export default function ProductDetailPage() {
     error: null,
   });
 
-  // Load product details and reviews
   useEffect(() => {
     const fetchData = async () => {
       if (!productId) return;
-
       try {
         setState((prev) => ({ ...prev, isLoading: true, error: null }));
-
-        // Fetch product details
         const productResponse = await productApi.getProductDetail(productId);
 
-        // Fetch reviews
         let reviewsData: ProductReview[] = [];
         let reviewSummaryData: ReviewSummary | null = null;
         try {
@@ -75,15 +76,11 @@ export default function ProductDetailPage() {
           if (reviewsResponse.success && reviewsResponse.data) {
             reviewsData = reviewsResponse.data.content;
           }
-
-          // Fetch review summary
           const summaryResponse = await reviewApi.getReviewSummary(productId);
           if (summaryResponse.success && summaryResponse.data) {
             reviewSummaryData = summaryResponse.data;
           }
-        } catch {
-          // Reviews might not be available
-        }
+        } catch { /* reviews not available */ }
 
         setState((prev) => ({
           ...prev,
@@ -93,288 +90,250 @@ export default function ProductDetailPage() {
           isLoading: false,
         }));
       } catch {
-        const errorMsg = "Failed to load product";
-        setState((prev) => ({
-          ...prev,
-          isLoading: false,
-          error: errorMsg,
-        }));
+        setState((prev) => ({ ...prev, isLoading: false, error: "Không tìm thấy thông tin sản phẩm" }));
       }
     };
-
     fetchData();
   }, [productId]);
 
   const handleAddToCart = async () => {
-    if (!state.product || !user) {
-      message.error("Please log in to add items to cart");
+    if (!isAuthenticated || !user) {
+      message.info("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng");
+      navigate("/auth/login");
       return;
     }
+    if (!state.product) return;
 
     try {
       setState((prev) => ({ ...prev, isAddingToCart: true }));
-
       await orderApi.addToCart(user.id, {
         productId: state.product.id,
         quantity: state.quantity,
       });
-
-      message.success(`Added ${state.quantity} item(s) to cart`);
+      message.success("Đã thêm vào giỏ hàng thành công!");
       setState((prev) => ({ ...prev, isAddingToCart: false }));
-
-      // Navigate to cart after 1 second
-      setTimeout(() => {
-        navigate("/buyer/cart");
-      }, 1000);
     } catch {
-      message.error("Failed to add to cart");
+      message.error("Lỗi khi thêm vào giỏ hàng");
       setState((prev) => ({ ...prev, isAddingToCart: false }));
     }
   };
 
-  if (state.isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Spin size="large" />
-      </div>
-    );
-  }
-
-  if (!state.product) {
-    return (
-      <div className="p-6 bg-gray-50 min-h-screen">
-        <div className="max-w-4xl mx-auto">
-          <Button
-            icon={<ArrowLeftOutlined />}
-            onClick={() => navigate("/buyer/products")}
-            className="mb-4"
-          >
-            Back to Products
-          </Button>
-          <Empty description="Product not found" />
-        </div>
-      </div>
-    );
-  }
+  if (state.isLoading) return <div className="flex min-h-screen items-center justify-center"><Spin size="large" /></div>;
+  if (!state.product) return (
+    <div className="flex min-h-[70vh] flex-col items-center justify-center gap-6">
+      <EmptyState
+        title="Không tìm thấy sản phẩm"
+        description="Thông tin sản phẩm có thể đã bị thay đổi hoặc không tồn tại."
+        action={<Button icon={<ArrowLeftOutlined />} onClick={() => navigate("/buyer/products")} type="primary">Quay lại cửa hàng</Button>}
+      />
+    </div>
+  );
 
   const product = state.product;
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-4xl mx-auto">
-        {/* Back Button */}
+    <div className="mx-auto max-w-[1440px] space-y-12 pb-20">
+      <div className="flex items-center gap-4">
         <Button
           icon={<ArrowLeftOutlined />}
           onClick={() => navigate("/buyer/products")}
-          className="mb-6"
+          type="text"
+          className="rounded-xl border-border/60 bg-white/50 text-slate-500 transition-soft hover:border-primary hover:text-primary px-4 py-2 h-auto"
         >
-          Back to Products
+          Quay lại danh sách
         </Button>
+      </div>
 
-        {/* Error */}
-        {state.error && (
-          <Card className="mb-6 bg-red-50 border-red-200">
-            <p className="text-red-800">{state.error}</p>
-          </Card>
-        )}
-
-        {/* Product Details */}
-        <Row gutter={[32, 32]}>
-          {/* Images */}
-          <Col xs={24} md={12}>
-            <Card className="shadow-sm">
+      <Row gutter={[48, 48]}>
+        {/* Product Images Column */}
+        <Col xs={24} md={12} lg={13}>
+          <div className="sticky top-32 space-y-4">
+            <div className="group relative aspect-[3/4] overflow-hidden rounded-[2.5rem] bg-white shadow-luxury">
               {product.imageUrl ? (
-                <div>
-                  <img
-                    src={product.imageUrl}
-                    alt={product.name}
-                    className="w-full h-96 object-cover rounded"
-                  />
-                </div>
+                <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105" />
               ) : (
-                <div className="w-full h-96 bg-gray-200 rounded flex items-center justify-center">
-                  <span className="text-gray-400">No Image Available</span>
-                </div>
+                <div className="flex h-full items-center justify-center bg-slate-100 text-slate-300 italic font-medium">Không có hình ảnh</div>
               )}
-            </Card>
-          </Col>
+              <div className="absolute top-6 left-6">
+                <GradeBadge grade={product.condition >= 90 ? 'S' : 'A'} />
+              </div>
+            </div>
 
-          {/* Info */}
-          <Col xs={24} md={12}>
-            <Space direction="vertical" size="large" className="w-full">
-              {/* Title and Status */}
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
-                <div className="flex gap-2 items-center">
-                  <Tag color={product.status === "ACTIVE" ? "green" : "orange"}>{product.status}</Tag>
-                  {product.condition && (
-                    <span className="text-sm text-gray-600">
-                      Condition: {product.condition}/100
-                    </span>
-                  )}
+            {/* Trust Badges */}
+            <div className="grid grid-cols-3 gap-4">
+              {[
+                { icon: <SafetyCertificateOutlined />, text: "Xác thực 100%" },
+                { icon: <StarFilled />, text: "Đã kiểm định" },
+                { icon: <HeartOutlined />, text: "Eco-Friendly" }
+              ].map((badge, i) => (
+                <div key={i} className="flex flex-col items-center gap-2 rounded-3xl border border-pink-100/50 bg-white/40 p-4 backdrop-blur-sm transition-soft hover:bg-white/60">
+                  <span className="text-xl text-primary/70">{badge.icon}</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{badge.text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Col>
+
+        {/* Product Info Column */}
+        <Col xs={24} md={12} lg={11}>
+          <div className="space-y-10">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <Text className="font-display text-sm font-bold uppercase tracking-[0.25em] text-primary/70">{product.brandId || "Local Brand"}</Text>
+                <Divider type="vertical" className="border-pink-100" />
+                <div className="flex items-center gap-1 text-yellow-400">
+                  <StarFilled />
+                  <span className="text-sm font-bold text-slate-700">{state.reviewSummary?.averageRating.toFixed(1) || "5.0"}</span>
                 </div>
               </div>
-
-              {/* Brand and Category */}
-              <div className="text-gray-600">
-                <p>
-                  <strong>Brand ID:</strong> {product.brandId || "N/A"}
-                </p>
-                <p>
-                  <strong>Categories:</strong> {product.categoryIds?.join(", ") || "N/A"}
-                </p>
-              </div>
-
-              <Divider />
-
-              {/* Price */}
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <p className="text-gray-600 text-sm mb-2">Sale Price</p>
-                <p className="text-4xl font-bold text-blue-600">${product.salePrice.toLocaleString()}</p>
+              <Title className="!m-0 !font-display !text-4xl !font-bold !leading-tight !tracking-tight text-text-dark md:!text-5xl">{product.name}</Title>
+              <div className="flex items-center gap-4">
+                <Text className="text-4xl font-bold text-primary">{product.salePrice.toLocaleString()}₫</Text>
                 {product.originalPrice && product.originalPrice > product.salePrice && (
-                  <p className="text-gray-500 text-sm mt-1">
-                    Original: <s>${product.originalPrice.toLocaleString()}</s>
-                  </p>
+                  <>
+                    <Text delete className="text-lg font-medium text-slate-300">{product.originalPrice.toLocaleString()}₫</Text>
+                    <Badge status="Rejected">-{Math.round(((product.originalPrice - product.salePrice) / product.originalPrice) * 100)}%</Badge>
+                  </>
                 )}
               </div>
+            </div>
 
-              {/* Description */}
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Description</h3>
-                <p className="text-gray-700 whitespace-pre-wrap">{product.description}</p>
-              </div>
-
-              {/* Quantity and Cart */}
-              <Card className="bg-gray-50">
-                <Space direction="vertical" size="large" className="w-full">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Quantity
-                    </label>
-                    <InputNumber
-                      min={1}
-                      max={10}
-                      value={state.quantity}
-                      onChange={(value) => setState((prev) => ({ ...prev, quantity: value || 1 }))}
-                      size="large"
-                      className="w-full"
-                    />
+            <Card className="rounded-[2rem] border-pink-100/50 bg-white/50 shadow-sm backdrop-blur-md">
+              <div className="space-y-8">
+                <div className="space-y-4">
+                  <div className="flex justify-between">
+                    <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Số lượng</span>
+                    <span className="text-xs font-bold text-primary italic">Chỉ còn 1 sản phẩm duy nhất</span>
                   </div>
+                  <div className="flex items-center gap-4">
+                    <div className="flex flex-1 items-center justify-between rounded-2xl border border-pink-100 bg-white p-1">
+                      <Button
+                        type="text"
+                        icon={<MinusOutlined />}
+                        disabled={state.quantity <= 1}
+                        onClick={() => setState(p => ({ ...p, quantity: p.quantity - 1 }))}
+                        className="h-10 w-10 text-primary flex items-center justify-center"
+                      />
+                      <span className="font-display text-lg font-bold">{state.quantity}</span>
+                      <Button
+                        type="text"
+                        icon={<PlusOutlined />}
+                        onClick={() => setState(p => ({ ...p, quantity: p.quantity + 1 }))}
+                        className="h-10 w-10 text-primary flex items-center justify-center"
+                      />
+                    </div>
+                  </div>
+                </div>
 
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <Button
                     type="primary"
                     size="large"
                     icon={<ShoppingCartOutlined />}
-                    onClick={handleAddToCart}
+                    className="h-14 rounded-2xl font-bold shadow-luxury"
                     loading={state.isAddingToCart}
-                    block
-                    disabled={product.status !== "ACTIVE"}
+                    onClick={handleAddToCart}
                   >
-                    Add to Cart
+                    THÊM VÀO GIỎ
                   </Button>
-                </Space>
-              </Card>
+                  <Button
+                    size="large"
+                    className="h-14 rounded-2xl border-primary text-primary font-bold transition-soft hover:!bg-primary hover:!text-white"
+                  >
+                    MUA NGAY
+                  </Button>
+                </div>
+              </div>
+            </Card>
 
-              {/* Seller Info */}
-              <Card className="bg-blue-50 border-blue-200">
-                <p className="text-sm text-gray-600 mb-1">Product Info</p>
-                <p className="text-sm text-gray-700">SKU: {product.sku}</p>
-              </Card>
-            </Space>
+            <div className="space-y-8">
+              <div>
+                <Title level={5} className="!mb-4 !font-display uppercase tracking-widest text-sm">Mô tả sản phẩm</Title>
+                <Paragraph className="text-lg leading-relaxed text-slate-600/80">{product.description || "Chưa có mô tả chi tiết cho sản phẩm này."}</Paragraph>
+              </div>
+
+              <div className="grid grid-cols-2 gap-x-12 gap-y-6 rounded-[2rem] bg-pink-50/30 p-8 border border-pink-100/20">
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/60">Tình trạng</div>
+                  <div className="mt-1 text-base font-bold text-slate-700">{product.condition}/100 - Rất mới</div>
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/60">Mã SKU</div>
+                  <div className="mt-1 text-base font-bold text-slate-700">{product.sku}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/60">Xác thực</div>
+                  <div className="mt-1 text-base font-bold text-slate-700 italic">Authentic Guaranteed</div>
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/60">Màu sắc</div>
+                  <div className="mt-1 text-base font-bold text-slate-700">Tự nhiên</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Col>
+      </Row>
+
+      {/* Reviews Section */}
+      <section className="mt-20 space-y-12">
+        <div className="flex flex-col items-center text-center">
+          <Title className="!font-display !text-4xl !font-bold uppercase tracking-tight">Đánh giá cộng đồng</Title>
+          <div className="mt-4 h-1 w-20 rounded-full bg-primary/30" />
+        </div>
+
+        <Row gutter={[48, 48]}>
+          <Col xs={24} lg={8}>
+            <div className="rounded-[2.5rem] border border-pink-100/50 bg-white/50 p-10 backdrop-blur-md shadow-sm">
+              <div className="text-center">
+                <div className="font-display text-7xl font-bold text-primary leading-none">{state.reviewSummary?.averageRating.toFixed(1) || "5.0"}</div>
+                <Rate disabled value={Math.round(state.reviewSummary?.averageRating || 5)} className="mt-6 !text-yellow-400" />
+                <div className="mt-4 text-sm font-bold text-slate-400 uppercase tracking-widest">Dựa trên {state.reviewSummary?.totalReviews || 0} lượt mua</div>
+              </div>
+              <div className="mt-10 space-y-4">
+                {[5, 4, 3, 2, 1].map((rating) => (
+                  <div key={rating} className="flex items-center gap-4">
+                    <span className="w-10 text-xs font-bold text-slate-400">{rating} sao</span>
+                    <Progress
+                      percent={state.reviewSummary?.ratingDistribution?.[rating as keyof typeof state.reviewSummary.ratingDistribution] || 0}
+                      showInfo={false}
+                      strokeColor={rating >= 4 ? "#d94a7a" : "#f08ab1"}
+                      className="m-0"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Col>
+          <Col xs={24} lg={16}>
+            <div className="space-y-6">
+              {state.reviews.length > 0 ? (
+                state.reviews.map((review) => (
+                  <Card key={review.id} className="rounded-3xl border-pink-100/40 bg-white transition-soft hover:shadow-luxury">
+                    <div className="flex items-start gap-4">
+                      <Avatar size={48} className="bg-pink-50 text-primary font-bold">{review.reviewedBy?.[0]?.toUpperCase()}</Avatar>
+                      <div className="flex-1 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Title level={5} className="!m-0 !font-sans !font-bold text-slate-800">{review.reviewedBy}</Title>
+                          <Text className="text-xs font-bold text-slate-400">{new Date(review.createdAt || "").toLocaleDateString()}</Text>
+                        </div>
+                        <Rate disabled value={review.rating} className="text-xs !text-yellow-400" />
+                        <Paragraph className="text-slate-600 leading-relaxed italic mt-3">"{review.comment}"</Paragraph>
+                      </div>
+                    </div>
+                  </Card>
+                ))
+              ) : (
+                <EmptyState
+                  title="Chưa có đánh giá"
+                  description="Sản phẩm này chưa có đánh giá nào từ cộng đồng. Hãy là người đầu tiên sở hữu!"
+                />
+              )}
+            </div>
           </Col>
         </Row>
-
-        {/* Reviews */}
-        <Card className="mt-8 shadow-sm">
-          {/* Review Summary */}
-          {state.reviewSummary && (
-            <div className="mb-8 pb-8 border-b">
-              <Row gutter={[32, 32]}>
-                {/* Average Rating */}
-                <Col xs={24} sm={12} md={6}>
-                  <div className="text-center">
-                    <div className="text-5xl font-bold text-yellow-500 mb-2">
-                      {state.reviewSummary.averageRating.toFixed(1)}
-                    </div>
-                    <Rate value={Math.round(state.reviewSummary.averageRating)} disabled />
-                    <p className="text-gray-600 text-sm mt-2">
-                      Based on {state.reviewSummary.totalReviews} reviews
-                    </p>
-                  </div>
-                </Col>
-
-                {/* Rating Distribution */}
-                <Col xs={24} sm={12} md={18}>
-                  <Space direction="vertical" size="middle" className="w-full">
-                    {[5, 4, 3, 2, 1].map((rating) => (
-                      <div key={rating} className="flex items-center gap-3">
-                        <span className="w-12 text-sm font-medium text-gray-600">{rating} ★</span>
-                        <Progress
-                          percent={
-                            state.reviewSummary.totalReviews > 0
-                              ? ((state.reviewSummary.ratingDistribution?.[rating as keyof typeof state.reviewSummary.ratingDistribution] || 0) / state.reviewSummary.totalReviews) * 100
-                              : 0
-                          }
-                          size="small"
-                          strokeColor={{ 0: "#ffd666", 100: "#ffd666" }}
-                        />
-                        <span className="w-12 text-right text-xs text-gray-500">
-                          {state.reviewSummary.ratingDistribution?.[rating as keyof typeof state.reviewSummary.ratingDistribution] || 0}
-                        </span>
-                      </div>
-                    ))}
-                  </Space>
-                </Col>
-              </Row>
-            </div>
-          )}
-
-          {/* Leave Review Button */}
-          {user && (
-            <div className="mb-6">
-              <Button
-                type="primary"
-                size="large"
-                icon={<EditOutlined />}
-                onClick={() => navigate(`/buyer/products/${productId}/review`)}
-              >
-                Leave a Review
-              </Button>
-            </div>
-          )}
-
-          {/* Reviews List */}
-          <Tabs
-            items={[
-              {
-                key: "reviews",
-                label: `Reviews (${state.reviews.length})`,
-                children:
-                  state.reviews.length > 0 ? (
-                    <Space direction="vertical" size="large" className="w-full">
-                      {state.reviews.map((review) => (
-                        <Card key={review.id} size="small" className="bg-gray-50">
-                          <div className="flex justify-between items-start mb-2">
-                            <div>
-                              <p className="font-semibold text-gray-900">{review.reviewedBy}</p>
-                              <Rate value={review.rating} disabled size="small" />
-                            </div>
-                            <span className="text-xs text-gray-500">
-                              {new Date(review.createdAt || "").toLocaleDateString()}
-                            </span>
-                          </div>
-                          <p className="text-gray-700 text-sm">{review.comment}</p>
-                        </Card>
-                      ))}
-                    </Space>
-                  ) : (
-                    <Empty description="No reviews yet" />
-                  ),
-              },
-            ]}
-          />
-        </Card>
-      </div>
+      </section>
     </div>
   );
 }
