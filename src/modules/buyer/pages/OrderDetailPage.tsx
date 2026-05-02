@@ -29,6 +29,7 @@ import {
   DownloadOutlined,
   UndoOutlined,
   ExclamationCircleOutlined,
+  CheckCircleOutlined,
 } from "@ant-design/icons";
 import { orderApi } from "@/modules/order/api/orderApi";
 import { returnApi } from "@/modules/order/api/returnApi";
@@ -48,6 +49,7 @@ interface OrderDetailPageState {
     description: string;
   };
   isSubmittingReturn: boolean;
+  isConfirmingReceipt: boolean;
 }
 
 const RETURN_REASONS = [
@@ -81,6 +83,7 @@ export default function OrderDetailPage() {
     returnModalVisible: false,
     returnForm: { itemIds: [], reason: "", description: "" },
     isSubmittingReturn: false,
+    isConfirmingReceipt: false,
   });
 
   // Load order details
@@ -178,6 +181,36 @@ export default function OrderDetailPage() {
           }
         } catch (err) {
           message.error(err instanceof Error ? err.message : "Failed to cancel order");
+        }
+      },
+    });
+  };
+
+  const handleConfirmReceipt = () => {
+    Modal.confirm({
+      title: "Confirm Receipt",
+      icon: <CheckCircleOutlined />,
+      content: "Are you sure you have received this order? This will complete the order.",
+      okText: "Yes, Confirm",
+      okType: "primary",
+      cancelText: "No",
+      onOk: async () => {
+        try {
+          setState((prev) => ({ ...prev, isConfirmingReceipt: true }));
+          const response = await orderApi.updateOrderStatus(orderId!, {
+            status: "COMPLETED",
+          });
+          if (response.success) {
+            message.success("Order confirmed successfully");
+            const orderResponse = await orderApi.getOrderDetail(orderId!);
+            if (orderResponse.success) {
+              setState((prev) => ({ ...prev, order: orderResponse.data || null }));
+            }
+          }
+        } catch (err) {
+          message.error(err instanceof Error ? err.message : "Failed to confirm receipt");
+        } finally {
+          setState((prev) => ({ ...prev, isConfirmingReceipt: false }));
         }
       },
     });
@@ -405,6 +438,17 @@ export default function OrderDetailPage() {
             {state.order.status === "PENDING" && (
               <Button danger onClick={handleCancelOrder}>
                 Cancel Order
+              </Button>
+            )}
+
+            {state.order.status === "DELIVERED" && (
+              <Button
+                type="primary"
+                icon={<CheckCircleOutlined />}
+                loading={state.isConfirmingReceipt}
+                onClick={handleConfirmReceipt}
+              >
+                Confirm Receipt
               </Button>
             )}
 
