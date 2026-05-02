@@ -1,14 +1,14 @@
 /**
  * Product List Page (Buyer)
- * Browse and search products with filtering
+ * Browse and search products with comprehensive filtering and sorting
  */
 
 import { useState, useEffect } from "react";
-import { Row, Col, Card, Input, Button, Slider, Space, Spin, Empty, Pagination, Tag } from "antd";
-import { SearchOutlined, ShoppingCartOutlined } from "@ant-design/icons";
+import { Row, Col, Card, Input, Button, Slider, Space, Spin, Empty, Pagination, Tag, Select } from "antd";
+import { SearchOutlined, ShoppingCartOutlined, ClearOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { productApi } from "@/modules/product/api/productApi";
-import type { ProductSummary, ProductQuery } from "@/shared/contracts/productContract";
+import type { ProductSummary, ProductQuery, ProductBrand, ProductCategory } from "@/shared/contracts/productContract";
 
 
 interface BuyerProductListPageState {
@@ -20,6 +20,11 @@ interface BuyerProductListPageState {
   totalElements: number;
   totalPages: number;
   filters: Omit<ProductQuery, "page" | "size">;
+  brands: ProductBrand[];
+  categories: ProductCategory[];
+  brandsLoading: boolean;
+  categoriesLoading: boolean;
+  sortBy: string; // "newest" | "price_asc" | "price_desc"
 }
 
 /**
@@ -42,8 +47,50 @@ export default function BuyerProductListPage() {
       minCondition: 0,
       maxCondition: 100,
       status: undefined,
+      brandId: undefined,
+      categoryId: undefined,
     },
+    brands: [],
+    categories: [],
+    brandsLoading: false,
+    categoriesLoading: false,
+    sortBy: "newest",
   });
+
+  // Load brands and categories on mount
+  useEffect(() => {
+    const loadBrandsAndCategories = async () => {
+      try {
+        setState((prev) => ({ ...prev, brandsLoading: true, categoriesLoading: true }));
+
+        const [brandsRes, categoriesRes] = await Promise.all([
+          productApi.getBrands(),
+          productApi.getCategories(),
+        ]);
+
+        if (brandsRes.success && brandsRes.data) {
+          setState((prev) => ({
+            ...prev,
+            brands: Array.isArray(brandsRes.data) ? brandsRes.data : brandsRes.data.content || [],
+            brandsLoading: false,
+          }));
+        }
+
+        if (categoriesRes.success && categoriesRes.data) {
+          setState((prev) => ({
+            ...prev,
+            categories: Array.isArray(categoriesRes.data) ? categoriesRes.data : categoriesRes.data.content || [],
+            categoriesLoading: false,
+          }));
+        }
+      } catch (err) {
+        console.error("Failed to load brands/categories:", err);
+        setState((prev) => ({ ...prev, brandsLoading: false, categoriesLoading: false }));
+      }
+    };
+
+    loadBrandsAndCategories();
+  }, []);
 
   // Load products on filters or page change
   useEffect(() => {
@@ -51,10 +98,20 @@ export default function BuyerProductListPage() {
       try {
         setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
+        let sortParam = "";
+        if (state.sortBy === "price_asc") {
+          sortParam = "salePrice,asc";
+        } else if (state.sortBy === "price_desc") {
+          sortParam = "salePrice,desc";
+        } else {
+          sortParam = "createdAt,desc"; // newest
+        }
+
         const query: ProductQuery = {
           ...state.filters,
           page: state.page,
           size: state.size,
+          sort: sortParam,
         };
 
         const response = await productApi.getProducts(query);
@@ -79,7 +136,7 @@ export default function BuyerProductListPage() {
     };
 
     fetchProducts();
-  }, [state.page, state.size, state.filters]);
+  }, [state.page, state.size, state.filters, state.sortBy]);
 
   const handleSearch = (keyword: string) => {
     setState((prev) => ({
@@ -101,6 +158,48 @@ export default function BuyerProductListPage() {
     setState((prev) => ({
       ...prev,
       filters: { ...prev.filters, minCondition: values[0], maxCondition: values[1] },
+      page: 0,
+    }));
+  };
+
+  const handleBrandChange = (brandId: string | undefined) => {
+    setState((prev) => ({
+      ...prev,
+      filters: { ...prev.filters, brandId },
+      page: 0,
+    }));
+  };
+
+  const handleCategoryChange = (categoryId: string | undefined) => {
+    setState((prev) => ({
+      ...prev,
+      filters: { ...prev.filters, categoryId },
+      page: 0,
+    }));
+  };
+
+  const handleSortChange = (sortBy: string) => {
+    setState((prev) => ({
+      ...prev,
+      sortBy,
+      page: 0,
+    }));
+  };
+
+  const handleResetFilters = () => {
+    setState((prev) => ({
+      ...prev,
+      filters: {
+        keyword: "",
+        minPrice: 0,
+        maxPrice: 10000000,
+        minCondition: 0,
+        maxCondition: 100,
+        status: undefined,
+        brandId: undefined,
+        categoryId: undefined,
+      },
+      sortBy: "newest",
       page: 0,
     }));
   };
@@ -146,6 +245,76 @@ export default function BuyerProductListPage() {
             </div>
 
             {/* Filters Grid */}
+            <Row gutter={[16, 16]}>
+              {/* Brand */}
+              <Col xs={24} md={12} lg={6}>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Brand</label>
+                  <Select
+                    placeholder="Select brand"
+                    allowClear
+                    value={state.filters.brandId || undefined}
+                    onChange={handleBrandChange}
+                    loading={state.brandsLoading}
+                    className="w-full"
+                    options={state.brands.map((b) => ({
+                      label: b.name,
+                      value: b.id,
+                    }))}
+                  />
+                </div>
+              </Col>
+
+              {/* Category */}
+              <Col xs={24} md={12} lg={6}>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                  <Select
+                    placeholder="Select category"
+                    allowClear
+                    value={state.filters.categoryId || undefined}
+                    onChange={handleCategoryChange}
+                    loading={state.categoriesLoading}
+                    className="w-full"
+                    options={state.categories.map((c) => ({
+                      label: c.name,
+                      value: c.id,
+                    }))}
+                  />
+                </div>
+              </Col>
+
+              {/* Sort */}
+              <Col xs={24} md={12} lg={6}>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+                  <Select
+                    value={state.sortBy}
+                    onChange={handleSortChange}
+                    className="w-full"
+                    options={[
+                      { label: "Newest", value: "newest" },
+                      { label: "Price: Low to High", value: "price_asc" },
+                      { label: "Price: High to Low", value: "price_desc" },
+                    ]}
+                  />
+                </div>
+              </Col>
+
+              {/* Reset Filters */}
+              <Col xs={24} md={12} lg={6}>
+                <div className="flex items-end h-full">
+                  <Button
+                    icon={<ClearOutlined />}
+                    onClick={handleResetFilters}
+                    className="w-full"
+                  >
+                    Reset Filters
+                  </Button>
+                </div>
+              </Col>
+            </Row>
+
             <Row gutter={[16, 16]}>
               {/* Price Range */}
               <Col xs={24} md={12}>
