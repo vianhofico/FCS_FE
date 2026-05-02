@@ -27,17 +27,22 @@ import type { IamAddress, IamAddressRequest } from "@/shared/contracts/iamContra
 import type { PaymentMethod } from "@/shared/contracts/commonContract";
 import { PaymentMethod as PaymentMethodEnum } from "@/shared/contracts/commonContract";
 import { useAuth } from "@/shared/context/AuthContext";
+import { createPaymentSession, isOnlinePayment, type PaymentCheckoutSession } from "@/shared/integrations/paymentGateway";
+import { getShippingOptions, type ShippingOption } from "@/shared/integrations/shippingService";
 
 interface CheckoutPageState {
   cartItems: CartItem[];
   addresses: IamAddress[];
   selectedAddressId: string | null;
+  selectedShippingOptionId: string | null;
+  shippingOptions: ShippingOption[];
   paymentMethod: PaymentMethod;
   isLoading: boolean;
   isCreatingOrder: boolean;
   error: string | null;
   showAddressModal: boolean;
   newAddress: IamAddressRequest;
+  paymentSession: PaymentCheckoutSession | null;
 }
 
 /**
@@ -52,6 +57,8 @@ export default function CheckoutPage() {
     cartItems: [],
     addresses: [],
     selectedAddressId: null,
+    selectedShippingOptionId: null,
+    shippingOptions: [],
     paymentMethod: PaymentMethodEnum.COD,
     isLoading: true,
     isCreatingOrder: false,
@@ -66,6 +73,7 @@ export default function CheckoutPage() {
       phone: "",
       type: "HOME",
     },
+    paymentSession: null,
   });
 
   // Load cart and addresses
@@ -110,6 +118,32 @@ export default function CheckoutPage() {
     loadData();
   }, [user]);
 
+  useEffect(() => {
+    const loadShippingOptions = async () => {
+      const selectedAddress = state.addresses.find((address) => address.id === state.selectedAddressId);
+      const subTotal = state.cartItems.reduce((sum, item) => sum + item.salePrice * item.quantity, 0);
+
+      if (!selectedAddress || subTotal <= 0) {
+        setState((prev) => ({ ...prev, shippingOptions: [], selectedShippingOptionId: null }));
+        return;
+      }
+
+      const shippingOptions = await getShippingOptions({
+        city: selectedAddress.city,
+        district: selectedAddress.district,
+        subtotal: subTotal,
+      });
+
+      setState((prev) => ({
+        ...prev,
+        shippingOptions,
+        selectedShippingOptionId: prev.selectedShippingOptionId || shippingOptions[0]?.id || null,
+      }));
+    };
+
+    void loadShippingOptions();
+  }, [state.addresses, state.cartItems, state.selectedAddressId]);
+
   const handleAddressCreate = async (values: IamAddressRequest) => {
     if (!user) return;
 
@@ -126,8 +160,8 @@ export default function CheckoutPage() {
         form.resetFields();
         message.success("Address added successfully");
       }
-    } catch (err) {
-      message.error(err instanceof Error ? err.message : "Failed to add address");
+    } catch {
+      message.error("Failed to add address");
     }
   };
 
@@ -150,24 +184,51 @@ export default function CheckoutPage() {
         0
       );
 
+      const selectedShippingOption =
+        state.shippingOptions.find((option) => option.id === state.selectedShippingOptionId) ||
+        state.shippingOptions[0] ||
+        null;
+
+      if (!selectedShippingOption) {
+        message.error("Please select a shipping option");
+        return;
+      }
+
       const orderData: OrderCreateRequest = {
         buyerId: user.id,
         subTotal,
-        shippingFee: 10,
+        shippingFee: selectedShippingOption.fee,
         discountAmount: 0,
-        totalAmount: subTotal + 10,
+        totalAmount: subTotal + selectedShippingOption.fee,
         paymentMethod: state.paymentMethod,
         shippingAddressId: state.selectedAddressId,
+        shippingSnapshot: JSON.stringify({
+          provider: selectedShippingOption.provider,
+          serviceLevel: selectedShippingOption.serviceLevel,
+          etaDays: selectedShippingOption.etaDays,
+        }),
       };
 
       const response = await orderApi.createOrder(orderData);
 
       if (response.success && response.data) {
-        message.success("Order created successfully!");
+        if (isOnlinePayment(state.paymentMethod)) {
+          const paymentSession = await createPaymentSession({
+            orderId: response.data.id,
+            amount: orderData.totalAmount,
+            method: state.paymentMethod,
+          });
+
+          setState((prev) => ({ ...prev, paymentSession }));
+          message.info(`Payment session ready with ${paymentSession.providerName}`);
+        } else {
+          message.success("Order created successfully!");
+        }
+
         navigate(`/buyer/orders/${response.data.id}`);
       }
-    } catch (err) {
-      message.error(err instanceof Error ? err.message : "Failed to create order");
+    } catch {
+      message.error("Failed to create order");
     } finally {
       setState((prev) => ({ ...prev, isCreatingOrder: false }));
     }
@@ -203,7 +264,11 @@ export default function CheckoutPage() {
     (sum, item) => sum + item.salePrice * item.quantity,
     0
   );
-  const shippingFee = 10;
+  const selectedShippingOption =
+    state.shippingOptions.find((option) => option.id === state.selectedShippingOptionId) ||
+    state.shippingOptions[0] ||
+    null;
+  const shippingFee = selectedShippingOption?.fee ?? 10;
   const total = subTotal + shippingFee;
 
   if (state.isLoading) {
@@ -276,6 +341,29 @@ export default function CheckoutPage() {
               </Button>
             </Card>
 
+            {/* Shipping Options */}
+            <Card title="Shipping Options" className="mt-6 shadow-sm">
+              {state.shippingOptions.length > 0 ? (
+                <Radio.Group
+                  value={state.selectedShippingOptionId}
+                  onChange={(event) => setState((prev) => ({ ...prev, selectedShippingOptionId: event.target.value }))}
+                  className="w-full space-y-3"
+                >
+                  {state.shippingOptions.map((option) => (
+                    <Radio key={option.id} value={option.id} className="w-full block p-3 border rounded">
+                      <div className="font-semibold">
+                        {option.provider} - {option.serviceLevel}
+                      </div>
+                      <div className="text-sm text-gray-600">ETA {option.etaDays} day(s)</div>
+                      <div className="text-sm text-gray-600">Fee: ${option.fee.toLocaleString()}</div>
+                    </Radio>
+                  ))}
+                </Radio.Group>
+              ) : (
+                <p className="text-gray-500">Select an address to load shipping quotes.</p>
+              )}
+            </Card>
+
             {/* Payment Method */}
             <Card title="Payment Method" className="mt-6 shadow-sm">
               <Radio.Group
@@ -323,6 +411,14 @@ export default function CheckoutPage() {
                   <span>Shipping:</span>
                   <span className="font-semibold">${shippingFee.toLocaleString()}</span>
                 </div>
+                {selectedShippingOption && (
+                  <div className="rounded-lg bg-slate-50 p-3 text-sm text-slate-700">
+                    <div className="font-semibold">{selectedShippingOption.provider}</div>
+                    <div>
+                      {selectedShippingOption.serviceLevel} - ETA {selectedShippingOption.etaDays} day(s)
+                    </div>
+                  </div>
+                )}
                 <Divider />
                 <div className="flex justify-between text-xl font-bold">
                   <span>Total:</span>
@@ -339,6 +435,22 @@ export default function CheckoutPage() {
                 >
                   Place Order
                 </Button>
+
+                {state.paymentSession && (
+                  <Card size="small" className="mt-4">
+                    <p className="font-semibold">Payment Session Ready</p>
+                    <p className="text-sm text-gray-600">Provider: {state.paymentSession.providerName}</p>
+                    <p className="text-sm text-gray-600">
+                      Expires: {new Date(state.paymentSession.expiresAt).toLocaleString()}
+                    </p>
+                    <Button
+                      className="mt-2"
+                      onClick={() => window.open(state.paymentSession?.redirectUrl || "", "_blank", "noopener,noreferrer")}
+                    >
+                      Open Payment Gateway
+                    </Button>
+                  </Card>
+                )}
 
                 <Button
                   size="large"

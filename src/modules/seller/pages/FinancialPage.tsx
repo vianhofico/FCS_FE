@@ -35,9 +35,17 @@ interface PageState {
     status: string;
     createdAt: string;
   }>;
+  bankAccounts: Array<{
+    id: string;
+    bankName: string;
+    accountNumber: string;
+    accountHolder: string;
+    isPrimary: boolean;
+  }>;
   isLoading: boolean;
   error: string | null;
   showWithdrawalModal: boolean;
+  showBankAccountModal: boolean;
 }
 
 export default function FinancialPage() {
@@ -49,9 +57,11 @@ export default function FinancialPage() {
     totalWithdrawn: 0,
     pendingWithdrawal: 0,
     withdrawals: [],
+    bankAccounts: [],
     isLoading: true,
     error: null,
     showWithdrawalModal: false,
+    showBankAccountModal: false,
   });
 
   useEffect(() => {
@@ -61,16 +71,20 @@ export default function FinancialPage() {
       try {
         setState((prev) => ({ ...prev, isLoading: true }));
 
-        const response = await financialApi.getSellerFinancials(user.id);
+        const [financialResponse, bankAccountResponse] = await Promise.all([
+          financialApi.getSellerFinancials(user.id),
+          financialApi.getBankAccounts(user.id),
+        ]);
 
-        if (response.success && response.data) {
+        if (financialResponse.success && financialResponse.data) {
           setState((prev) => ({
             ...prev,
-            balance: response.data?.balance || 0,
-            totalEarnings: response.data?.totalEarnings || 0,
-            totalWithdrawn: response.data?.totalWithdrawn || 0,
-            pendingWithdrawal: response.data?.pendingWithdrawal || 0,
-            withdrawals: response.data?.withdrawals || [],
+            balance: financialResponse.data?.balance || 0,
+            totalEarnings: financialResponse.data?.totalEarnings || 0,
+            totalWithdrawn: financialResponse.data?.totalWithdrawn || 0,
+            pendingWithdrawal: financialResponse.data?.pendingWithdrawal || 0,
+            withdrawals: financialResponse.data?.withdrawals || [],
+            bankAccounts: bankAccountResponse.success ? bankAccountResponse.data || [] : [],
             isLoading: false,
           }));
         }
@@ -106,6 +120,24 @@ export default function FinancialPage() {
       }
     } catch (err) {
       message.error(err instanceof Error ? err.message : "Failed to request withdrawal");
+    }
+  };
+
+  const handleAddBankAccount = async (values: { bankName: string; accountNumber: string; accountHolder: string }) => {
+    if (!user) return;
+
+    try {
+      const response = await financialApi.addBankAccount(user.id, values);
+      if (response.success && response.data) {
+        setState((prev) => ({
+          ...prev,
+          bankAccounts: [...prev.bankAccounts, { ...response.data, isPrimary: prev.bankAccounts.length === 0 }],
+          showBankAccountModal: false,
+        }));
+        message.success("Bank account added");
+      }
+    } catch {
+      message.error("Failed to add bank account");
     }
   };
 
@@ -211,8 +243,28 @@ export default function FinancialPage() {
             >
               Request Withdrawal
             </Button>
-            <Button>View Bank Accounts</Button>
+            <Button onClick={() => setState((prev) => ({ ...prev, showBankAccountModal: true }))}>View Bank Accounts</Button>
           </Space>
+        </Card>
+
+        <Card title="Bank Accounts" className="mb-6 shadow-sm">
+          {state.bankAccounts.length > 0 ? (
+            <Space direction="vertical" style={{ width: "100%" }}>
+              {state.bankAccounts.map((account) => (
+                <Card key={account.id} size="small">
+                  <Space direction="vertical" size={4}>
+                    <div className="font-semibold">
+                      {account.bankName} {account.isPrimary ? <span className="text-green-600">(Primary)</span> : null}
+                    </div>
+                    <div className="text-sm text-gray-600">{account.accountHolder}</div>
+                    <div className="text-sm text-gray-600">{account.accountNumber}</div>
+                  </Space>
+                </Card>
+              ))}
+            </Space>
+          ) : (
+            <Empty description="No bank accounts configured" />
+          )}
         </Card>
 
         {/* Withdrawal History */}
@@ -258,6 +310,25 @@ export default function FinancialPage() {
                   { label: "Wallet", value: "WALLET" },
                 ]}
               />
+            </Form.Item>
+          </Form>
+        </Modal>
+
+        <Modal
+          title="Add Bank Account"
+          open={state.showBankAccountModal}
+          onCancel={() => setState((prev) => ({ ...prev, showBankAccountModal: false }))}
+          onOk={() => form.submit()}
+        >
+          <Form form={form} layout="vertical" onFinish={handleAddBankAccount}>
+            <Form.Item name="bankName" label="Bank Name" rules={[{ required: true, message: "Please enter bank name" }]}>
+              <Input placeholder="Bank name" />
+            </Form.Item>
+            <Form.Item name="accountNumber" label="Account Number" rules={[{ required: true, message: "Please enter account number" }]}>
+              <Input placeholder="Account number" />
+            </Form.Item>
+            <Form.Item name="accountHolder" label="Account Holder" rules={[{ required: true, message: "Please enter account holder" }]}>
+              <Input placeholder="Account holder name" />
             </Form.Item>
           </Form>
         </Modal>

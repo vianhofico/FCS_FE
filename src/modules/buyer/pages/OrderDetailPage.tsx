@@ -35,6 +35,7 @@ import { returnApi } from "@/modules/order/api/returnApi";
 import type { OrderDetail, OrderItem } from "@/shared/contracts/orderContract";
 import { useAuth } from "@/shared/context/AuthContext";
 import TimelineWidget from "@/shared/components/TimelineWidget";
+import { buildTrackingUrl } from "@/shared/integrations/shippingService";
 
 interface OrderDetailPageState {
   order: OrderDetail | null;
@@ -340,6 +341,34 @@ export default function OrderDetailPage() {
             <Empty description="No shipping address" />
           )}
         </Card>
+
+        {state.order.trackingNumber && (
+          <Card title="Shipping Tracking" className="mb-6 shadow-sm">
+            <Space direction="vertical" size={8}>
+              <div>
+                <span className="text-gray-600">Provider: </span>
+                <Tag color="blue">{state.order.shippingProvider || "Carrier"}</Tag>
+              </div>
+              <div>
+                <span className="text-gray-600">Tracking Number: </span>
+                <span className="font-mono">{state.order.trackingNumber}</span>
+              </div>
+              {buildTrackingUrl(state.order.shippingProvider, state.order.trackingNumber) && (
+                <Button
+                  onClick={() =>
+                    window.open(
+                      buildTrackingUrl(state.order.shippingProvider, state.order.trackingNumber) || "",
+                      "_blank",
+                      "noopener,noreferrer"
+                    )
+                  }
+                >
+                  Track Shipment
+                </Button>
+              )}
+            </Space>
+          </Card>
+        )}
 
         {/* Price Summary */}
         <Card className="mb-6 shadow-sm">
