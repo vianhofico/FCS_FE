@@ -1,0 +1,29 @@
+import { Timeline, Card } from 'antd';
+
+type TimelineItem = {
+  id: string;
+  title: string;
+  description?: string;
+  createdAt?: string;
+};
+
+type Props = {
+  items: TimelineItem[];
+  title?: string;
+};
+
+export default function TimelineWidget({ items, title }: Props) {
+  return (
+    <Card title={title || 'Timeline'}>
+      <Timeline>
+        {items.map((it) => (
+          <Timeline.Item key={it.id}>
+            <div style={{ fontWeight: 600 }}>{it.title}</div>
+            {it.description && <div style={{ color: '#666' }}>{it.description}</div>}
+            {it.createdAt && <div style={{ color: '#999', fontSize: 12 }}>{it.createdAt}</div>}
+          </Timeline.Item>
+        ))}
+      </Timeline>
+    </Card>
+  );
+}

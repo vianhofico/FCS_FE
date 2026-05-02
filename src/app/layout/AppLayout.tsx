@@ -1,8 +1,10 @@
-import { Layout, Menu, theme } from "antd";
+import { Layout, Menu, theme, Badge, Dropdown, Space } from "antd";
 import type { MenuProps } from "antd";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 
 import { appRoutes } from "@/app/router/routeManifest";
+import { BellFilled } from '@ant-design/icons';
+import { useNotifications } from '@/shared/hooks/useNotifications';
 
 const { Header, Sider, Content } = Layout;
 
@@ -16,6 +18,7 @@ export function AppLayout() {
   const { token } = theme.useToken();
   const navigate = useNavigate();
   const location = useLocation();
+  const { unread, refresh } = useNotifications();
 
   const selectedKeys = menuItems
     ?.map((i) => (typeof i?.key === "string" ? i.key : null))
@@ -48,7 +51,24 @@ export function AppLayout() {
             fontWeight: 600,
           }}
         >
-          Fashion Consignment System
+          <div style={{ flex: 1 }}>Fashion Consignment System</div>
+          <div style={{ marginLeft: 'auto' }}>
+            <Dropdown
+              menu={{
+                items: [
+                  { key: 'notifications', label: 'Notifications', onClick: () => navigate('/notifications') },
+                  { key: 'refresh', label: 'Refresh', onClick: () => refresh() },
+                ],
+              }}
+              placement="bottomRight"
+            >
+              <Space size={16} style={{ cursor: 'pointer' }}>
+                <Badge count={unread} size="small">
+                  <BellFilled style={{ fontSize: 18 }} />
+                </Badge>
+              </Space>
+            </Dropdown>
+          </div>
         </Header>
 
         <Content style={{ padding: 16 }}>
