@@ -255,38 +255,43 @@ export default function OrderDetailPage() {
   const itemColumns = [
     {
       title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Sản phẩm</span>,
-      dataIndex: "productName",
       key: "product",
-      render: (name: string, record: OrderItem) => (
-        <div className="flex items-center gap-4 py-2 group cursor-pointer" onClick={() => navigate(`/buyer/products/${record.productId}`)}>
-          <div className="h-16 w-12 overflow-hidden rounded-lg bg-bg-secondary shadow-sm">
-            {record.productImage ? (
-              <img src={record.productImage} alt={name} className="h-full w-full object-cover transition-transform group-hover:scale-110" />
-            ) : (
-              <div className="flex h-full items-center justify-center text-[10px] text-slate-300 italic">No Img</div>
-            )}
+      render: (_: unknown, record: OrderItem) => {
+        const name = record.productName ?? record.productNameSnapshot ?? "Sản phẩm";
+        return (
+          <div className="flex items-center gap-4 py-2 group cursor-pointer" onClick={() => navigate(`/buyer/products/${record.productId}`)}>
+            <div className="h-16 w-12 overflow-hidden rounded-lg bg-bg-secondary shadow-sm">
+              {record.productImage ? (
+                <img src={record.productImage} alt={name} className="h-full w-full object-cover transition-transform group-hover:scale-110" />
+              ) : (
+                <div className="flex h-full items-center justify-center text-[10px] text-slate-300 italic">No Img</div>
+              )}
+            </div>
+            <span className="font-bold text-slate-700 transition-soft group-hover:text-primary">{name}</span>
           </div>
-          <span className="font-bold text-slate-700 transition-soft group-hover:text-primary">{name}</span>
-        </div>
-      ),
+        );
+      },
     },
     {
       title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Số lượng</span>,
-      dataIndex: "quantity",
       key: "quantity",
-      render: (qty: number) => <span className="font-bold text-slate-500">x{qty}</span>,
+      render: (_: unknown, record: OrderItem) => <span className="font-bold text-slate-500">x{record.quantity ?? 1}</span>,
     },
     {
       title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Đơn giá</span>,
-      dataIndex: "unitPrice",
       key: "price",
-      render: (price: number) => <span className="font-medium text-slate-600">{price.toLocaleString()}₫</span>,
+      render: (_: unknown, record: OrderItem) => {
+        const price = record.unitPrice ?? record.priceAtPurchase ?? record.salePrice ?? 0;
+        return <span className="font-medium text-slate-600">{price.toLocaleString()}₫</span>;
+      },
     },
     {
       title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Thành tiền</span>,
-      dataIndex: "subtotal",
       key: "subtotal",
-      render: (subtotal: number) => <span className="font-bold text-primary">{subtotal.toLocaleString()}₫</span>,
+      render: (_: unknown, record: OrderItem) => {
+        const price = record.subtotal ?? record.totalPrice ?? (record.unitPrice ?? record.priceAtPurchase ?? record.salePrice ?? 0) * (record.quantity ?? 1);
+        return <span className="font-bold text-primary">{price.toLocaleString()}₫</span>;
+      },
     },
   ];
 
@@ -345,10 +350,10 @@ export default function OrderDetailPage() {
               current={statusIndex}
               className="luxury-steps"
               items={[
-                { title: "Chờ duyệt", description: "Đã đặt hàng" },
-                { title: "Xác nhận", description: "Đã thanh toán" },
-                { title: "Giao hàng", description: "Đang vận chuyển" },
-                { title: "Hoàn tất", description: "Đã nhận hàng" },
+                { title: "Chờ duyệt", content: "Đã đặt hàng" },
+                { title: "Xác nhận", content: "Đã thanh toán" },
+                { title: "Giao hàng", content: "Đang vận chuyển" },
+                { title: "Hoàn tất", content: "Đã nhận hàng" },
               ]}
             />
           </Card>

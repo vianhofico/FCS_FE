@@ -95,7 +95,7 @@ export default function CheckoutPage() {
         if (cartResponse.success && cartResponse.data) {
           setState((prev) => ({
             ...prev,
-            cartItems: cartResponse.data.items,
+            cartItems: cartResponse.data.items.map((item) => ({ ...item, quantity: item.quantity ?? 1 })),
           }));
         }
 
@@ -199,6 +199,7 @@ export default function CheckoutPage() {
 
       const orderData: OrderCreateRequest = {
         buyerId: user.id,
+        productIds: state.cartItems.map((item) => item.productId),
         subTotal,
         shippingFee: selectedShippingOption.fee,
         discountAmount: 0,

@@ -63,10 +63,10 @@ export default function BuyerProductListPage() {
     filters: {
       keyword: searchParams.get("q") || "",
       minPrice: 0,
-      maxPrice: 10000000,
+      maxPrice: 100000000,
       minCondition: 0,
       maxCondition: 100,
-      status: "ACTIVE",
+      status: "SELLING",
       brandId: undefined,
       categoryId: undefined,
     },
@@ -168,10 +168,10 @@ export default function BuyerProductListPage() {
       filters: {
         keyword: "",
         minPrice: 0,
-        maxPrice: 10000000,
+        maxPrice: 100000000,
         minCondition: 0,
         maxCondition: 100,
-        status: "ACTIVE",
+        status: "SELLING",
         brandId: undefined,
         categoryId: undefined,
       },
@@ -208,7 +208,7 @@ export default function BuyerProductListPage() {
                   </div>
                 )}
                 <div className="absolute top-4 left-4 z-10">
-                  <GradeBadge grade={getConditionLabel(product.condition || 0).split(" ")[0]} />
+                  <GradeBadge grade={getConditionLabel(product.conditionPercent ?? product.condition ?? 0).split(" ")[0]} />
                 </div>
                 <div className="absolute inset-0 flex items-center justify-center gap-3 bg-black/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                   <Button
@@ -230,7 +230,7 @@ export default function BuyerProductListPage() {
                 <Text className="font-display text-[10px] font-bold uppercase tracking-[0.2em] text-primary/70">
                   {product.sku}
                 </Text>
-                <Badge status="Active">{getConditionLabel(product.condition || 0)}</Badge>
+                <Badge status="Active">{getConditionLabel(product.conditionPercent ?? product.condition ?? 0)}</Badge>
               </div>
               <Title level={5} className="!m-0 !line-clamp-1 !font-display !font-bold !text-text-dark group-hover:text-primary transition-soft">
                 {product.name}
@@ -418,7 +418,6 @@ export default function BuyerProductListPage() {
         onClose={() => setShowMobileFilters(false)}
         open={showMobileFilters}
         className="rounded-r-[2rem]"
-        width={320}
       >
         <div className="p-2">{filterContent}</div>
       </Drawer>

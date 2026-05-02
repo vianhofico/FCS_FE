@@ -61,8 +61,9 @@ export default function CartPage() {
         setState((prev) => ({ ...prev, isLoading: true, error: null }));
         const response = await orderApi.getCart(user.id);
         if (response.success && response.data) {
-          const total = response.data.items.reduce((sum, item) => sum + item.salePrice * item.quantity, 0);
-          setState((prev) => ({ ...prev, cartItems: response.data.items, total, isLoading: false }));
+          const cartItems = response.data.items.map((item) => ({ ...item, quantity: item.quantity ?? 1 }));
+          const total = cartItems.reduce((sum, item) => sum + item.salePrice * item.quantity, 0);
+          setState((prev) => ({ ...prev, cartItems, total, isLoading: false }));
         }
       } catch (err) {
         setState((prev) => ({ ...prev, isLoading: false, error: "Không thể tải dữ liệu giỏ hàng" }));

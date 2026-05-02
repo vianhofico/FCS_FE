@@ -72,10 +72,14 @@ export type UserRole = typeof UserRole[keyof typeof UserRole];
  * Product status enum
  */
 export const ProductStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
-  ARCHIVED: "ARCHIVED",
   DRAFT: "DRAFT",
+  READY_TO_LIST: "READY_TO_LIST",
+  SELLING: "SELLING",
+  RESERVED: "RESERVED",
+  SOLD: "SOLD",
+  HOLD: "HOLD",
+  RETURNED: "RETURNED",
+  ARCHIVED: "ARCHIVED",
 } as const;
 export type ProductStatus = typeof ProductStatus[keyof typeof ProductStatus];
 

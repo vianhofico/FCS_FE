@@ -56,6 +56,7 @@ export type ProductSummary = {
   salePrice: number;
   status: ProductStatus;
   condition?: number; // 0-100
+  conditionPercent?: number; // 0-100
   imageUrl?: string;
   createdAt?: string;
 };

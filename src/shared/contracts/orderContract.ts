@@ -15,7 +15,7 @@ export type CartItem = {
   productImage?: string;
   sku: string;
   salePrice: number;
-  quantity: number;
+  quantity?: number;
   addedAt?: string;
 };
 
@@ -44,12 +44,17 @@ export type CartAddItemRequest = {
 export type OrderItem = {
   id: string;
   productId: string;
-  productName: string;
+  productName?: string;
+  productNameSnapshot?: string;
   productImage?: string;
-  sku: string;
-  salePrice: number;
-  quantity: number;
-  totalPrice: number;
+  sku?: string;
+  skuSnapshot?: string;
+  salePrice?: number;
+  unitPrice?: number;
+  priceAtPurchase?: number;
+  quantity?: number;
+  totalPrice?: number;
+  subtotal?: number;
 };
 
 /**

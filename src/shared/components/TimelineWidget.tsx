@@ -15,15 +15,18 @@ type Props = {
 export default function TimelineWidget({ items, title }: Props) {
   return (
     <Card title={title || 'Timeline'}>
-      <Timeline>
-        {items.map((it) => (
-          <Timeline.Item key={it.id}>
-            <div style={{ fontWeight: 600 }}>{it.title}</div>
-            {it.description && <div style={{ color: '#666' }}>{it.description}</div>}
-            {it.createdAt && <div style={{ color: '#999', fontSize: 12 }}>{it.createdAt}</div>}
-          </Timeline.Item>
-        ))}
-      </Timeline>
+      <Timeline
+        items={items.map((it) => ({
+          key: it.id,
+          children: (
+            <>
+              <div style={{ fontWeight: 600 }}>{it.title}</div>
+              {it.description && <div style={{ color: '#666' }}>{it.description}</div>}
+              {it.createdAt && <div style={{ color: '#999', fontSize: 12 }}>{it.createdAt}</div>}
+            </>
+          ),
+        }))}
+      />
     </Card>
   );
 }

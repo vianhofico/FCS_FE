@@ -129,6 +129,7 @@ export default function ProductDetailPage() {
   );
 
   const product = state.product;
+  const conditionPercent = product.conditionPercent ?? product.condition ?? 0;
 
   return (
     <div className="mx-auto max-w-[1440px] space-y-12 pb-20">
@@ -154,7 +155,7 @@ export default function ProductDetailPage() {
                 <div className="flex h-full items-center justify-center bg-slate-100 text-slate-300 italic font-medium">Không có hình ảnh</div>
               )}
               <div className="absolute top-6 left-6">
-                <GradeBadge grade={product.condition >= 90 ? 'S' : 'A'} />
+                <GradeBadge grade={conditionPercent >= 90 ? 'S' : 'A'} />
               </div>
             </div>
 
@@ -180,7 +181,7 @@ export default function ProductDetailPage() {
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <Text className="font-display text-sm font-bold uppercase tracking-[0.25em] text-primary/70">{product.brandId || "Local Brand"}</Text>
-                <Divider type="vertical" className="border-pink-100" />
+                <Divider orientation="vertical" className="border-pink-100" />
                 <div className="flex items-center gap-1 text-yellow-400">
                   <StarFilled />
                   <span className="text-sm font-bold text-slate-700">{state.reviewSummary?.averageRating.toFixed(1) || "5.0"}</span>
@@ -192,7 +193,7 @@ export default function ProductDetailPage() {
                 {product.originalPrice && product.originalPrice > product.salePrice && (
                   <>
                     <Text delete className="text-lg font-medium text-slate-300">{product.originalPrice.toLocaleString()}₫</Text>
-                    <Badge status="Rejected">-{Math.round(((product.originalPrice - product.salePrice) / product.originalPrice) * 100)}%</Badge>
+                    <Badge>-{Math.round(((product.originalPrice - product.salePrice) / product.originalPrice) * 100)}%</Badge>
                   </>
                 )}
               </div>
@@ -255,7 +256,7 @@ export default function ProductDetailPage() {
               <div className="grid grid-cols-2 gap-x-12 gap-y-6 rounded-[2rem] bg-pink-50/30 p-8 border border-pink-100/20">
                 <div>
                   <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/60">Tình trạng</div>
-                  <div className="mt-1 text-base font-bold text-slate-700">{product.condition}/100 - Rất mới</div>
+                  <div className="mt-1 text-base font-bold text-slate-700">{conditionPercent}/100 - Rất mới</div>
                 </div>
                 <div>
                   <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/60">Mã SKU</div>
