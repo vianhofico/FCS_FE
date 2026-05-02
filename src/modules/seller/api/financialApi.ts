@@ -4,7 +4,8 @@
 
 import { http } from "@/shared/api/http";
 import { endpoints } from "@/shared/api/endpoints";
-import type { ApiResponse } from "@/shared/contracts/commonContract";
+import type { ApiResponse, PageResponse } from "@/shared/contracts/commonContract";
+import type { Wallet } from "@/shared/contracts/financialContract";
 
 interface WithdrawalRequest {
   sellerId: string;
@@ -30,8 +31,22 @@ export const financialApi = {
    * Get seller financial information
    */
   getSellerFinancials: async (sellerId: string): Promise<ApiResponse<SellerFinancials>> => {
-    const response = await http.get<ApiResponse<SellerFinancials>>(`${endpoints.wallets}/${sellerId}`);
-    return response.data;
+    const walletsResponse = await http.get<ApiResponse<PageResponse<Wallet> | Wallet[]>>(endpoints.wallets);
+    const walletsData = walletsResponse.data.data;
+    const wallets = Array.isArray(walletsData) ? walletsData : walletsData?.content || [];
+    const wallet = wallets.find((item) => item.userId === sellerId || item.walletOwnerId === sellerId);
+
+    return {
+      success: true,
+      message: wallet ? "Fetched seller financials" : "Seller wallet not found",
+      data: {
+        balance: wallet?.availableBalance ?? wallet?.balance ?? 0,
+        totalEarnings: wallet?.balance ?? 0,
+        totalWithdrawn: 0,
+        pendingWithdrawal: 0,
+        withdrawals: [],
+      },
+    };
   },
 
   /**

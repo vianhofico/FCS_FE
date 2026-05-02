@@ -148,6 +148,7 @@ export default function ConsignmentRequestDetailPage() {
   }
 
   const request = state.request;
+  const createdAt = request.createdAt ? new Date(request.createdAt).toLocaleDateString() : "—";
   const statusMap: Record<string, string> = {
     PENDING: "Pending",
     ACCEPTED: "Verified",
@@ -211,7 +212,7 @@ export default function ConsignmentRequestDetailPage() {
             <div className="grid grid-cols-1 gap-12 md:grid-cols-3">
               <div className="space-y-1">
                 <Text className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Ngày khởi tạo</Text>
-                <div className="text-lg font-bold text-slate-700">{new Date(request.createdAt).toLocaleDateString()}</div>
+                <div className="text-lg font-bold text-slate-700">{createdAt}</div>
               </div>
               <div className="space-y-1">
                 <Text className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Số lượng món đồ</Text>
@@ -276,7 +277,7 @@ export default function ConsignmentRequestDetailPage() {
             {request.status === "SUBMITTED" && (
               <Card className="rounded-[2.5rem] border-pink-100 bg-pink-50/50 p-8 text-center">
                 <Title level={5} className="!mb-6 !font-display uppercase tracking-widest text-xs">Thao tác yêu cầu</Title>
-                <Space direction="vertical" className="w-full" size="middle">
+                <Space orientation="vertical" className="w-full" size="middle">
                   <Button
                     type="primary"
                     block

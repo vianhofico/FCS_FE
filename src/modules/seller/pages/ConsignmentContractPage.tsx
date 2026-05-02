@@ -142,13 +142,18 @@ export default function ConsignmentContractPage() {
       title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Mức hoa hồng</span>,
       dataIndex: "commissionRate",
       key: "commission",
-      render: (rate: number) => <span className="font-bold text-primary">{rate}%</span>,
+      render: (rate?: number) => {
+        const percent = rate ? (rate <= 1 ? rate * 100 : rate) : 0;
+        return <span className="font-bold text-primary">{percent.toLocaleString()}%</span>;
+      },
     },
     {
-      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Ngày bắt đầu</span>,
-      dataIndex: "startDate",
-      key: "startDate",
-      render: (date: string) => <span className="font-bold text-slate-700">{new Date(date).toLocaleDateString()}</span>,
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Ngày ký</span>,
+      key: "signedAt",
+      render: (_: unknown, record: ConsignmentContract) => {
+        const date = record.signedAt ?? record.createdAt;
+        return <span className="font-bold text-slate-700">{date ? new Date(date).toLocaleDateString() : "—"}</span>;
+      },
     },
     {
       title: "",

@@ -128,15 +128,19 @@ export default function MyProductsPage() {
     {
       title: <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Trạng thái</span>,
       key: "status",
-      render: (status: string) => {
+      render: (_: unknown, record: ProductSummary) => {
         const statusMap: Record<string, string> = {
-          ACTIVE: "Active",
-          INACTIVE: "Inactive",
+          SELLING: "Active",
+          RESERVED: "OnlineReview",
+          SOLD: "Verified",
+          HOLD: "Pending",
+          READY_TO_LIST: "Pending",
+          RETURNED: "Inactive",
           ARCHIVED: "Rejected",
           DRAFT: "Pending",
         };
         return (
-          <Badge status={statusMap[status] || "Pending"}>{status}</Badge>
+          <Badge status={statusMap[record.status] || "Pending"}>{record.status}</Badge>
         );
       },
     },
@@ -168,7 +172,7 @@ export default function MyProductsPage() {
 
   const stats = [
     { label: "Tổng sản phẩm", value: state.total, icon: <ShoppingOutlined />, color: "bg-blue-50 text-blue-500" },
-    { label: "Đang niêm yết", value: state.products.filter(p => p.status === 'ACTIVE').length, icon: <EyeOutlined />, color: "bg-emerald-50 text-emerald-500" },
+    { label: "Đang niêm yết", value: state.products.filter(p => p.status === 'SELLING').length, icon: <EyeOutlined />, color: "bg-emerald-50 text-emerald-500" },
     { label: "Bản nháp", value: state.products.filter(p => p.status === 'DRAFT').length, icon: <EditOutlined />, color: "bg-orange-50 text-orange-500" },
   ];
 
@@ -225,10 +229,10 @@ export default function MyProductsPage() {
             className="h-12 min-w-[200px]"
             onChange={(val) => setState(prev => ({ ...prev, filters: { ...prev.filters, status: val || "" }, page: 0 }))}
             options={[
-              { label: "Đang niêm yết", value: "ACTIVE" },
-              { label: "Tạm ẩn", value: "INACTIVE" },
-              { label: "Đã lưu trữ", value: "ARCHIVED" },
-              { label: "Bản nháp", value: "DRAFT" },
+              { label: "Sẵn sàng niêm yết", value: "READY_TO_LIST" },
+              { label: "Đang niêm yết", value: "SELLING" },
+              { label: "Đã giữ chỗ", value: "RESERVED" },
+              { label: "Đã bán", value: "SOLD" },
             ]}
           />
         </div>

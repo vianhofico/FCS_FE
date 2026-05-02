@@ -72,16 +72,12 @@ export default function ConsignmentMultiStepPage() {
     if (!user) return;
     setIsSubmitting(true);
     try {
-      // Simulation of submission - map values to backend expected format
+      const formValues = { ...form.getFieldsValue(true), ...values };
       const payload = {
         consignorId: user.id,
-        note: values.note,
-        items: [{
-          suggestedName: values.name,
-          suggestedPrice: values.price,
-          conditionNote: values.condition,
-          media: [] // Media handling would go here
-        }]
+        code: `CR-${Date.now()}`,
+        status: "SUBMITTED",
+        note: [formValues.name, formValues.note].filter(Boolean).join(" - "),
       };
 
       await http.post(endpoints.consignments, payload);
@@ -261,12 +257,12 @@ export default function ConsignmentMultiStepPage() {
         <Col lg={4}>
           <div className="sticky top-32">
             <Steps
-              direction="vertical"
+              orientation="vertical"
               current={current}
               className="luxury-steps"
               items={steps.map(s => ({
                 title: <span className="font-display text-xs font-black uppercase tracking-widest">{s.title}</span>,
-                description: <span className="text-[10px] font-medium text-slate-400 italic">{s.description}</span>,
+                content: <span className="text-[10px] font-medium text-slate-400 italic">{s.description}</span>,
                 icon: s.icon
               }))}
             />

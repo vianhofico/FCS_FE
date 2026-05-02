@@ -89,7 +89,7 @@ export default function SalesReportPage() {
     const csvContent =
       "Order ID,Total Amount,Status,Created Date\n" +
       state.orders
-        .map((o) => `${o.id},${o.totalAmount},${o.status},${new Date(o.createdAt || "").toLocaleDateString()}`)
+        .map((o) => `${o.orderCode ?? o.id},${o.totalAmount},${o.status},${o.createdAt ? new Date(o.createdAt).toLocaleDateString() : ""}`)
         .join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv" });
@@ -103,9 +103,10 @@ export default function SalesReportPage() {
   const columns = [
     {
       title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Mã đơn hàng</span>,
-      dataIndex: "id",
       key: "id",
-      render: (text: string) => <span className="font-mono text-xs font-bold text-slate-400">#{text.slice(-8).toUpperCase()}</span>,
+      render: (_: unknown, record: OrderSummary) => (
+        <span className="font-mono text-xs font-bold text-slate-400">{record.orderCode ?? `#${record.id.slice(-8).toUpperCase()}`}</span>
+      ),
     },
     {
       title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Tổng giá trị</span>,
@@ -130,12 +131,16 @@ export default function SalesReportPage() {
       title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Ngày tạo</span>,
       dataIndex: "createdAt",
       key: "createdAt",
-      render: (date: string) => (
-        <div className="flex flex-col">
-          <span className="font-bold text-slate-700">{new Date(date).toLocaleDateString()}</span>
-          <span className="text-[10px] text-slate-400">{new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-        </div>
-      ),
+      render: (date?: string) => {
+        if (!date) return <span className="font-bold text-slate-400">—</span>;
+        const createdAt = new Date(date);
+        return (
+          <div className="flex flex-col">
+            <span className="font-bold text-slate-700">{createdAt.toLocaleDateString()}</span>
+            <span className="text-[10px] text-slate-400">{createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+          </div>
+        );
+      },
     },
   ];
 
@@ -148,10 +153,10 @@ export default function SalesReportPage() {
   }
 
   const stats = [
-    { label: "Số đơn hàng", value: state.stats.totalOrders, icon: <ShoppingCartOutlined />, color: "bg-blue-50 text-blue-500" },
-    { label: "Tổng doanh thu", value: state.stats.totalRevenue, icon: <WalletOutlined />, color: "bg-primary/5 text-primary" },
-    { label: "Giá trị trung bình", value: state.stats.averageOrderValue, icon: <LineChartOutlined />, color: "bg-emerald-50 text-emerald-500" },
-    { label: "Tỷ lệ tăng trưởng", value: "12%", icon: <TrophyOutlined />, color: "bg-orange-50 text-orange-500" },
+    { label: "Số đơn hàng", value: state.stats.totalOrders, unit: "count", icon: <ShoppingCartOutlined />, color: "bg-blue-50 text-blue-500" },
+    { label: "Tổng doanh thu", value: state.stats.totalRevenue, unit: "currency", icon: <WalletOutlined />, color: "bg-primary/5 text-primary" },
+    { label: "Giá trị trung bình", value: state.stats.averageOrderValue, unit: "currency", icon: <LineChartOutlined />, color: "bg-emerald-50 text-emerald-500" },
+    { label: "Tỷ lệ tăng trưởng", value: "12%", unit: "text", icon: <TrophyOutlined />, color: "bg-orange-50 text-orange-500" },
   ];
 
   return (
@@ -203,7 +208,7 @@ export default function SalesReportPage() {
                 <div>
                   <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{s.label}</div>
                   <div className="font-display text-2xl font-bold text-slate-800">
-                    {typeof s.value === 'number' ? `${s.value.toLocaleString()}₫` : s.value}
+                    {s.unit === "currency" && typeof s.value === "number" ? `${s.value.toLocaleString()}₫` : typeof s.value === "number" ? s.value.toLocaleString() : s.value}
                   </div>
                 </div>
               </div>

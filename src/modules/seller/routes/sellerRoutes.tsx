@@ -1,6 +1,7 @@
 import type { RouteObject } from "react-router-dom";
 import ConsignmentRequestListPage from "@/modules/seller/pages/ConsignmentRequestListPage";
 import ConsignmentRequestDetailPage from "@/modules/seller/pages/ConsignmentRequestDetailPage";
+import ConsignmentMultiStepPage from "@/modules/seller/pages/ConsignmentMultiStepPage";
 import ConsignmentContractPage from "@/modules/seller/pages/ConsignmentContractPage";
 import MyProductsPage from "@/modules/seller/pages/MyProductsPage";
 import SalesReportPage from "@/modules/seller/pages/SalesReportPage";
@@ -14,6 +15,10 @@ export const sellerRoutes: RouteObject[] = [
       {
         index: true,
         element: <ConsignmentRequestListPage />,
+      },
+      {
+        path: "new",
+        element: <ConsignmentMultiStepPage />,
       },
       {
         path: ":requestId",

@@ -82,8 +82,8 @@ export default function ConsignmentRequestListPage() {
       title: <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Mã yêu cầu</span>,
       dataIndex: "id",
       key: "id",
-      render: (id: string) => (
-        <span className="font-mono text-xs font-bold text-slate-400">#{id.slice(-8).toUpperCase()}</span>
+      render: (id: string, record: ConsignmentRequestSummary) => (
+        <span className="font-mono text-xs font-bold text-slate-400">{record.code ?? `#${id.slice(-8).toUpperCase()}`}</span>
       ),
     },
     {
@@ -108,12 +108,16 @@ export default function ConsignmentRequestListPage() {
       title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Ngày tạo</span>,
       dataIndex: "createdAt",
       key: "createdAt",
-      render: (date: string) => (
-        <div className="flex flex-col">
-          <span className="font-bold text-slate-700">{new Date(date).toLocaleDateString()}</span>
-          <span className="text-[10px] text-slate-400">{new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-        </div>
-      ),
+      render: (date?: string) => {
+        if (!date) return <span className="font-bold text-slate-400">—</span>;
+        const createdAt = new Date(date);
+        return (
+          <div className="flex flex-col">
+            <span className="font-bold text-slate-700">{createdAt.toLocaleDateString()}</span>
+            <span className="text-[10px] text-slate-400">{createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+          </div>
+        );
+      },
     },
     {
       title: "",
