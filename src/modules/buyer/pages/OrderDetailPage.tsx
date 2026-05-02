@@ -452,6 +452,19 @@ export default function OrderDetailPage() {
               </Button>
             )}
 
+            {state.order.status === "COMPLETED" && (
+              <Button
+                type="primary"
+                onClick={() => {
+                  if (state.order?.items && state.order.items.length > 0) {
+                    navigate(`/buyer/products/${state.order.items[0].productId}/review`);
+                  }
+                }}
+              >
+                Leave Review
+              </Button>
+            )}
+
             {(state.order.status === "DELIVERED" || state.order.status === "SHIPPED") && (
               <Button
                 type="primary"

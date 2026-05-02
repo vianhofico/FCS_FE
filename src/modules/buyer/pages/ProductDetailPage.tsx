@@ -19,18 +19,20 @@ import {
   Tag,
   message,
   Tabs,
+  Progress,
 } from "antd";
-import { ShoppingCartOutlined, ArrowLeftOutlined } from "@ant-design/icons";
+import { ShoppingCartOutlined, ArrowLeftOutlined, EditOutlined } from "@ant-design/icons";
 import { productApi } from "@/modules/product/api/productApi";
 import { reviewApi } from "@/modules/product/api/reviewApi";
 import { orderApi } from "@/modules/order/api/orderApi";
 import type { ProductDetail } from "@/shared/contracts/productContract";
-import type { ProductReview } from "@/shared/contracts/reviewContract";
+import type { ProductReview, ReviewSummary } from "@/shared/contracts/reviewContract";
 import { useAuth } from "@/shared/context/AuthContext";
 
 interface ProductDetailPageState {
   product: ProductDetail | null;
   reviews: ProductReview[];
+  reviewSummary: ReviewSummary | null;
   quantity: number;
   isLoading: boolean;
   isAddingToCart: boolean;
@@ -47,6 +49,7 @@ export default function ProductDetailPage() {
   const [state, setState] = useState<ProductDetailPageState>({
     product: null,
     reviews: [],
+    reviewSummary: null,
     quantity: 1,
     isLoading: true,
     isAddingToCart: false,
@@ -66,10 +69,17 @@ export default function ProductDetailPage() {
 
         // Fetch reviews
         let reviewsData: ProductReview[] = [];
+        let reviewSummaryData: ReviewSummary | null = null;
         try {
           const reviewsResponse = await reviewApi.getProductReviews(productId);
           if (reviewsResponse.success && reviewsResponse.data) {
             reviewsData = reviewsResponse.data.content;
+          }
+
+          // Fetch review summary
+          const summaryResponse = await reviewApi.getReviewSummary(productId);
+          if (summaryResponse.success && summaryResponse.data) {
+            reviewSummaryData = summaryResponse.data;
           }
         } catch {
           // Reviews might not be available
@@ -79,6 +89,7 @@ export default function ProductDetailPage() {
           ...prev,
           product: productResponse.data,
           reviews: reviewsData,
+          reviewSummary: reviewSummaryData,
           isLoading: false,
         }));
       } catch {
@@ -275,6 +286,64 @@ export default function ProductDetailPage() {
 
         {/* Reviews */}
         <Card className="mt-8 shadow-sm">
+          {/* Review Summary */}
+          {state.reviewSummary && (
+            <div className="mb-8 pb-8 border-b">
+              <Row gutter={[32, 32]}>
+                {/* Average Rating */}
+                <Col xs={24} sm={12} md={6}>
+                  <div className="text-center">
+                    <div className="text-5xl font-bold text-yellow-500 mb-2">
+                      {state.reviewSummary.averageRating.toFixed(1)}
+                    </div>
+                    <Rate value={Math.round(state.reviewSummary.averageRating)} disabled />
+                    <p className="text-gray-600 text-sm mt-2">
+                      Based on {state.reviewSummary.totalReviews} reviews
+                    </p>
+                  </div>
+                </Col>
+
+                {/* Rating Distribution */}
+                <Col xs={24} sm={12} md={18}>
+                  <Space direction="vertical" size="middle" className="w-full">
+                    {[5, 4, 3, 2, 1].map((rating) => (
+                      <div key={rating} className="flex items-center gap-3">
+                        <span className="w-12 text-sm font-medium text-gray-600">{rating} ★</span>
+                        <Progress
+                          percent={
+                            state.reviewSummary.totalReviews > 0
+                              ? ((state.reviewSummary.ratingDistribution?.[rating as keyof typeof state.reviewSummary.ratingDistribution] || 0) / state.reviewSummary.totalReviews) * 100
+                              : 0
+                          }
+                          size="small"
+                          strokeColor={{ 0: "#ffd666", 100: "#ffd666" }}
+                        />
+                        <span className="w-12 text-right text-xs text-gray-500">
+                          {state.reviewSummary.ratingDistribution?.[rating as keyof typeof state.reviewSummary.ratingDistribution] || 0}
+                        </span>
+                      </div>
+                    ))}
+                  </Space>
+                </Col>
+              </Row>
+            </div>
+          )}
+
+          {/* Leave Review Button */}
+          {user && (
+            <div className="mb-6">
+              <Button
+                type="primary"
+                size="large"
+                icon={<EditOutlined />}
+                onClick={() => navigate(`/buyer/products/${productId}/review`)}
+              >
+                Leave a Review
+              </Button>
+            </div>
+          )}
+
+          {/* Reviews List */}
           <Tabs
             items={[
               {
