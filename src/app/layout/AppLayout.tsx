@@ -128,7 +128,7 @@ export function AppLayout() {
 
   return (
     <Layout className="min-h-screen bg-bg-main font-sans">
-      <Header className="sticky top-0 z-50 h-auto border-b border-pink-100/40 bg-bg-main/90 px-0 backdrop-blur-xl">
+      <Header className="sticky top-0 z-50 h-auto border-b border-white bg-bg-main/90 px-0 shadow-none backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1440px] items-center gap-4 px-4 py-3 sm:px-6 lg:px-8">
           <div className="flex min-w-0 flex-1 items-center justify-between gap-4">
             <button

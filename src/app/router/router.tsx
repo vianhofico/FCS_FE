@@ -1,3 +1,4 @@
+import { Result } from "antd";
 import { createBrowserRouter } from "react-router-dom";
 
 import { AppLayout } from "@/app/layout/AppLayout";
@@ -35,6 +36,14 @@ function guardRoutes(routes: import("react-router-dom").RouteObject[], requiredR
   }));
 }
 
+function guardRoute(route: import("react-router-dom").RouteObject, requiredRoles: UserRole[]) {
+  return {
+    ...route,
+    element: route.element ? <RoleGuard requiredRoles={requiredRoles}>{route.element}</RoleGuard> : route.element,
+    children: route.children ? guardRoutes(route.children, requiredRoles) : route.children,
+  };
+}
+
 export const router = createBrowserRouter([
   {
     path: "/auth",
@@ -45,11 +54,21 @@ export const router = createBrowserRouter([
     children: [
       ...appRoutes.map((route) => ({ path: route.path, element: getRouteElement(route) })),
       ...guestBuyerRoutes,
-      ...guardRoutes(buyerRoutes, ["BUYER"]),
-      ...guardRoutes(sellerRoutes, ["SELLER"]),
-      ...guardRoutes(managerRoutes, ["MANAGER", "ADMIN"]),
-      ...guardRoutes(adminRoutes, ["ADMIN"]),
-      ...notificationRoutes.map((route) => ({ ...route, element: <AuthGuard>{route.element}</AuthGuard> })),
+      ...buyerRoutes.map((route) => guardRoute(route, ["BUYER"])),
+      ...sellerRoutes.map((route) => guardRoute(route, ["SELLER"])),
+      ...managerRoutes.map((route) => guardRoute(route, ["MANAGER"])),
+      ...adminRoutes.map((route) => guardRoute(route, ["ADMIN"])),
+      ...notificationRoutes.map((route) => guardRoute(route, ["BUYER", "SELLER", "MANAGER", "ADMIN"])),
+      {
+        path: "forbidden",
+        element: (
+          <Result
+            status="403"
+            title="Truy cập bị từ chối"
+            subTitle="Bạn không có quyền truy cập vào trang này."
+          />
+        ),
+      },
       { path: "*", element: <NotFoundPage /> },
     ],
   },

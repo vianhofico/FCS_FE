@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { UserRole } from "@/shared/contracts/commonContract";
+import { UserRole, type UserRole as UserRoleType } from "@/shared/contracts/commonContract";
 import {
   AuditOutlined,
   DashboardOutlined,
@@ -32,7 +32,7 @@ export type AppRouteItem = {
   element: ReactNode;
   backendModule: string;
   requireAuth?: boolean;
-  requiredRoles?: UserRole[];
+  requiredRoles?: UserRoleType[];
 };
 
 export const appRoutes: AppRouteItem[] = [
@@ -60,7 +60,7 @@ export const appRoutes: AppRouteItem[] = [
     element: <IamPage />,
     backendModule: "iam",
     requireAuth: true,
-    requiredRoles: ["MANAGER" as UserRole, "ADMIN" as UserRole],
+    requiredRoles: [UserRole.MANAGER, UserRole.ADMIN],
   },
   {
     key: "catalog",
@@ -70,6 +70,7 @@ export const appRoutes: AppRouteItem[] = [
     element: <CatalogPage />,
     backendModule: "catalog",
     requireAuth: true,
+    requiredRoles: [UserRole.MANAGER, UserRole.ADMIN],
   },
   {
     key: "product",
@@ -79,6 +80,7 @@ export const appRoutes: AppRouteItem[] = [
     element: <ProductPage />,
     backendModule: "product",
     requireAuth: true,
+    requiredRoles: [UserRole.MANAGER, UserRole.ADMIN],
   },
   {
     key: "consignment",
@@ -88,6 +90,7 @@ export const appRoutes: AppRouteItem[] = [
     element: <ConsignmentPage />,
     backendModule: "consignment",
     requireAuth: true,
+    requiredRoles: [UserRole.SELLER, UserRole.MANAGER, UserRole.ADMIN],
   },
   {
     key: "order",
@@ -97,6 +100,7 @@ export const appRoutes: AppRouteItem[] = [
     element: <OrderPage />,
     backendModule: "order",
     requireAuth: true,
+    requiredRoles: [UserRole.BUYER, UserRole.MANAGER, UserRole.ADMIN],
   },
   {
     key: "financial",
@@ -106,6 +110,7 @@ export const appRoutes: AppRouteItem[] = [
     element: <FinancialPage />,
     backendModule: "financial",
     requireAuth: true,
+    requiredRoles: [UserRole.SELLER, UserRole.MANAGER, UserRole.ADMIN],
   },
   {
     key: "notification",
@@ -115,6 +120,7 @@ export const appRoutes: AppRouteItem[] = [
     element: <NotificationPage />,
     backendModule: "notification",
     requireAuth: true,
+    requiredRoles: [UserRole.BUYER, UserRole.SELLER, UserRole.MANAGER, UserRole.ADMIN],
   },
   {
     key: "audit",
@@ -124,5 +130,6 @@ export const appRoutes: AppRouteItem[] = [
     element: <AuditPage />,
     backendModule: "audit",
     requireAuth: true,
+    requiredRoles: [UserRole.MANAGER, UserRole.ADMIN],
   },
 ];

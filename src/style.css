@@ -67,6 +67,11 @@
     line-height: 1;
   }
 
+  .ant-layout-header {
+    border-block-end-color: #fff !important;
+    box-shadow: none !important;
+  }
+
   .luxury-menu.ant-menu-horizontal {
     border-bottom: none !important;
   }
