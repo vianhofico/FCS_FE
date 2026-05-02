@@ -94,7 +94,7 @@ export default function ApprovalsPage() {
         setState((prev) => ({
           ...prev,
           isLoading: false,
-          error: err instanceof Error ? err.message : "Failed to load approvals",
+          error: err instanceof Error ? err.message : "Không thể tải danh sách phê duyệt",
         }));
       }
     };

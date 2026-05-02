@@ -23,7 +23,12 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        <span className="font-display text-sm font-bold uppercase tracking-widest text-primary/60">Đang tải...</span>
+      </div>
+    );
   }
 
   if (!isAuthenticated) {
@@ -40,7 +45,12 @@ export function RoleRoute({ children, allowedRoles }: RoleRouteProps) {
   const { isAuthenticated, isLoading, hasRole } = useAuth();
 
   if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        <span className="font-display text-sm font-bold uppercase tracking-widest text-primary/60">Đang tải...</span>
+      </div>
+    );
   }
 
   if (!isAuthenticated) {

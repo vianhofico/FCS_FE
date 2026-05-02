@@ -67,7 +67,7 @@ export default function BackupManagementPage() {
         setState((prev) => ({
           ...prev,
           isLoading: false,
-          error: err instanceof Error ? err.message : "Failed to load backups",
+          error: err instanceof Error ? err.message : "Không thể tải danh sách sao lưu",
         }));
       }
     };
@@ -100,7 +100,7 @@ export default function BackupManagementPage() {
             ],
           }));
         } catch (err) {
-          message.error(err instanceof Error ? err.message : "Failed to perform backup");
+          message.error(err instanceof Error ? err.message : "Tạo bản sao lưu thất bại");
         } finally {
           setPerformingBackup(false);
         }
@@ -119,7 +119,7 @@ export default function BackupManagementPage() {
         try {
           message.success("Phục hồi hệ thống thành công");
         } catch (err) {
-          message.error(err instanceof Error ? err.message : "Failed to restore backup");
+          message.error(err instanceof Error ? err.message : "Phục hồi dữ liệu thất bại");
         }
       },
     });
@@ -140,7 +140,7 @@ export default function BackupManagementPage() {
             backups: prev.backups.filter((b) => b.id !== backupId),
           }));
         } catch (err) {
-          message.error(err instanceof Error ? err.message : "Failed to delete backup");
+          message.error(err instanceof Error ? err.message : "Xóa bản sao lưu thất bại");
         }
       },
     });

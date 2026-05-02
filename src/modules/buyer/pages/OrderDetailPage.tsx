@@ -53,12 +53,12 @@ interface OrderDetailPageState {
 }
 
 const RETURN_REASONS = [
-  "Defective",
-  "Wrong size",
-  "Not as described",
-  "Changed mind",
-  "Damaged",
-  "Other",
+  "Sản phẩm bị lỗi",
+  "Sai kích cỡ",
+  "Không đúng mô tả",
+  "Đổi ý",
+  "Bị hư hỏng khi vận chuyển",
+  "Lý do khác",
 ];
 
 const ORDER_STATUS_STEPS: Record<string, number> = {
@@ -104,7 +104,7 @@ export default function OrderDetailPage() {
           }));
         }
       } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : "Failed to load order";
+        const errorMsg = err instanceof Error ? err.message : "Không thể tải chi tiết đơn hàng";
         setState((prev) => ({
           ...prev,
           isLoading: false,
@@ -130,7 +130,7 @@ export default function OrderDetailPage() {
 
   const handleReturnSubmit = async () => {
     if (!state.returnForm.itemIds.length || !state.returnForm.reason) {
-      message.error("Please select items and reason");
+      message.error("Vui lòng chọn sản phẩm và lý do trả hàng");
       return;
     }
 
@@ -144,7 +144,7 @@ export default function OrderDetailPage() {
       });
 
       if (response.success) {
-        message.success("Return request submitted successfully");
+        message.success("Đã gửi yêu cầu trả hàng thành công");
         handleReturnCancel();
         // Reload order
         const orderResponse = await orderApi.getOrderDetail(orderId!);
@@ -153,7 +153,7 @@ export default function OrderDetailPage() {
         }
       }
     } catch (err) {
-      message.error(err instanceof Error ? err.message : "Failed to submit return");
+      message.error(err instanceof Error ? err.message : "Gửi yêu cầu trả hàng thất bại");
     } finally {
       setState((prev) => ({ ...prev, isSubmittingReturn: false }));
     }
@@ -161,26 +161,26 @@ export default function OrderDetailPage() {
 
   const handleCancelOrder = () => {
     Modal.confirm({
-      title: "Cancel Order",
+      title: "Hủy đơn hàng",
       icon: <ExclamationCircleOutlined />,
-      content: "Are you sure you want to cancel this order? This action cannot be undone.",
-      okText: "Yes, Cancel",
+      content: "Bạn có chắc chắn muốn hủy đơn hàng này không? Thao tác này không thể hoàn tác.",
+      okText: "Đồng ý, Hủy đơn",
       okType: "danger",
-      cancelText: "No",
+      cancelText: "Không",
       onOk: async () => {
         try {
           const response = await orderApi.updateOrderStatus(orderId!, {
             status: "CANCELLED",
           });
           if (response.success) {
-            message.success("Order cancelled successfully");
+            message.success("Đã hủy đơn hàng thành công");
             const orderResponse = await orderApi.getOrderDetail(orderId!);
             if (orderResponse.success) {
               setState((prev) => ({ ...prev, order: orderResponse.data || null }));
             }
           }
         } catch (err) {
-          message.error(err instanceof Error ? err.message : "Failed to cancel order");
+          message.error(err instanceof Error ? err.message : "Hủy đơn hàng thất bại");
         }
       },
     });
@@ -188,12 +188,12 @@ export default function OrderDetailPage() {
 
   const handleConfirmReceipt = () => {
     Modal.confirm({
-      title: "Confirm Receipt",
+      title: "Xác nhận nhận hàng",
       icon: <CheckCircleOutlined />,
-      content: "Are you sure you have received this order? This will complete the order.",
-      okText: "Yes, Confirm",
+      content: "Bạn xác nhận đã nhận được đầy đủ sản phẩm? Thao tác này sẽ hoàn tất đơn hàng.",
+      okText: "Xác nhận",
       okType: "primary",
-      cancelText: "No",
+      cancelText: "Quay lại",
       onOk: async () => {
         try {
           setState((prev) => ({ ...prev, isConfirmingReceipt: true }));
@@ -201,14 +201,14 @@ export default function OrderDetailPage() {
             status: "COMPLETED",
           });
           if (response.success) {
-            message.success("Order confirmed successfully");
+            message.success("Xác nhận nhận hàng thành công");
             const orderResponse = await orderApi.getOrderDetail(orderId!);
             if (orderResponse.success) {
               setState((prev) => ({ ...prev, order: orderResponse.data || null }));
             }
           }
         } catch (err) {
-          message.error(err instanceof Error ? err.message : "Failed to confirm receipt");
+          message.error(err instanceof Error ? err.message : "Xác nhận thất bại");
         } finally {
           setState((prev) => ({ ...prev, isConfirmingReceipt: false }));
         }

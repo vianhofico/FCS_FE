@@ -91,7 +91,7 @@ export default function FinancialPage() {
         setState((prev) => ({
           ...prev,
           isLoading: false,
-          error: err instanceof Error ? err.message : "Failed to load financial data",
+          error: err instanceof Error ? err.message : "Không thể tải dữ liệu tài chính",
         }));
       }
     };
