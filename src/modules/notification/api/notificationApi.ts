@@ -11,8 +11,8 @@ export const notificationApi = {
   /**
    * Get user notifications
    */
-  getNotifications: async (query: NotificationQuery = {}): Promise<ApiResponse<PageResponse<Notification>>> => {
-    const response = await http.get<ApiResponse<PageResponse<Notification>>>(endpoints.notifications, {
+  getNotifications: async (query: NotificationQuery = {}): Promise<ApiResponse<PageResponse<Notification> | Notification[]>> => {
+    const response = await http.get<ApiResponse<PageResponse<Notification> | Notification[]>>(endpoints.notifications, {
       params: query,
     });
     return response.data;

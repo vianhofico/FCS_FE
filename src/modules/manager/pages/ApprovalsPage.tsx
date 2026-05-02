@@ -16,18 +16,13 @@ import {
   Typography,
 } from "antd";
 import { CheckOutlined, CloseOutlined, SafetyCertificateOutlined } from "@ant-design/icons";
+import { consignmentApi } from "@/modules/seller/api/consignmentApi";
+import type { ConsignmentRequestSummary } from "@/shared/contracts/consignmentContract";
 import { Badge, Button, EmptyState } from "@/shared/ui";
 
 const { Title, Paragraph } = Typography;
 
-interface ApprovalRequest {
-  id: string;
-  type: string;
-  requester: string;
-  description: string;
-  status: string;
-  createdAt: string;
-}
+type ApprovalRequest = ConsignmentRequestSummary;
 
 interface PageState {
   approvals: ApprovalRequest[];
@@ -59,37 +54,28 @@ export default function ApprovalsPage() {
       try {
         setState((prev) => ({ ...prev, isLoading: true }));
 
-        // Mock data
-        const mockApprovals: ApprovalRequest[] = [
-          {
-            id: "a1",
-            type: "SELLER_VERIFICATION",
-            requester: "seller@example.com",
-            description: "New seller verification",
-            status: "PENDING",
-            createdAt: new Date().toISOString(),
-          },
-          {
-            id: "a2",
-            type: "COMMISSION_UPDATE",
-            requester: "manager@example.com",
-            description: "Update commission rate",
-            status: "APPROVED",
-            createdAt: new Date(Date.now() - 86400000).toISOString(),
-          },
-        ];
+        const response = await consignmentApi.getConsignmentRequests({
+          page: state.page,
+          size: state.size,
+        });
 
-        setState((prev) => ({
-          ...prev,
-          approvals: mockApprovals,
-          total: mockApprovals.length,
-          stats: {
-            total: mockApprovals.length,
-            pending: mockApprovals.filter((a) => a.status === "PENDING").length,
-            approved: mockApprovals.filter((a) => a.status === "APPROVED").length,
-          },
-          isLoading: false,
-        }));
+        if (response.success && response.data) {
+          const approvals = response.data.content.filter((request) =>
+            ["SUBMITTED", "REVIEWING", "APPROVED", "REJECTED"].includes(request.status)
+          );
+
+          setState((prev) => ({
+            ...prev,
+            approvals,
+            total: response.data?.totalElements || approvals.length,
+            stats: {
+              total: approvals.length,
+              pending: approvals.filter((a) => ["SUBMITTED", "REVIEWING"].includes(a.status)).length,
+              approved: approvals.filter((a) => a.status === "APPROVED").length,
+            },
+            isLoading: false,
+          }));
+        }
       } catch (err) {
         setState((prev) => ({
           ...prev,
@@ -100,7 +86,7 @@ export default function ApprovalsPage() {
     };
 
     fetchApprovals();
-  }, []);
+  }, [state.page, state.size]);
 
   const handleApprove = (id: string) => {
     Modal.confirm({
@@ -110,13 +96,16 @@ export default function ApprovalsPage() {
       cancelText: "Hủy",
       onOk: async () => {
         try {
-          message.success("Đã phê duyệt yêu cầu");
-          setState((prev) => ({
-            ...prev,
-            approvals: prev.approvals.map((a) =>
-              a.id === id ? { ...a, status: "APPROVED" } : a
-            ),
-          }));
+          const response = await consignmentApi.acceptConsignment(id);
+          if (response.success) {
+            message.success("Đã phê duyệt yêu cầu");
+            setState((prev) => ({
+              ...prev,
+              approvals: prev.approvals.map((a) =>
+                a.id === id ? { ...a, status: "APPROVED" } : a
+              ),
+            }));
+          }
         } catch (err) {
           message.error(err instanceof Error ? err.message : "Phê duyệt thất bại");
         }
@@ -133,13 +122,18 @@ export default function ApprovalsPage() {
       cancelText: "Hủy",
       onOk: async () => {
         try {
-          message.success("Đã từ chối yêu cầu");
-          setState((prev) => ({
-            ...prev,
-            approvals: prev.approvals.map((a) =>
-              a.id === id ? { ...a, status: "REJECTED" } : a
-            ),
-          }));
+          const response = await consignmentApi.rejectConsignment(id, {
+            reason: "Từ chối bởi quản lý",
+          });
+          if (response.success) {
+            message.success("Đã từ chối yêu cầu");
+            setState((prev) => ({
+              ...prev,
+              approvals: prev.approvals.map((a) =>
+                a.id === id ? { ...a, status: "REJECTED" } : a
+              ),
+            }));
+          }
         } catch (err) {
           message.error(err instanceof Error ? err.message : "Từ chối thất bại");
         }
@@ -150,20 +144,18 @@ export default function ApprovalsPage() {
   const columns = [
     {
       title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Loại phê duyệt</span>,
-      dataIndex: "type",
       key: "type",
-      render: (type: string) => <span className="font-bold text-slate-700">{type}</span>,
+      render: () => <span className="font-bold text-slate-700">CONSIGNMENT_REQUEST</span>,
     },
     {
       title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Người yêu cầu</span>,
-      dataIndex: "requester",
       key: "requester",
-      render: (email: string) => <span className="text-slate-500 font-medium">{email}</span>,
+      render: (_: unknown, record: ApprovalRequest) => <span className="text-slate-500 font-medium">{record.consignorId}</span>,
     },
     {
       title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Nội dung</span>,
-      dataIndex: "description",
       key: "description",
+      render: (_: unknown, record: ApprovalRequest) => record.note || record.code,
     },
     {
       title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Trạng thái</span>,
@@ -184,7 +176,7 @@ export default function ApprovalsPage() {
       align: "right" as const,
       render: (_: unknown, record: ApprovalRequest) => (
         <Space size="middle">
-          {record.status === "PENDING" && (
+          {["SUBMITTED", "REVIEWING"].includes(record.status) && (
             <>
               <Button
                 type="text"

@@ -14,7 +14,7 @@ export type IamUserSummary = {
   email: string;
   phone?: string;
   status: UserStatus;
-  roles: UserRole[];
+  roles?: UserRole[];
   createdAt?: string;
 };
 

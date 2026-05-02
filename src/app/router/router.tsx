@@ -7,6 +7,7 @@ import { adminRoutes } from "@/modules/admin/routes/adminRoutes";
 import { buyerRoutes, guestBuyerRoutes } from "@/modules/buyer/routes/buyerRoutes";
 import { managerRoutes } from "@/modules/manager/routes/managerRoutes";
 import { sellerRoutes } from "@/modules/seller/routes/sellerRoutes";
+import { notificationRoutes } from "@/modules/notification/routes/notificationRoutes";
 import { NotFoundPage } from "@/modules/errors/NotFoundPage";
 import { authRoutes } from "@/modules/iam/routes/authRoutes";
 import type { UserRole } from "@/shared/contracts/commonContract";
@@ -48,6 +49,7 @@ export const router = createBrowserRouter([
       ...guardRoutes(sellerRoutes, ["SELLER"]),
       ...guardRoutes(managerRoutes, ["MANAGER", "ADMIN"]),
       ...guardRoutes(adminRoutes, ["ADMIN"]),
+      ...notificationRoutes.map((route) => ({ ...route, element: <AuthGuard>{route.element}</AuthGuard> })),
       { path: "*", element: <NotFoundPage /> },
     ],
   },

@@ -6,20 +6,15 @@
 import { useState, useEffect } from "react";
 import { Card, Table, Spin, Modal, message, Space, Input, Typography, Row, Col } from "antd";
 import { LockOutlined, UnlockOutlined, DeleteOutlined, UserOutlined, SearchOutlined } from "@ant-design/icons";
+import { iamApi } from "@/modules/iam/api/iamApi";
+import type { IamUserSummary } from "@/shared/contracts/iamContract";
+import type { UserStatus } from "@/shared/contracts/commonContract";
 import { Badge, Button, EmptyState } from "@/shared/ui";
 
 const { Title, Paragraph } = Typography;
 
-interface User {
-  id: string;
-  email: string;
-  role: string;
-  status: string;
-  createdAt: string;
-}
-
 interface PageState {
-  users: User[];
+  users: IamUserSummary[];
   isLoading: boolean;
   error: string | null;
   page: number;
@@ -44,19 +39,20 @@ export default function UserManagementPage() {
       try {
         setState((prev) => ({ ...prev, isLoading: true }));
 
-        // Mock data
-        const mockUsers: User[] = [
-          { id: "u1", email: "buyer@example.com", role: "BUYER", status: "ACTIVE", createdAt: new Date().toISOString() },
-          { id: "u2", email: "seller@example.com", role: "SELLER", status: "ACTIVE", createdAt: new Date().toISOString() },
-          { id: "u3", email: "inactive@example.com", role: "BUYER", status: "INACTIVE", createdAt: new Date().toISOString() },
-        ];
+        const response = await iamApi.getUsers({
+          keyword: state.search || undefined,
+          page: state.page,
+          size: state.size,
+        });
 
-        setState((prev) => ({
-          ...prev,
-          users: mockUsers,
-          total: mockUsers.length,
-          isLoading: false,
-        }));
+        if (response.success && response.data) {
+          setState((prev) => ({
+            ...prev,
+            users: response.data?.content || [],
+            total: response.data?.totalElements || 0,
+            isLoading: false,
+          }));
+        }
       } catch (err) {
         setState((prev) => ({
           ...prev,
@@ -69,6 +65,16 @@ export default function UserManagementPage() {
     fetchUsers();
   }, [state.page, state.size, state.search]);
 
+  const updateUserStatus = async (userId: string, status: UserStatus) => {
+    const response = await iamApi.updateUserStatus(userId, { status });
+    if (response.success) {
+      setState((prev) => ({
+        ...prev,
+        users: prev.users.map((u) => (u.id === userId ? { ...u, status } : u)),
+      }));
+    }
+  };
+
   const handleSuspendUser = (userId: string) => {
     Modal.confirm({
       title: "Khóa tài khoản",
@@ -78,13 +84,8 @@ export default function UserManagementPage() {
       cancelText: "Hủy",
       onOk: async () => {
         try {
+          await updateUserStatus(userId, "SUSPENDED");
           message.success("Đã khóa tài khoản");
-          setState((prev) => ({
-            ...prev,
-            users: prev.users.map((u) =>
-              u.id === userId ? { ...u, status: "SUSPENDED" } : u
-            ),
-          }));
         } catch (err) {
           message.error(err instanceof Error ? err.message : "Khóa tài khoản thất bại");
         }
@@ -100,36 +101,10 @@ export default function UserManagementPage() {
       cancelText: "Hủy",
       onOk: async () => {
         try {
+          await updateUserStatus(userId, "ACTIVE");
           message.success("Đã mở khóa tài khoản");
-          setState((prev) => ({
-            ...prev,
-            users: prev.users.map((u) =>
-              u.id === userId ? { ...u, status: "ACTIVE" } : u
-            ),
-          }));
         } catch (err) {
           message.error(err instanceof Error ? err.message : "Mở khóa thất bại");
-        }
-      },
-    });
-  };
-
-  const handleDeleteUser = (userId: string) => {
-    Modal.confirm({
-      title: "Xóa người dùng",
-      content: "Hành động này không thể hoàn tác. Bạn có chắc chắn muốn xóa người dùng này?",
-      okText: "Xóa",
-      okType: "danger",
-      cancelText: "Hủy",
-      onOk: async () => {
-        try {
-          message.success("Đã xóa người dùng");
-          setState((prev) => ({
-            ...prev,
-            users: prev.users.filter((u) => u.id !== userId),
-          }));
-        } catch (err) {
-          message.error(err instanceof Error ? err.message : "Xóa người dùng thất bại");
         }
       },
     });
@@ -144,12 +119,15 @@ export default function UserManagementPage() {
     },
     {
       title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Vai trò</span>,
-      dataIndex: "role",
-      key: "role",
-      render: (role: string) => (
-        <span className="inline-flex items-center rounded-lg bg-slate-50 px-2.5 py-1 text-xs font-bold text-slate-500 border border-slate-100">
-          {role}
-        </span>
+      key: "roles",
+      render: (_: unknown, record: IamUserSummary) => (
+        <div className="flex flex-wrap gap-2">
+          {(record.roles?.length ? record.roles : ["—"]).map((role) => (
+            <span key={role} className="inline-flex items-center rounded-lg bg-slate-50 px-2.5 py-1 text-xs font-bold text-slate-500 border border-slate-100">
+              {role}
+            </span>
+          ))}
+        </div>
       ),
     },
     {
@@ -169,7 +147,7 @@ export default function UserManagementPage() {
       title: "",
       key: "actions",
       align: "right" as const,
-      render: (_: unknown, record: User) => (
+      render: (_: unknown, record: IamUserSummary) => (
         <Space size="middle">
           {record.status === "ACTIVE" ? (
             <Button
@@ -194,7 +172,8 @@ export default function UserManagementPage() {
             danger
             type="text"
             icon={<DeleteOutlined />}
-            onClick={() => handleDeleteUser(record.id)}
+            disabled
+            title="API xóa người dùng chưa được hỗ trợ"
             className="hover:!bg-red-50 rounded-xl font-bold"
           >
             Xóa

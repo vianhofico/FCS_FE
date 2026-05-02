@@ -171,7 +171,7 @@ export default function RegisterPage() {
               </div>
 
               <Form.Item noStyle>
-                <Space direction="vertical" className="w-full" size="large">
+                <Space orientation="vertical" className="w-full" size="large">
                   <Button
                     type="primary"
                     htmlType="submit"

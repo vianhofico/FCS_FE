@@ -9,10 +9,15 @@ import type { NotificationStatus } from "@/shared/contracts/commonContract";
  */
 export type Notification = {
   id: string;
-  recipientId: string;
+  recipientId?: string;
+  userId?: string;
+  notificationId?: string;
   title: string;
-  message: string;
-  status: NotificationStatus;
+  message?: string;
+  content?: string;
+  type?: string;
+  status?: NotificationStatus;
+  read?: boolean;
   relatedModule?: string;
   relatedEntityId?: string;
   actionUrl?: string;

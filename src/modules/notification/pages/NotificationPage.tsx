@@ -1,12 +1,5 @@
-import { ModulePlaceholderPage } from "@/shared/components/ModulePlaceholderPage";
+import NotificationCenterPage from "@/modules/notification/pages/NotificationCenterPage";
 
 export function NotificationPage() {
-  return (
-    <ModulePlaceholderPage
-      moduleKey="notification"
-      title="Notification"
-      backendPackage="com.fcs.be.modules.notification"
-      notes="Implement notification listing, read-state and user notification preferences."
-    />
-  );
+  return <NotificationCenterPage />;
 }
