@@ -3,6 +3,7 @@ import { createBrowserRouter } from "react-router-dom";
 import { AppLayout } from "@/app/layout/AppLayout";
 import { AuthGuard, RoleGuard } from "@/app/router/guards";
 import { appRoutes } from "@/app/router/routeManifest";
+import { managerRoutes } from "@/modules/manager/routes/managerRoutes";
 import { NotFoundPage } from "@/modules/errors/NotFoundPage";
 import { authRoutes } from "@/modules/iam/routes/authRoutes";
 import type { UserRole } from "@/shared/contracts/commonContract";
@@ -31,6 +32,7 @@ export const router = createBrowserRouter([
     element: <AppLayout />,
     children: [
       ...appRoutes.map((route) => ({ path: route.path, element: getRouteElement(route) })),
+      ...managerRoutes,
       { path: "*", element: <NotFoundPage /> },
     ],
   },

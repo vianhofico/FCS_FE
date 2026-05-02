@@ -15,6 +15,8 @@ import UserManagementPage from "@/modules/manager/pages/UserManagementPage";
 import SystemSettingsPage from "@/modules/manager/pages/SystemSettingsPage";
 import CommunicationCenterPage from "@/modules/manager/pages/CommunicationCenterPage";
 import PerformanceMonitoringPage from "@/modules/manager/pages/PerformanceMonitoringPage";
+import BulkActionPanel from "@/modules/manager/pages/BulkActionPanel";
+import AuditLogDetailPage from "@/modules/manager/pages/AuditLogDetailPage";
 
 export const managerRoutes: RouteObject[] = [
   {
@@ -59,6 +61,14 @@ export const managerRoutes: RouteObject[] = [
       {
         path: "performance/monitoring",
         element: <PerformanceMonitoringPage />,
+      },
+      {
+        path: "bulk-actions",
+        element: <BulkActionPanel />,
+      },
+      {
+        path: "audit/logs",
+        element: <AuditLogDetailPage />,
       },
       {
         path: "",
