@@ -6,7 +6,7 @@
 import { useState, useEffect } from "react";
 import { Card, Button, Table, Space, Spin, Empty, Tag, Modal, message } from "antd";
 import { DownloadOutlined } from "@ant-design/icons";
-import { consignmentApi } from "@/modules/seller/api/consignmentApi";
+import { consignmentApi } from "../api/consignmentApi";
 import type { ConsignmentContract } from "@/shared/contracts/consignmentContract";
 import { useAuth } from "@/shared/context/AuthContext";
 

@@ -6,6 +6,20 @@ function requiredEnv(name: string): string {
   return value;
 }
 
+function getApiBaseUrl(): string {
+  const configuredUrl = import.meta.env.VITE_API_BASE_URL;
+
+  if (configuredUrl && typeof configuredUrl === "string") {
+    return configuredUrl;
+  }
+
+  if (import.meta.env.DEV) {
+    return "http://localhost:8080";
+  }
+
+  return requiredEnv("VITE_API_BASE_URL");
+}
+
 export const env = {
-  apiBaseUrl: requiredEnv("VITE_API_BASE_URL"),
+  apiBaseUrl: getApiBaseUrl(),
 } as const;
