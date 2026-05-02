@@ -18,7 +18,7 @@ export default function TimelineWidget({ items, title }: Props) {
       <Timeline
         items={items.map((it) => ({
           key: it.id,
-          children: (
+          content: (
             <>
               <div style={{ fontWeight: 600 }}>{it.title}</div>
               {it.description && <div style={{ color: '#666' }}>{it.description}</div>}

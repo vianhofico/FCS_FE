@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Badge, Card, Empty, List, Space, Spin, Tag, Typography } from "antd";
+import { Badge, Card, Empty, Spin, Tag, Typography } from "antd";
 
 import { activityLogApi } from "@/modules/audit/api/activityLogApi";
 import TimelineWidget from "@/shared/components/TimelineWidget";
@@ -57,24 +57,29 @@ export default function AuditLogDetailPage() {
   }
 
   return (
-    <Space direction="vertical" size={16} style={{ width: "100%" }}>
+    <div className="space-y-4">
       <Card title="Audit Logs">
-        <List
-          dataSource={logs}
-          locale={{ emptyText: <Empty description="No audit logs found" /> }}
-          renderItem={(item) => (
-            <List.Item onClick={() => setSelectedId(item.id)} style={{ cursor: "pointer" }}>
-              <Space direction="vertical" size={4} style={{ width: "100%" }}>
-                <Space>
+        {logs.length > 0 ? (
+          <div className="divide-y divide-slate-100">
+            {logs.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setSelectedId(item.id)}
+                className="flex w-full cursor-pointer flex-col items-start gap-1 py-4 text-left transition-colors hover:bg-slate-50"
+              >
+                <div className="flex flex-wrap items-center gap-2">
                   <Typography.Text strong>{item.action || "Unknown action"}</Typography.Text>
                   <Tag>{item.actor || "System"}</Tag>
                   {item.id === selectedId && <Badge status="processing" text="Selected" />}
-                </Space>
+                </div>
                 <Typography.Text type="secondary">{item.createdAt || "No timestamp"}</Typography.Text>
-              </Space>
-            </List.Item>
-          )}
-        />
+              </button>
+            ))}
+          </div>
+        ) : (
+          <Empty description="No audit logs found" />
+        )}
       </Card>
 
       <TimelineWidget
@@ -95,6 +100,6 @@ export default function AuditLogDetailPage() {
           </Typography.Paragraph>
         </Card>
       )}
-    </Space>
+    </div>
   );
 }

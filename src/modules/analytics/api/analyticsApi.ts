@@ -25,8 +25,8 @@ export const analyticsApi = {
   /**
    * Get revenue report
    */
-  getRevenueReport: async (query: AnalyticsQuery = {}): Promise<ApiResponse<RevenueReport>> => {
-    const response = await http.get<ApiResponse<RevenueReport>>(`${endpoints.analytics}/revenue`, {
+  getRevenueReport: async (query: AnalyticsQuery = {}): Promise<ApiResponse<RevenueReport | RevenueReport[]>> => {
+    const response = await http.get<ApiResponse<RevenueReport | RevenueReport[]>>(`${endpoints.analytics}/revenue`, {
       params: query,
     });
     return response.data;

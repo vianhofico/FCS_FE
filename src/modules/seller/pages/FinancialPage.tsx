@@ -73,7 +73,6 @@ export default function FinancialPage() {
         setState((prev) => ({ ...prev, isLoading: true }));
 
         const financialResponse = await financialApi.getSellerFinancials(user.id);
-        const bankAccountResponse = await financialApi.getBankAccounts(user.id).catch(() => null);
 
         if (financialResponse.success && financialResponse.data) {
           setState((prev) => ({
@@ -83,7 +82,7 @@ export default function FinancialPage() {
             totalWithdrawn: financialResponse.data?.totalWithdrawn || 0,
             pendingWithdrawal: financialResponse.data?.pendingWithdrawal || 0,
             withdrawals: financialResponse.data?.withdrawals || [],
-            bankAccounts: bankAccountResponse?.success ? bankAccountResponse.data || [] : [],
+            bankAccounts: financialResponse.data?.bankAccounts || [],
             isLoading: false,
           }));
         }

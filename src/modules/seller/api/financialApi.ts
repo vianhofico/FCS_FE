@@ -13,6 +13,14 @@ interface WithdrawalRequest {
   method: string;
 }
 
+interface BankAccountSummary {
+  id: string;
+  bankName: string;
+  accountNumber: string;
+  accountHolder: string;
+  isPrimary: boolean;
+}
+
 interface SellerFinancials {
   balance: number;
   totalEarnings: number;
@@ -24,17 +32,36 @@ interface SellerFinancials {
     status: string;
     createdAt: string;
   }>;
+  bankAccounts: BankAccountSummary[];
 }
+
+const getSellerWallet = async (sellerId: string) => {
+  const walletsResponse = await http.get<ApiResponse<PageResponse<Wallet> | Wallet[]>>(endpoints.wallets);
+  const walletsData = walletsResponse.data.data;
+  const wallets = Array.isArray(walletsData) ? walletsData : walletsData?.content || [];
+  return wallets.find((item) => item.userId === sellerId || item.walletOwnerId === sellerId);
+};
+
+const mapWalletBankAccount = (wallet?: Wallet): BankAccountSummary[] => {
+  if (!wallet?.bankName || !wallet.bankAccountNumber) return [];
+
+  return [
+    {
+      id: wallet.id,
+      bankName: wallet.bankName,
+      accountNumber: wallet.bankAccountNumber,
+      accountHolder: wallet.bankAccountName || "—",
+      isPrimary: true,
+    },
+  ];
+};
 
 export const financialApi = {
   /**
    * Get seller financial information
    */
   getSellerFinancials: async (sellerId: string): Promise<ApiResponse<SellerFinancials>> => {
-    const walletsResponse = await http.get<ApiResponse<PageResponse<Wallet> | Wallet[]>>(endpoints.wallets);
-    const walletsData = walletsResponse.data.data;
-    const wallets = Array.isArray(walletsData) ? walletsData : walletsData?.content || [];
-    const wallet = wallets.find((item) => item.userId === sellerId || item.walletOwnerId === sellerId);
+    const wallet = await getSellerWallet(sellerId);
 
     return {
       success: true,
@@ -45,6 +72,7 @@ export const financialApi = {
         totalWithdrawn: 0,
         pendingWithdrawal: 0,
         withdrawals: [],
+        bankAccounts: mapWalletBankAccount(wallet),
       },
     };
   },
@@ -87,23 +115,14 @@ export const financialApi = {
   /**
    * Get bank accounts
    */
-  getBankAccounts: async (
-    sellerId: string
-  ): Promise<
-    ApiResponse<
-      Array<{
-        id: string;
-        bankName: string;
-        accountNumber: string;
-        accountHolder: string;
-        isPrimary: boolean;
-      }>
-    >
-  > => {
-    const response = await http.get(
-      `${endpoints.wallets}/seller/${sellerId}/bank-accounts`
-    );
-    return response.data;
+  getBankAccounts: async (sellerId: string): Promise<ApiResponse<BankAccountSummary[]>> => {
+    const wallet = await getSellerWallet(sellerId);
+
+    return {
+      success: true,
+      message: wallet ? "Fetched bank account from wallet" : "Seller wallet not found",
+      data: mapWalletBankAccount(wallet),
+    };
   },
 
   /**

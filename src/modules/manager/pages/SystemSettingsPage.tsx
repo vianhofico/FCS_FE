@@ -3,10 +3,11 @@
  * System configuration and settings
  */
 
-import { useState } from "react";
-import { Card, Row, Col, Form, Input, InputNumber, Switch, message, Typography, Divider } from "antd";
+import { useEffect, useState } from "react";
+import { App, Card, Row, Col, Form, Input, InputNumber, Switch, Spin, Typography, Divider } from "antd";
 import { SettingOutlined, SaveOutlined, InfoCircleOutlined, ControlOutlined } from "@ant-design/icons";
 import { Button } from "@/shared/ui";
+import { systemSettingApi, type SystemSettingSummary } from "@/modules/catalog/api/systemSettingApi";
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -18,21 +19,82 @@ interface Settings {
   emailNotifications: boolean;
 }
 
+const defaultSettings: Settings = {
+  platformName: "Fashion Consignment System",
+  commissionRate: 15,
+  maxFileSize: 10,
+  maintenanceMode: false,
+  emailNotifications: true,
+};
+
+const fieldKeys: Record<keyof Settings, string> = {
+  platformName: "platform.name",
+  commissionRate: "commission.rate",
+  maxFileSize: "upload.max_file_size_mb",
+  maintenanceMode: "maintenance.mode",
+  emailNotifications: "notifications.email_enabled",
+};
+
+const parseSettingValue = (key: keyof Settings, value?: string) => {
+  if (value == null) return defaultSettings[key];
+  if (key === "maintenanceMode" || key === "emailNotifications") return value === "true";
+  if (key === "commissionRate" || key === "maxFileSize") return Number(value);
+  return value;
+};
+
 export default function SystemSettingsPage() {
   const [form] = Form.useForm();
-  const [settings, setSettings] = useState<Settings>({
-    platformName: "Fashion Consignment System",
-    commissionRate: 15,
-    maxFileSize: 10,
-    maintenanceMode: false,
-    emailNotifications: true,
-  });
+  const { message } = App.useApp();
+  const [settings, setSettings] = useState<Settings>(defaultSettings);
+  const [settingRecords, setSettingRecords] = useState<Partial<Record<keyof Settings, SystemSettingSummary>>>({});
   const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const response = await systemSettingApi.getSettings();
+        const records = response.data || [];
+        const nextSettings = { ...defaultSettings };
+        const nextRecords: Partial<Record<keyof Settings, SystemSettingSummary>> = {};
+
+        (Object.keys(fieldKeys) as Array<keyof Settings>).forEach((field) => {
+          const record = records.find((item) => item.key === fieldKeys[field]);
+          if (!record) return;
+          nextRecords[field] = record;
+          nextSettings[field] = parseSettingValue(field, record.value) as never;
+        });
+
+        setSettingRecords(nextRecords);
+        setSettings(nextSettings);
+        form.setFieldsValue(nextSettings);
+      } catch (err) {
+        message.error(err instanceof Error ? err.message : "Không thể tải cài đặt hệ thống");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadSettings();
+  }, [form, message]);
 
   const handleSave = async (values: Partial<Settings>) => {
     try {
       setLoading(true);
-      setSettings({ ...settings, ...values });
+      const updates = Object.entries(values).map(async ([field, value]) => {
+        const settingField = field as keyof Settings;
+        const record = settingRecords[settingField];
+        if (!record) return null;
+        return systemSettingApi.updateSetting(record.id, {
+          value: String(value),
+          description: record.description,
+        });
+      });
+
+      await Promise.all(updates);
+      const nextSettings = { ...settings, ...values };
+      setSettings(nextSettings);
+      form.setFieldsValue(nextSettings);
       message.success("Đã lưu cài đặt hệ thống");
     } catch (err) {
       message.error(err instanceof Error ? err.message : "Failed to save settings");
@@ -40,6 +102,14 @@ export default function SystemSettingsPage() {
       setLoading(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-[1440px] space-y-12 pb-20">

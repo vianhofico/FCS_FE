@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { Card, Row, Col, Spin, Table, Typography } from "antd";
 import { DownloadOutlined, MonitorOutlined, DatabaseOutlined, RiseOutlined } from "@ant-design/icons";
 import { Button, EmptyState } from "@/shared/ui";
+import { analyticsApi } from "@/modules/analytics/api/analyticsApi";
 
 const { Title, Paragraph } = Typography;
 
@@ -33,18 +34,27 @@ export default function SystemReportingPage() {
       try {
         setIsLoading(true);
 
-        const mockMetrics: SystemMetric[] = [
-          { id: "m1", metric: "API Calls", value: 125432, unit: "requests", timestamp: new Date().toISOString() },
-          { id: "m2", metric: "DB Queries", value: 89234, unit: "queries", timestamp: new Date().toISOString() },
-          { id: "m3", metric: "Cache Hits", value: 98765, unit: "hits", timestamp: new Date().toISOString() },
-        ];
+        const [dashboardResponse, revenueResponse, consignmentResponse] = await Promise.all([
+          analyticsApi.getDashboard(),
+          analyticsApi.getRevenueReport({ period: "DAILY" }),
+          analyticsApi.getConsignmentAnalytics(),
+        ]);
+        const dashboard = dashboardResponse.data;
+        const revenueData = revenueResponse.data;
+        const revenueRows = Array.isArray(revenueData) ? revenueData : revenueData ? [revenueData] : [];
+        const consignmentByStatus = consignmentResponse.data?.totalByStatus || consignmentResponse.data?.byStatus || {};
+        const now = new Date().toISOString();
 
-        setMetrics(mockMetrics);
+        setMetrics([
+          { id: "revenue", metric: "Revenue", value: dashboard?.totalRevenue || 0, unit: "VND", timestamp: now },
+          { id: "orders", metric: "Orders", value: revenueRows.reduce((sum, item) => sum + (item.orders || 0), 0), unit: "orders", timestamp: now },
+          { id: "consignments", metric: "Consignments", value: Object.values(consignmentByStatus).reduce((sum, value) => sum + value, 0), unit: "requests", timestamp: now },
+        ]);
         setStats({
-          totalTransactions: 5234,
-          totalRevenue: 325000000,
-          activeUsers: 1523,
-          systemUptime: 99.95,
+          totalTransactions: revenueRows.reduce((sum, item) => sum + (item.orders || 0), 0),
+          totalRevenue: dashboard?.totalRevenue || revenueRows.reduce((sum, item) => sum + (item.revenue || item.totalRevenue || 0), 0),
+          activeUsers: dashboard?.newUsersThisMonth || 0,
+          systemUptime: 100,
         });
         setIsLoading(false);
       } catch {

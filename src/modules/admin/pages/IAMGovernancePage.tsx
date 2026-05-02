@@ -4,9 +4,10 @@
  */
 
 import { useState, useEffect } from "react";
-import { Card, Table, Spin, Modal, message, Space, Row, Col, Typography } from "antd";
+import { Card, Table, Spin, Space, Row, Col, Typography } from "antd";
 import { DeleteOutlined, EditOutlined, SafetyOutlined, PlusOutlined, PartitionOutlined } from "@ant-design/icons";
 import { Badge, Button, EmptyState } from "@/shared/ui";
+import { iamApi } from "@/modules/iam/api/iamApi";
 
 const { Title, Paragraph } = Typography;
 
@@ -16,7 +17,7 @@ interface IAMPolicy {
   description: string;
   type: string;
   status: string;
-  createdAt: string;
+  createdAt?: string;
 }
 
 interface PageState {
@@ -45,20 +46,25 @@ export default function IAMGovernancePage() {
       try {
         setState((prev) => ({ ...prev, isLoading: true }));
 
-        const mockPolicies: IAMPolicy[] = [
-          { id: "p1", name: "Chính sách Người mua", description: "Quyền truy cập mặc định cho người mua", type: "ROLE", status: "ACTIVE", createdAt: new Date().toISOString() },
-          { id: "p2", name: "Chính sách Người bán", description: "Quyền truy cập mặc định cho người bán", type: "ROLE", status: "ACTIVE", createdAt: new Date().toISOString() },
-          { id: "p3", name: "Chính sách Quản trị", description: "Toàn quyền quản trị hệ thống", type: "ROLE", status: "ACTIVE", createdAt: new Date().toISOString() },
-        ];
+        const response = await iamApi.getRoles();
+        const roles = response.data?.content || [];
+        const policies: IAMPolicy[] = roles.map((role) => ({
+          id: role.id,
+          name: role.name,
+          description: role.description || `${role.name} role`,
+          type: "ROLE",
+          status: "ACTIVE",
+          createdAt: role.createdAt,
+        }));
 
         setState((prev) => ({
           ...prev,
-          policies: mockPolicies,
-          total: mockPolicies.length,
+          policies,
+          total: policies.length,
           stats: {
-            total: mockPolicies.length,
-            active: mockPolicies.filter((p) => p.status === "ACTIVE").length,
-            inactive: mockPolicies.filter((p) => p.status === "INACTIVE").length,
+            total: policies.length,
+            active: policies.filter((p) => p.status === "ACTIVE").length,
+            inactive: policies.filter((p) => p.status === "INACTIVE").length,
           },
           isLoading: false,
         }));
@@ -73,27 +79,6 @@ export default function IAMGovernancePage() {
 
     fetchPolicies();
   }, []);
-
-  const handleDeletePolicy = (policyId: string) => {
-    Modal.confirm({
-      title: "Xóa chính sách",
-      content: "Bạn có chắc chắn muốn xóa chính sách này không?",
-      okText: "Xóa",
-      okType: "danger",
-      cancelText: "Hủy",
-      onOk: async () => {
-        try {
-          message.success("Đã xóa chính sách");
-          setState((prev) => ({
-            ...prev,
-            policies: prev.policies.filter((p) => p.id !== policyId),
-          }));
-        } catch (err) {
-          message.error(err instanceof Error ? err.message : "Failed to delete policy");
-        }
-      },
-    });
-  };
 
   const columns = [
     {
@@ -134,11 +119,13 @@ export default function IAMGovernancePage() {
       title: "",
       key: "actions",
       align: "right" as const,
-      render: (_: unknown, record: IAMPolicy) => (
+      render: () => (
         <Space size="middle">
           <Button
             type="text"
             icon={<EditOutlined />}
+            disabled
+            title="Chỉnh sửa role chưa được hỗ trợ tại màn này"
             className="text-primary hover:!bg-pink-50 rounded-xl font-bold"
           >
             Sửa
@@ -147,7 +134,8 @@ export default function IAMGovernancePage() {
             danger
             type="text"
             icon={<DeleteOutlined />}
-            onClick={() => handleDeletePolicy(record.id)}
+            disabled
+            title="Xóa role chưa được hỗ trợ tại màn này"
             className="hover:!bg-red-50 rounded-xl font-bold"
           >
             Xóa
@@ -218,6 +206,8 @@ export default function IAMGovernancePage() {
           <Button
             type="primary"
             icon={<PlusOutlined />}
+            disabled
+            title="Tạo role chưa được hỗ trợ tại màn này"
             className="rounded-2xl h-12 px-8 font-bold shadow-luxury"
           >
             Tạo chính sách mới

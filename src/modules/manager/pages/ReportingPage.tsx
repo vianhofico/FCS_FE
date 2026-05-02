@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { Card, Row, Col, Spin, Table, Typography } from "antd";
 import { DownloadOutlined, BarChartOutlined, FileTextOutlined } from "@ant-design/icons";
 import { Button, EmptyState } from "@/shared/ui";
+import { analyticsApi } from "@/modules/analytics/api/analyticsApi";
 
 const { Title, Paragraph } = Typography;
 
@@ -47,29 +48,40 @@ export default function ReportingPage() {
       try {
         setState((prev) => ({ ...prev, isLoading: true }));
 
-        const mockReports: Report[] = [
+        const [dashboardResponse, revenueResponse, consignmentResponse] = await Promise.all([
+          analyticsApi.getDashboard(),
+          analyticsApi.getRevenueReport({ period: "DAILY" }),
+          analyticsApi.getConsignmentAnalytics(),
+        ]);
+        const revenueData = revenueResponse.data;
+        const revenueRows = Array.isArray(revenueData) ? revenueData : revenueData ? [revenueData] : [];
+        const consignmentByStatus = consignmentResponse.data?.totalByStatus || consignmentResponse.data?.byStatus || {};
+        const activeListings = Object.entries(consignmentByStatus)
+          .filter(([status]) => ["APPROVED", "ACCEPTED", "REVIEWING", "SUBMITTED"].includes(status))
+          .reduce((sum, [, value]) => sum + value, 0);
+        const reports: Report[] = [
           {
-            id: "r1",
-            title: "Báo cáo doanh số tháng",
-            type: "SALES",
-            generatedAt: new Date().toISOString(),
+            id: "revenue",
+            title: "Báo cáo doanh thu",
+            type: "REVENUE",
+            generatedAt: revenueRows[0]?.date || new Date().toISOString(),
           },
           {
-            id: "r2",
-            title: "Báo cáo hoạt động người dùng",
-            type: "ACTIVITY",
-            generatedAt: new Date(Date.now() - 86400000).toISOString(),
+            id: "consignments",
+            title: "Báo cáo ký gửi",
+            type: "CONSIGNMENT",
+            generatedAt: new Date().toISOString(),
           },
         ];
 
         setState((prev) => ({
           ...prev,
-          reports: mockReports,
+          reports,
           stats: {
-            totalOrders: 5234,
-            totalUsers: 1523,
-            totalRevenue: 125000,
-            activeListings: 3456,
+            totalOrders: revenueRows.reduce((sum, item) => sum + (item.orders || 0), 0),
+            totalUsers: dashboardResponse.data?.newUsersThisMonth || 0,
+            totalRevenue: dashboardResponse.data?.totalRevenue || revenueRows.reduce((sum, item) => sum + (item.revenue || item.totalRevenue || 0), 0),
+            activeListings,
           },
           isLoading: false,
         }));

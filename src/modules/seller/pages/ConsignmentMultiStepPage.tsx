@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react';
-import { Form, Input, InputNumber, Col, Typography, Steps, message, Card, Upload } from 'antd';
+import { App, Form, Input, InputNumber, Col, Typography, Steps, Card, Upload } from 'antd';
 import {
   ArrowLeftOutlined,
   ArrowRightOutlined,
@@ -25,6 +25,7 @@ const { Title, Text, Paragraph } = Typography;
 
 export default function ConsignmentMultiStepPage() {
   const navigate = useNavigate();
+  const { message } = App.useApp();
   const { user } = useAuth();
   const [current, setCurrent] = useState(0);
   const [form] = Form.useForm();

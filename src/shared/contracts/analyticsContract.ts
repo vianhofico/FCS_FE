@@ -18,7 +18,15 @@ export type DashboardKpi = {
  * Manager/Admin dashboard
  */
 export type ManagerDashboard = {
-  kpis: DashboardKpi[];
+  kpis?: DashboardKpi[];
+  totalRevenue?: number;
+  pendingConsignments?: number;
+  activeOrders?: number;
+  pendingWithdrawals?: number;
+  revenueToday?: number;
+  revenueThisMonth?: number;
+  newUsersThisMonth?: number;
+  topProducts?: Array<Record<string, unknown>>;
   revenueChart?: Record<string, unknown>;
   consignmentStats?: Record<string, unknown>;
   orderStats?: Record<string, unknown>;
@@ -28,10 +36,14 @@ export type ManagerDashboard = {
  * Revenue report
  */
 export type RevenueReport = {
-  period: "DAILY" | "WEEKLY" | "MONTHLY";
-  startDate: string;
-  endDate: string;
-  totalRevenue: number;
+  period?: "DAILY" | "WEEKLY" | "MONTHLY";
+  startDate?: string;
+  endDate?: string;
+  totalRevenue?: number;
+  date?: string;
+  revenue?: number;
+  orders?: number;
+  commission?: number;
   byPaymentMethod?: Record<string, number>;
   byProduct?: Array<{
     productId: string;
@@ -50,16 +62,18 @@ export type RevenueReport = {
  * Consignment analytics
  */
 export type ConsignmentAnalytics = {
-  totalConsignments: number;
+  totalConsignments?: number;
+  totalByStatus?: Record<string, number>;
   byStatus?: Record<string, number>;
+  conversionRate?: number;
   byConsignor?: Array<{
     consignorId: string;
     consignorName: string;
     count: number;
     totalValue: number;
   }>;
-  activeConsignments: number;
-  completedConsignments: number;
+  activeConsignments?: number;
+  completedConsignments?: number;
 };
 
 /**
