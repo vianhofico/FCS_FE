@@ -14,7 +14,6 @@ import {
   Form,
   Input,
   message,
-  Space,
   Select,
   Typography,
 } from "antd";
@@ -202,14 +201,14 @@ export default function FinancialPage() {
             Quản lý doanh thu, theo dõi các khoản rút tiền và thiết lập thông tin thanh toán của bạn.
           </Paragraph>
         </div>
-        <Space size="middle">
+        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
           <Button
             type="primary"
             size="large"
             icon={<ArrowUpOutlined />}
             onClick={() => setState((prev) => ({ ...prev, showWithdrawalModal: true }))}
             disabled={state.balance <= 0}
-            className="shadow-luxury"
+            className="w-full shadow-luxury sm:w-auto"
           >
             YÊU CẦU RÚT TIỀN
           </Button>
@@ -217,11 +216,11 @@ export default function FinancialPage() {
             size="large"
             icon={<PlusOutlined />}
             onClick={() => setState((prev) => ({ ...prev, showBankAccountModal: true }))}
-            className="rounded-xl border-pink-100 text-primary font-bold transition-soft hover:border-primary"
+            className="w-full rounded-xl border-pink-100 text-primary font-bold transition-soft hover:border-primary sm:w-auto"
           >
             THÊM NGÂN HÀNG
           </Button>
-        </Space>
+        </div>
       </div>
 
       <Row gutter={[24, 24]}>

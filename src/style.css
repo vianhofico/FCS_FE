@@ -68,6 +68,7 @@
   }
 
   .ant-layout-header {
+    background: rgba(255, 255, 255, 0.9) !important;
     border-block-end-color: #fff !important;
     box-shadow: none !important;
   }
@@ -79,6 +80,19 @@
   .luxury-menu.ant-menu-horizontal > .ant-menu-item,
   .luxury-menu.ant-menu-horizontal > .ant-menu-submenu {
     padding-inline: 10px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    height: 48px !important;
+    line-height: 48px !important;
+    margin-block: 0 !important;
+  }
+
+  .luxury-menu.ant-menu-horizontal > .ant-menu-item .ant-menu-title-content,
+  .luxury-menu.ant-menu-horizontal > .ant-menu-submenu .ant-menu-title-content {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 100%;
   }
 
   .luxury-menu.ant-menu-horizontal > .ant-menu-item-selected::after,

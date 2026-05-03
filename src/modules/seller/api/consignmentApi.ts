@@ -67,36 +67,11 @@ export const consignmentApi = {
   getConsignmentContracts: async (
     query: ConsignmentQuery
   ): Promise<ApiResponse<PageResponse<ConsignmentContract>>> => {
-    const consignmentsResponse = await http.get<ApiResponse<PageResponse<ConsignmentRequestSummary>>>(
-      endpoints.consignments,
+    const response = await http.get<ApiResponse<PageResponse<ConsignmentContract>>>(
+      `${endpoints.consignments}/contracts`,
       { params: query }
     );
-
-    const consignments = consignmentsResponse.data.data?.content || [];
-    const approvedConsignments = consignments.filter((request) =>
-      ["APPROVED", "ACCEPTED"].includes(request.status)
-    );
-    const contractResponses = await Promise.allSettled(
-      approvedConsignments.map((request) =>
-        http.get<ApiResponse<ConsignmentContract>>(`${endpoints.consignments}/${request.id}/contract`)
-      )
-    );
-    const contracts = contractResponses
-      .filter((result) => result.status === "fulfilled")
-      .map((result) => result.value.data.data)
-      .filter((contract): contract is ConsignmentContract => Boolean(contract));
-
-    return {
-      success: true,
-      message: "Fetched contracts",
-      data: {
-        content: contracts,
-        page: consignmentsResponse.data.data?.page || 0,
-        size: consignmentsResponse.data.data?.size || query.size || contracts.length,
-        totalElements: contracts.length,
-        totalPages: contracts.length > 0 ? 1 : 0,
-      },
-    };
+    return response.data;
   },
 
   /**

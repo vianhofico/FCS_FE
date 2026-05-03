@@ -4,11 +4,14 @@
  */
 
 import {
+  ArrowRightOutlined,
   ClearOutlined,
   FilterOutlined,
+  FireOutlined,
   SearchOutlined,
   ShoppingCartOutlined,
   SortAscendingOutlined,
+  StarFilled,
 } from "@ant-design/icons";
 import {
   Card,
@@ -26,6 +29,7 @@ import {
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
+import heroImage from "@/assets/buyer-hero-start.jpg";
 import { productApi } from "@/modules/product/api/productApi";
 import { Badge, Button, EmptyState, GradeBadge } from "@/shared/ui";
 import type { ProductCategory, ProductQuery, ProductSummary } from "@/shared/contracts/productContract";
@@ -45,8 +49,6 @@ interface BuyerProductListPageState {
   categoriesLoading: boolean;
   sortBy: string; // "newest" | "price_asc" | "price_desc"
 }
-
-const HERO_IMAGE = "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80";
 
 export default function BuyerProductListPage() {
   const navigate = useNavigate();
@@ -69,6 +71,7 @@ export default function BuyerProductListPage() {
       status: "SELLING",
       brandId: undefined,
       categoryId: undefined,
+      categoryIds: [],
     },
     categories: [],
     categoriesLoading: false,
@@ -154,10 +157,25 @@ export default function BuyerProductListPage() {
     }));
   };
 
-  const handleCategoryChange = (categoryId: string | undefined) => {
+  const handleCategoryToggle = (categoryId: string) => {
+    setState((prev) => {
+      const selectedCategoryIds = prev.filters.categoryIds || [];
+      const categoryIds = selectedCategoryIds.includes(categoryId)
+        ? selectedCategoryIds.filter((id) => id !== categoryId)
+        : [...selectedCategoryIds, categoryId];
+
+      return {
+        ...prev,
+        filters: { ...prev.filters, categoryIds, categoryId: undefined },
+        page: 0,
+      };
+    });
+  };
+
+  const handleClearCategories = () => {
     setState((prev) => ({
       ...prev,
-      filters: { ...prev.filters, categoryId },
+      filters: { ...prev.filters, categoryIds: [], categoryId: undefined },
       page: 0,
     }));
   };
@@ -174,6 +192,7 @@ export default function BuyerProductListPage() {
         status: "SELLING",
         brandId: undefined,
         categoryId: undefined,
+        categoryIds: [],
       },
       sortBy: "newest",
       page: 0,
@@ -269,24 +288,31 @@ export default function BuyerProductListPage() {
         <Title level={5} className="!mb-6 !font-display border-b border-border/60 pb-3">Danh mục</Title>
         <div className="flex flex-wrap gap-2">
           <Button
-            className={`rounded-full px-4 text-xs font-bold uppercase tracking-wider transition-soft ${
-              !state.filters.categoryId ? "bg-primary text-white border-none" : "border-border text-slate-500"
+            className={`rounded-full px-4 text-xs uppercase tracking-wider transition-soft ${
+              (state.filters.categoryIds || []).length === 0
+                ? "!border-primary bg-primary/5 font-black text-primary shadow-sm ring-1 ring-primary/20"
+                : "border-border font-bold text-slate-500"
             }`}
-            onClick={() => handleCategoryChange(undefined)}
+            onClick={handleClearCategories}
           >
             Tất cả
           </Button>
-          {state.categories.map((cat) => (
-            <Button
-              key={cat.id}
-              className={`rounded-full px-4 text-xs font-bold uppercase tracking-wider transition-soft ${
-                state.filters.categoryId === cat.id ? "bg-primary text-white border-none" : "border-border text-slate-500"
-              }`}
-              onClick={() => handleCategoryChange(cat.id)}
-            >
-              {cat.name}
-            </Button>
-          ))}
+          {state.categories.map((cat) => {
+            const isSelected = (state.filters.categoryIds || []).includes(cat.id);
+            return (
+              <Button
+                key={cat.id}
+                className={`rounded-full px-4 text-xs uppercase tracking-wider transition-soft ${
+                  isSelected
+                    ? "!border-primary bg-primary/5 font-black text-primary shadow-sm ring-1 ring-primary/20"
+                    : "border-border font-bold text-slate-500"
+                }`}
+                onClick={() => handleCategoryToggle(cat.id)}
+              >
+                {cat.name}
+              </Button>
+            );
+          })}
         </div>
       </div>
 
@@ -322,27 +348,58 @@ export default function BuyerProductListPage() {
 
   return (
     <div className="space-y-12">
-      {/* Banner Section */}
-      <section className="group relative h-[380px] overflow-hidden rounded-[2.5rem] shadow-luxury">
-        <img src={HERO_IMAGE} alt="Luxury Banner" className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105" />
-        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-transparent">
-          <div className="flex h-full flex-col justify-center px-8 md:px-16 lg:max-w-2xl">
-            <Text className="animate-reveal text-[10px] font-black uppercase tracking-[0.4em] text-primary">Ký gửi thời trang cao cấp</Text>
-            <Title className="!mt-4 !mb-6 !font-display !text-4xl !font-black !leading-tight !tracking-tight md:!text-5xl uppercase animate-reveal delay-100">
-              Phong cách bền vững, <br />
-              <span className="italic font-light text-primary/80 lowercase">giá trị vượt thời gian.</span>
-            </Title>
-            <Paragraph className="animate-reveal delay-200 text-lg font-medium text-slate-500/80">
-              Khám phá những món đồ Local Brand đã qua tuyển chọn kỹ lưỡng, đảm bảo độ mới và phong cách riêng biệt.
-            </Paragraph>
-            <div className="animate-reveal delay-300 mt-6">
-              <Button type="primary" size="large" className="shadow-luxury">Khám phá ngay</Button>
+      <section className="relative overflow-hidden rounded-[3rem] bg-white px-6 py-12 shadow-xl shadow-pink-100/40 md:px-12 lg:px-16">
+        <div className="pointer-events-none absolute -right-20 -top-24 h-80 w-80 rounded-full bg-primary/5 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 -left-20 h-72 w-72 rounded-full bg-pink-100/40 blur-3xl" />
+        <Row gutter={[48, 48]} align="middle" className="relative z-10">
+          <Col xs={24} lg={12}>
+            <div className="space-y-8">
+              <div className="inline-flex items-center gap-2 rounded-full border border-pink-100 bg-pink-50 px-4 py-2">
+                <FireOutlined className="text-primary" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-primary">Thời trang ký gửi thế hệ mới</span>
+              </div>
+
+              <div className="space-y-2">
+                <Title className="!m-0 !font-display !text-5xl !font-black !leading-tight !tracking-tight !text-slate-900 md:!text-6xl lg:!text-7xl uppercase">
+                  Phong cách
+                </Title>
+                <Title className="!m-0 !font-display !text-5xl !font-light italic !leading-tight !tracking-tight !text-primary md:!text-6xl lg:!text-7xl uppercase">
+                  thời trang bền vững
+                </Title>
+                <Title className="!m-0 !font-display !text-5xl !font-black !leading-tight !tracking-tight !text-slate-900 md:!text-6xl lg:!text-7xl uppercase">
+                  cho Gen Z.
+                </Title>
+              </div>
+
+              <Paragraph className="max-w-md text-base font-medium !leading-relaxed text-slate-500 opacity-80 md:text-lg">
+                Nền tảng mua sắm thời trang ký gửi Local Brand dành cho giới trẻ.
+              </Paragraph>
+
+              <Space size="middle" className="flex flex-wrap">
+                <Button type="primary" size="large" className="h-12 rounded-2xl px-8 font-black shadow-luxury">
+                  Khám phá ngay <ArrowRightOutlined />
+                </Button>
+                <div className="flex items-center gap-4 rounded-full border border-pink-100 bg-white/70 px-5 py-3 shadow-sm backdrop-blur">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-white">
+                    <StarFilled />
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-black uppercase tracking-widest text-primary/70">Ra mắt mới</div>
+                    <div className="text-sm font-black text-slate-800">Sau 02 Ngày : 14 Giờ</div>
+                  </div>
+                </div>
+              </Space>
             </div>
-          </div>
-        </div>
+          </Col>
+
+          <Col xs={24} lg={12}>
+            <div className="relative mx-auto max-w-xl overflow-hidden rounded-[3rem] shadow-2xl shadow-pink-200/50 lg:ml-auto">
+              <img loading="lazy" src={heroImage} alt="Thời trang ký gửi thế hệ mới" className="aspect-[4/5] w-full object-cover" />
+            </div>
+          </Col>
+        </Row>
       </section>
 
-      {/* Main Grid Section */}
       <div className="flex flex-col gap-10 md:flex-row">
         {/* Desktop Sidebar Filters */}
         <aside className="hidden w-72 shrink-0 lg:block">

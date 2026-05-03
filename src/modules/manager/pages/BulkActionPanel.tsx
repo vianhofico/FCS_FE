@@ -108,7 +108,7 @@ export default function BulkActionPanel() {
 
   return (
     <Card title="Bulk Actions" loading={isLoading}>
-      <Space direction="vertical" size={16} style={{ width: "100%" }}>
+      <Space orientation="vertical" size={16} style={{ width: "100%" }}>
         <p>Execute safe bulk moderation actions across orders and returns.</p>
         <Tabs
           activeKey={activeTab}
@@ -118,7 +118,7 @@ export default function BulkActionPanel() {
               key: "orders",
               label: "Orders",
               children: (
-                <Space direction="vertical" size={16} style={{ width: "100%" }}>
+                <Space orientation="vertical" size={16} style={{ width: "100%" }}>
                   <Space>
                     <Button type="primary" loading={isSubmitting} onClick={() => handleBulkOrders(ORDER_TARGET_STATUS)}>
                       Confirm selected
@@ -132,6 +132,7 @@ export default function BulkActionPanel() {
                     columns={orderColumns}
                     dataSource={orders}
                     pagination={false}
+                    scroll={{ x: "max-content" }}
                     locale={{ emptyText: <Empty description="No orders available" /> }}
                   />
                 </Space>
@@ -141,7 +142,7 @@ export default function BulkActionPanel() {
               key: "returns",
               label: "Returns",
               children: (
-                <Space direction="vertical" size={16} style={{ width: "100%" }}>
+                <Space orientation="vertical" size={16} style={{ width: "100%" }}>
                   <Space>
                     <Button type="primary" loading={isSubmitting} onClick={() => handleBulkReturns(RETURN_TARGET_STATUS)}>
                       Approve selected
@@ -155,6 +156,7 @@ export default function BulkActionPanel() {
                     columns={returnColumns}
                     dataSource={returns}
                     pagination={false}
+                    scroll={{ x: "max-content" }}
                     locale={{ emptyText: <Empty description="No returns available" /> }}
                   />
                 </Space>

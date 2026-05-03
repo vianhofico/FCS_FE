@@ -113,6 +113,7 @@ export type ProductQuery = {
   keyword?: string;
   brandId?: string;
   categoryId?: string;
+  categoryIds?: string[];
   minPrice?: number;
   maxPrice?: number;
   minCondition?: number;

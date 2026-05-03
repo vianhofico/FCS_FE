@@ -108,7 +108,7 @@ export default function PerformanceMonitoringPage() {
               ].map((item, i) => (
                 <div key={i}>
                   <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">{item.label}</p>
-                  <Progress percent={item.percent} strokeColor={item.percent > 70 ? "#ff4d4f" : "#primary"} strokeWidth={12} className="luxury-progress" />
+                  <Progress percent={item.percent} strokeColor={item.percent > 70 ? "#ff4d4f" : "#primary"} size={["100%", 12]} className="luxury-progress" />
                 </div>
               ))}
             </div>
@@ -122,16 +122,16 @@ export default function PerformanceMonitoringPage() {
           >
             <Row gutter={[16, 40]}>
               <Col span={12}>
-                <Statistic title={<span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Tổng yêu cầu</span>} value={125432} valueStyle={{ fontWeight: 900 }} />
+                <Statistic title={<span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Tổng yêu cầu</span>} value={125432} styles={{ content: { fontWeight: 900 } }} />
               </Col>
               <Col span={12}>
-                <Statistic title={<span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Thành công</span>} value={124658} valueStyle={{ color: "#52c41a", fontWeight: 900 }} />
+                <Statistic title={<span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Thành công</span>} value={124658} styles={{ content: { color: "#52c41a", fontWeight: 900 } }} />
               </Col>
               <Col span={12}>
-                <Statistic title={<span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Thất bại</span>} value={774} valueStyle={{ color: "#ff4d4f", fontWeight: 900 }} />
+                <Statistic title={<span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Thất bại</span>} value={774} styles={{ content: { color: "#ff4d4f", fontWeight: 900 } }} />
               </Col>
               <Col span={12}>
-                <Statistic title={<span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Thời gian TB</span>} value={145} suffix="ms" valueStyle={{ fontWeight: 900 }} />
+                <Statistic title={<span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Thời gian TB</span>} value={145} suffix="ms" styles={{ content: { fontWeight: 900 } }} />
               </Col>
             </Row>
           </Card>

@@ -154,6 +154,8 @@ export default function OrderModerationPage() {
       title: "",
       key: "actions",
       align: "right" as const,
+      fixed: "right" as const,
+      width: 220,
       render: (_: any, record: OrderSummary) => (
         <Space size="middle">
           <Button type="text" icon={<EyeOutlined />} className="text-slate-400 hover:!text-primary" onClick={() => navigate(`/manager/orders/${record.id}`)} />
@@ -207,7 +209,7 @@ export default function OrderModerationPage() {
         </div>
 
         <Spin spinning={state.isLoading && state.orders.length === 0}>
-          <Table columns={columns} dataSource={state.orders.map(o => ({ ...o, key: o.id }))} pagination={false} className="luxury-table" />
+          <Table columns={columns} dataSource={state.orders.map(o => ({ ...o, key: o.id }))} pagination={false} scroll={{ x: 780 }} className="luxury-table" />
 
           {state.total > state.size && (
             <div className="mt-10 flex justify-center">

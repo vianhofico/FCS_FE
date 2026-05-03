@@ -94,6 +94,7 @@ export default function CartPage() {
     {
       title: <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Sản phẩm</span>,
       key: "product",
+      width: 240,
       render: (_: any, record: CartItem) => (
         <div className="flex items-center gap-4 py-2 group cursor-pointer" onClick={() => navigate(`/buyer/products/${record.productId}`)}>
           <div className="h-20 w-16 overflow-hidden rounded-xl bg-bg-secondary shadow-sm">
@@ -108,6 +109,17 @@ export default function CartPage() {
             <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{record.sku}</p>
           </div>
         </div>
+      ),
+    },
+    {
+      title: "",
+      key: "action",
+      align: "center" as const,
+      width: 64,
+      render: (_: any, record: CartItem) => (
+        <Popconfirm title="Xóa sản phẩm này?" onConfirm={() => handleRemoveItem(record.id)} okText="Có" cancelText="Không">
+          <Button type="text" danger icon={<DeleteOutlined />} className="hover:!bg-red-50" />
+        </Popconfirm>
       ),
     },
     {
@@ -138,15 +150,6 @@ export default function CartPage() {
       title: <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tạm tính</span>,
       key: "subtotal",
       render: (_: any, record: CartItem) => <span className="font-black text-primary">{(record.salePrice * record.quantity).toLocaleString()}₫</span>,
-    },
-    {
-      title: "",
-      key: "action",
-      render: (_: any, record: CartItem) => (
-        <Popconfirm title="Xóa sản phẩm này?" onConfirm={() => handleRemoveItem(record.id)} okText="Có" cancelText="Không">
-          <Button type="text" danger icon={<DeleteOutlined />} className="hover:!bg-red-50" />
-        </Popconfirm>
-      ),
     },
   ];
 
@@ -182,7 +185,7 @@ export default function CartPage() {
         <Row gutter={[32, 32]}>
           <Col xs={24} lg={16}>
             <Card className="overflow-hidden rounded-[2.5rem] border-border/40 bg-white shadow-sm">
-              <Table columns={columns} dataSource={state.cartItems} pagination={false} rowKey="id" className="luxury-table" />
+              <Table columns={columns} dataSource={state.cartItems} pagination={false} rowKey="id" scroll={{ x: 720 }} className="luxury-table" />
             </Card>
           </Col>
           <Col xs={24} lg={8}>

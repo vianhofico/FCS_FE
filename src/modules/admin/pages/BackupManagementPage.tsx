@@ -191,6 +191,8 @@ export default function BackupManagementPage() {
       title: "",
       key: "actions",
       align: "right" as const,
+      fixed: "right" as const,
+      width: 220,
       render: (_: unknown, record: Backup) => (
         <Space size="middle">
           <Button
@@ -288,6 +290,7 @@ export default function BackupManagementPage() {
           columns={columns}
           dataSource={state.backups.map((b) => ({ ...b, key: b.id }))}
           pagination={false}
+          scroll={{ x: 900 }}
           className="luxury-table"
         />
 

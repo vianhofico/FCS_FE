@@ -148,6 +148,8 @@ export default function MyProductsPage() {
       title: "",
       key: "actions",
       align: "right" as const,
+      fixed: "right" as const,
+      width: 150,
       render: (_: any, record: ProductSummary) => (
         <Space size="middle">
           <Button
@@ -242,6 +244,7 @@ export default function MyProductsPage() {
             columns={columns}
             dataSource={state.products.map(p => ({ ...p, key: p.id }))}
             pagination={false}
+            scroll={{ x: 900 }}
             className="luxury-table"
           />
           <div className="mt-10 flex justify-center">

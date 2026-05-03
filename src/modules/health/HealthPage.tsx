@@ -25,13 +25,13 @@ export function HealthPage() {
   };
 
   return (
-    <Space direction="vertical" size={16} style={{ width: "100%" }}>
+    <Space orientation="vertical" size={16} style={{ width: "100%" }}>
       <Typography.Title level={3} style={{ margin: 0 }}>
         Health
       </Typography.Title>
 
       <Card>
-        <Space direction="vertical" size={12} style={{ width: "100%" }}>
+        <Space orientation="vertical" size={12} style={{ width: "100%" }}>
           <Typography.Paragraph style={{ margin: 0 }}>
             Goi thu <code>GET /api/v1/health</code> toi backend (baseURL lay tu <code>VITE_API_BASE_URL</code>
             ).

@@ -234,6 +234,7 @@ export default function ReturnsModerationPage() {
           columns={columns}
           dataSource={state.returns.map((ret) => ({ ...ret, key: ret.id }))}
           pagination={false}
+          scroll={{ x: "max-content" }}
           className="luxury-table"
         />
 

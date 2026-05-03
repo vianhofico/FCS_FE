@@ -127,6 +127,8 @@ export default function OrderHistoryPage() {
       title: "",
       key: "action",
       align: "right" as const,
+      fixed: "right" as const,
+      width: 130,
       render: (_: unknown, record: OrderSummary) => (
         <Button
           type="text"
@@ -201,6 +203,7 @@ export default function OrderHistoryPage() {
                 columns={columns}
                 dataSource={state.orders.map((order) => ({ ...order, key: order.id }))}
                 pagination={false}
+                scroll={{ x: 820 }}
                 className="luxury-table"
               />
             </Spin>

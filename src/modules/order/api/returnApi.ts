@@ -3,7 +3,6 @@
  */
 
 import { http } from "@/shared/api/http";
-import { endpoints } from "@/shared/api/endpoints";
 import type { ApiResponse, PageResponse } from "@/shared/contracts/commonContract";
 import type {
   ReturnRequestSummary,
@@ -19,7 +18,7 @@ export const returnApi = {
    */
   getReturns: async (query: ReturnQuery = {}): Promise<ApiResponse<PageResponse<ReturnRequestSummary>>> => {
     const response = await http.get<ApiResponse<PageResponse<ReturnRequestSummary>>>(
-      `${endpoints.orders}/returns`,
+      "/api/v1/returns",
       { params: query }
     );
     return response.data;
@@ -29,7 +28,7 @@ export const returnApi = {
    * Get return detail
    */
   getReturnDetail: async (returnId: string): Promise<ApiResponse<ReturnRequestDetail>> => {
-    const response = await http.get<ApiResponse<ReturnRequestDetail>>(`${endpoints.orders}/returns/${returnId}`);
+    const response = await http.get<ApiResponse<ReturnRequestDetail>>(`/api/v1/returns/${returnId}`);
     return response.data;
   },
 
@@ -38,7 +37,7 @@ export const returnApi = {
    */
   createReturn: async (payload: ReturnRequestCreateRequest): Promise<ApiResponse<ReturnRequestSummary>> => {
     const response = await http.post<ApiResponse<ReturnRequestSummary>>(
-      `${endpoints.orders}/returns`,
+      "/api/v1/returns",
       payload
     );
     return response.data;
@@ -52,7 +51,7 @@ export const returnApi = {
     payload: ReturnStatusRequest
   ): Promise<ApiResponse<ReturnRequestDetail>> => {
     const response = await http.patch<ApiResponse<ReturnRequestDetail>>(
-      `${endpoints.orders}/returns/${returnId}/status`,
+      `/api/v1/returns/${returnId}/status`,
       payload
     );
     return response.data;

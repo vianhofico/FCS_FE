@@ -38,10 +38,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative flex min-h-[80vh] items-center justify-center px-4">
-      {/* Background Decorative Elements */}
-      <div className="pointer-events-none absolute -left-10 top-20 h-64 w-64 rounded-full bg-primary/5 blur-3xl" />
-      <div className="pointer-events-none absolute -right-20 bottom-10 h-80 w-80 rounded-full bg-accent/10 blur-3xl" />
+    <div className="relative flex min-h-[80vh] items-center justify-center overflow-hidden px-4">
+      <div className="pointer-events-none absolute left-0 top-20 h-64 w-64 -translate-x-1/2 rounded-full bg-primary/5 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-10 right-0 h-80 w-80 translate-x-1/2 rounded-full bg-accent/10 blur-3xl" />
 
       <Card className="w-full max-w-md overflow-hidden border-pink-100/50 bg-white/80 shadow-luxury backdrop-blur-xl rounded-[2.5rem]">
         <div className="relative text-center">

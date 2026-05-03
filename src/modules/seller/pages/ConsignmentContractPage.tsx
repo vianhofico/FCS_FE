@@ -159,6 +159,8 @@ export default function ConsignmentContractPage() {
       title: "",
       key: "actions",
       align: "right" as const,
+      fixed: "right" as const,
+      width: 240,
       render: (_: unknown, record: ConsignmentContract) => (
         <Space size="middle">
           <Button
@@ -223,6 +225,7 @@ export default function ConsignmentContractPage() {
           dataSource={state.contracts.map((contract) => ({ ...contract, key: contract.id }))}
           pagination={false}
           loading={state.isLoading}
+          scroll={{ x: 820 }}
           className="luxury-table"
         />
 

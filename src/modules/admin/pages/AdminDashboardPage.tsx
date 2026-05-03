@@ -165,7 +165,6 @@ export default function AdminDashboardPage() {
                 type="dashboard" 
                 percent={stats.systemHealth} 
                 strokeColor={{ '0%': '#d94a7a', '100%': '#f08ab1' }}
-                strokeWidth={8}
                 size={220}
                 format={p => <div className="flex flex-col"><span className="font-display text-5xl font-black text-slate-900">{p}%</span><span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Excellent</span></div>}
               />

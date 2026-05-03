@@ -4,7 +4,7 @@ import { appRoutes } from "@/app/router/routeManifest";
 
 export function DashboardPage() {
   return (
-    <Space direction="vertical" size={16} style={{ width: "100%" }}>
+    <Space orientation="vertical" size={16} style={{ width: "100%" }}>
       <Typography.Title level={3} style={{ margin: 0 }}>
         Dashboard
       </Typography.Title>

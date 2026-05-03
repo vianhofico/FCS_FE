@@ -201,6 +201,7 @@ export default function MyReturnsPage() {
                 columns={columns}
                 dataSource={state.returns.map((ret) => ({ ...ret, key: ret.id }))}
                 pagination={false}
+                scroll={{ x: "max-content" }}
                 className="luxury-table"
               />
             </Spin>

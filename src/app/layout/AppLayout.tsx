@@ -9,7 +9,6 @@ import {
   MenuOutlined,
   ReconciliationOutlined,
   SafetyCertificateOutlined,
-  SearchOutlined,
   SettingOutlined,
   ShopOutlined,
   ShoppingCartOutlined,
@@ -17,7 +16,7 @@ import {
   TeamOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { Avatar, Badge, Button, Drawer, Dropdown, Input, Layout, Menu, Space } from "antd";
+import { Avatar, Badge, Button, Drawer, Dropdown, Layout, Menu, Space } from "antd";
 import type { MenuProps } from "antd";
 import { useMemo, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -93,14 +92,6 @@ function getSelectedKeys(menuItems: NavigationItem[], pathname: string) {
   return keys.length ? [keys.sort((a, b) => b.length - a.length)[0]] : [];
 }
 
-function getRoleLabel(hasRole: ReturnType<typeof useAuth>["hasRole"], isAuthenticated: boolean) {
-  if (!isAuthenticated) return "Guest Atelier";
-  if (hasRole("ADMIN")) return "Admin Studio";
-  if (hasRole("MANAGER")) return "Manager Desk";
-  if (hasRole("SELLER")) return "Seller Atelier";
-  return "Buyer Club";
-}
-
 export function AppLayout() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -109,7 +100,6 @@ export function AppLayout() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const menuItems = useMemo(() => getMenuItems(hasRole, isAuthenticated), [hasRole, isAuthenticated]);
   const selectedKeys = getSelectedKeys(menuItems, location.pathname);
-  const roleLabel = getRoleLabel(hasRole, isAuthenticated);
 
   const handleLogout = () => {
     logout();
@@ -122,46 +112,27 @@ export function AppLayout() {
       items={menuItems}
       selectedKeys={selectedKeys.length ? selectedKeys : ["/"]}
       onClick={({ key }) => navigate(key)}
-      className="luxury-menu hidden min-w-0 flex-1 border-none bg-transparent text-[10px] font-bold uppercase tracking-widest text-slate-500 lg:flex h-11 leading-[44px]"
+      className="luxury-menu flex min-w-max self-center border-none bg-transparent text-[10px] font-bold uppercase tracking-widest text-slate-500 h-12 leading-[48px]"
     />
   );
 
   return (
-    <Layout className="min-h-screen bg-bg-main font-sans">
-      <Header className="sticky top-0 z-50 h-auto border-b border-white bg-bg-main/90 px-0 shadow-none backdrop-blur-xl">
-        <div className="mx-auto flex max-w-[1440px] items-center gap-4 px-4 py-3 sm:px-6 lg:px-8">
+    <Layout className="min-h-screen bg-white font-sans">
+      <Header className="sticky top-0 z-50 h-auto border-none bg-transparent px-0 shadow-none backdrop-blur-0">
+        <div className="mx-auto flex max-w-[1440px] items-center gap-4 px-4 pt-1 pb-0 sm:px-6 lg:px-8">
           <div className="flex min-w-0 flex-1 items-center justify-between gap-4">
             <button
               type="button"
               onClick={() => navigate("/")}
-              className="group flex min-w-fit flex-col border-0 bg-transparent p-0 text-left leading-none"
+              className="group flex min-w-fit self-center border-0 bg-transparent p-0 leading-none"
             >
-              <span className="site-deco site-logo text-2xl md:text-3xl lg:text-[2.35rem] transition-soft group-hover:text-primary-hover">Re:Wear</span>
-              <span className="mt-1.5 text-[10px] font-medium text-primary/70 tracking-wide italic opacity-85">
-                Thời trang ký gửi
-              </span>
+              <span className="site-deco site-logo inline-flex items-center text-2xl md:text-3xl lg:text-[2.35rem] transition-soft group-hover:text-primary-hover">Re:Wear</span>
             </button>
 
-            <div className="mx-2 hidden min-w-0 flex-1 lg:block xl:mx-4">{menu}</div>
+            <div className="mx-2 hidden min-w-0 flex-1 overflow-x-auto overflow-y-hidden lg:block xl:mx-4">{menu}</div>
 
-            <div className="hidden max-w-[320px] flex-1 lg:block">
-              <Input
-                size="large"
-                prefix={<SearchOutlined className="text-primary/60" />}
-                placeholder="Tìm kiếm local brand, sản phẩm..."
-                className="rounded-xl border-pink-100 bg-pink-50/50 px-4 h-11 hover:border-pink-200 focus:border-pink-300 transition-soft"
-                onPressEnter={(event) => {
-                  const value = event.currentTarget.value.trim();
-                  navigate(value ? `/buyer/products?q=${encodeURIComponent(value)}` : "/buyer/products");
-                }}
-              />
-            </div>
 
-            <Space size={12} className="shrink-0">
-              <span className="hidden rounded-full border border-pink-100 bg-pink-50/50 px-3.5 py-1.5 text-[9px] font-bold uppercase tracking-widest text-primary md:inline-flex">
-                {roleLabel}
-              </span>
-
+            <Space size={12} className="shrink-0 -mt-0.5">
               {isAuthenticated ? (
                 <>
                   <Dropdown
@@ -198,19 +169,18 @@ export function AppLayout() {
                   </Dropdown>
                 </>
               ) : (
-                <Space className="hidden sm:flex" size={12}>
-                  <Button type="text" onClick={() => navigate("/buyer/products")} className="font-bold text-gray-500 hover:text-primary">Sản phẩm</Button>
+                <Space className="!hidden md:!flex !items-center" size={12}>
                   <Button
+                    type="primary"
                     icon={<LoginOutlined />}
                     onClick={() => navigate("/auth/login")}
-                    className="rounded-xl font-bold border-pink-100 hover:border-primary hover:text-primary"
+                    className="rounded-xl h-10 px-5 font-bold bg-primary hover:!bg-primary-hover border-none shadow-sm"
                   >
                     Đăng nhập
                   </Button>
                   <Button
-                    type="primary"
                     onClick={() => navigate("/auth/register")}
-                    className="bg-primary hover:bg-primary-hover border-none rounded-xl font-bold shadow-lg shadow-pink-100/50"
+                    className="rounded-xl font-bold border-pink-100 hover:border-primary hover:text-primary"
                   >
                     Đăng ký
                   </Button>
@@ -228,8 +198,7 @@ export function AppLayout() {
         </div>
       </Header>
 
-      <Content className="relative min-h-[calc(100vh-104px)] overflow-hidden bg-bg-main">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(circle_at_20%_20%,rgba(217,74,122,0.12),transparent_28%),radial-gradient(circle_at_80%_0%,rgba(240,138,177,0.16),transparent_30%)]" />
+      <Content className="relative min-h-[calc(100vh-104px)] overflow-hidden bg-white">
         <main className="relative mx-auto w-full max-w-[1440px] px-4 py-5 sm:px-6 lg:px-8">
           <Outlet />
         </main>
@@ -245,7 +214,6 @@ export function AppLayout() {
       >
         <div className="flex h-full flex-col">
           <div className="px-6 mb-6">
-            <div className="text-[10px] font-bold uppercase tracking-[0.24em] text-primary/70">{roleLabel}</div>
             <div className="mt-2 text-sm text-slate-500 italic">Cửa hàng thời trang ký gửi cao cấp.</div>
           </div>
           <Menu

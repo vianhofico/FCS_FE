@@ -123,6 +123,8 @@ export default function ConsignmentRequestListPage() {
       title: "",
       key: "actions",
       align: "right" as const,
+      fixed: "right" as const,
+      width: 130,
       render: (_: any, record: ConsignmentRequestSummary) => (
         <Button
           type="text"
@@ -186,6 +188,7 @@ export default function ConsignmentRequestListPage() {
             columns={columns}
             dataSource={state.requests.map(r => ({ ...r, key: r.id }))}
             pagination={false}
+            scroll={{ x: 620 }}
             className="luxury-table"
           />
           <div className="mt-10 flex justify-center">
