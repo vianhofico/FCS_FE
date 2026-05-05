@@ -36,7 +36,7 @@ export type ReturnRequestDetail = ReturnRequestSummary & {
 export type ReturnRequestCreateRequest = {
   orderId: string;
   reason: string;
-  evidenceUrls?: string[];
+  evidenceUrls?: string;
 };
 
 /**

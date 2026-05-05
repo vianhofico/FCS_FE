@@ -4,11 +4,10 @@
  */
 
 import { useState, useEffect } from "react";
-import { Card, Table, Spin, Modal, message, Space, Input, Typography, Row, Col } from "antd";
-import { LockOutlined, UnlockOutlined, DeleteOutlined, UserOutlined, SearchOutlined } from "@ant-design/icons";
+import { Card, Table, Spin, Space, Input, Typography, Row, Col } from "antd";
+import { LockOutlined, DeleteOutlined, UserOutlined, SearchOutlined } from "@ant-design/icons";
 import { iamApi } from "@/modules/iam/api/iamApi";
 import type { IamUserSummary } from "@/shared/contracts/iamContract";
-import type { UserStatus } from "@/shared/contracts/commonContract";
 import { Badge, Button, EmptyState } from "@/shared/ui";
 
 const { Title, Paragraph } = Typography;
@@ -65,51 +64,6 @@ export default function UserManagementPage() {
     fetchUsers();
   }, [state.page, state.size, state.search]);
 
-  const updateUserStatus = async (userId: string, status: UserStatus) => {
-    const response = await iamApi.updateUserStatus(userId, { status });
-    if (response.success) {
-      setState((prev) => ({
-        ...prev,
-        users: prev.users.map((u) => (u.id === userId ? { ...u, status } : u)),
-      }));
-    }
-  };
-
-  const handleSuspendUser = (userId: string) => {
-    Modal.confirm({
-      title: "Khóa tài khoản",
-      content: "Bạn có chắc chắn muốn khóa tài khoản người dùng này không?",
-      okText: "Khóa",
-      okType: "danger",
-      cancelText: "Hủy",
-      onOk: async () => {
-        try {
-          await updateUserStatus(userId, "SUSPENDED");
-          message.success("Đã khóa tài khoản");
-        } catch (err) {
-          message.error(err instanceof Error ? err.message : "Khóa tài khoản thất bại");
-        }
-      },
-    });
-  };
-
-  const handleActivateUser = (userId: string) => {
-    Modal.confirm({
-      title: "Mở khóa tài khoản",
-      content: "Bạn muốn mở khóa cho tài khoản này?",
-      okText: "Mở khóa",
-      cancelText: "Hủy",
-      onOk: async () => {
-        try {
-          await updateUserStatus(userId, "ACTIVE");
-          message.success("Đã mở khóa tài khoản");
-        } catch (err) {
-          message.error(err instanceof Error ? err.message : "Mở khóa thất bại");
-        }
-      },
-    });
-  };
-
   const columns = [
     {
       title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Email</span>,
@@ -147,34 +101,24 @@ export default function UserManagementPage() {
       title: "",
       key: "actions",
       align: "right" as const,
-      render: (_: unknown, record: IamUserSummary) => (
+      render: () => (
         <Space size="middle">
-          {record.status === "ACTIVE" ? (
-            <Button
-              type="text"
-              icon={<LockOutlined />}
-              onClick={() => handleSuspendUser(record.id)}
-              className="text-amber-500 hover:!bg-amber-50 rounded-xl font-bold"
-            >
-              Khóa
-            </Button>
-          ) : (
-            <Button
-              type="text"
-              icon={<UnlockOutlined />}
-              onClick={() => handleActivateUser(record.id)}
-              className="text-emerald-500 hover:!bg-emerald-50 rounded-xl font-bold"
-            >
-              Mở khóa
-            </Button>
-          )}
+          <Button
+            type="text"
+            icon={<LockOutlined />}
+            disabled
+            title="Manager chỉ được xem danh sách người dùng"
+            className="text-slate-300 rounded-xl font-bold"
+          >
+            Khóa
+          </Button>
           <Button
             danger
             type="text"
             icon={<DeleteOutlined />}
             disabled
-            title="API xóa người dùng chưa được hỗ trợ"
-            className="hover:!bg-red-50 rounded-xl font-bold"
+            title="Manager chỉ được xem danh sách người dùng"
+            className="rounded-xl font-bold"
           >
             Xóa
           </Button>

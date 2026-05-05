@@ -7,12 +7,8 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Card,
-  message,
-  Modal,
   Row,
   Col,
-  Form,
-  Space,
   Typography,
 } from "antd";
 import { ArrowLeftOutlined, InfoCircleOutlined, TagsOutlined } from "@ant-design/icons";
@@ -27,18 +23,15 @@ interface PageState {
   request: ConsignmentRequestDetail | null;
   isLoading: boolean;
   error: string | null;
-  isProcessing: boolean;
 }
 
 export default function ConsignmentRequestDetailPage() {
   const { requestId } = useParams<{ requestId: string }>();
   const navigate = useNavigate();
-  const [form] = Form.useForm();
   const [state, setState] = useState<PageState>({
     request: null,
     isLoading: true,
     error: null,
-    isProcessing: false,
   });
 
   useEffect(() => {
@@ -69,58 +62,6 @@ export default function ConsignmentRequestDetailPage() {
     fetchRequest();
   }, [requestId]);
 
-  const handleAccept = () => {
-    Modal.confirm({
-      title: "Chấp nhận yêu cầu ký gửi",
-      content: "Bạn có đồng ý với các điều khoản và muốn chấp nhận yêu cầu ký gửi này không?",
-      okText: "Chấp nhận",
-      okType: "primary",
-      cancelText: "Hủy",
-      onOk: async () => {
-        try {
-          setState((prev) => ({ ...prev, isProcessing: true }));
-          const response = await consignmentApi.acceptConsignment(requestId!);
-
-          if (response.success) {
-            message.success("Đã chấp nhận yêu cầu ký gửi");
-            setState((prev) => ({ ...prev, request: response.data || null }));
-          }
-        } catch (err) {
-          message.error(err instanceof Error ? err.message : "Chấp nhận yêu cầu thất bại");
-        } finally {
-          setState((prev) => ({ ...prev, isProcessing: false }));
-        }
-      },
-    });
-  };
-
-  const handleReject = () => {
-    Modal.confirm({
-      title: "Từ chối yêu cầu ký gửi",
-      content: "Nhập lý do từ chối:",
-      okText: "Từ chối",
-      okType: "danger",
-      cancelText: "Hủy",
-      onOk: async () => {
-        try {
-          setState((prev) => ({ ...prev, isProcessing: true }));
-          const reason = form.getFieldValue("rejectionReason") || "Không có lý do cụ thể";
-          const response = await consignmentApi.rejectConsignment(requestId!, {
-            reason,
-          });
-
-          if (response.success) {
-            message.success("Đã từ chối yêu cầu ký gửi");
-            setState((prev) => ({ ...prev, request: response.data || null }));
-          }
-        } catch (err) {
-          message.error(err instanceof Error ? err.message : "Từ chối yêu cầu thất bại");
-        } finally {
-          setState((prev) => ({ ...prev, isProcessing: false }));
-        }
-      },
-    });
-  };
 
   if (!state.request) {
     return (
@@ -149,14 +90,14 @@ export default function ConsignmentRequestDetailPage() {
 
   const request = state.request;
   const createdAt = request.createdAt ? new Date(request.createdAt).toLocaleDateString() : "—";
-  const statusMap: Record<string, string> = {
-    PENDING: "Pending",
-    ACCEPTED: "Verified",
-    REJECTED: "Rejected",
-    CANCELLED: "Inactive",
-    SUBMITTED: "Submitted",
-    APPROVED: "Verified",
-    REVIEWING: "OnlineReview",
+  const statusLabels: Record<string, string> = {
+    DRAFT: "Bản nháp",
+    SUBMITTED: "Đã gửi",
+    UNDER_REVIEW: "Đang xem xét",
+    APPROVED: "Đã duyệt",
+    REJECTED: "Bị từ chối",
+    RECEIVED: "Đã tiếp nhận",
+    CANCELLED: "Đã hủy",
   };
 
   const timelineItems = [
@@ -168,7 +109,7 @@ export default function ConsignmentRequestDetailPage() {
     },
     {
       id: "status",
-      title: `Trạng thái hiện tại: ${statusMap[request.status] || request.status}`,
+      title: `Trạng thái hiện tại: ${statusLabels[request.status] || request.status}`,
       description: request.note || "Đang trong quá trình xem xét",
       createdAt: request.updatedAt,
     },
@@ -195,7 +136,7 @@ export default function ConsignmentRequestDetailPage() {
         >
           Quay lại
         </Button>
-        <Badge status={statusMap[request.status] || request.status}>{request.status}</Badge>
+        <Badge status={request.status === "APPROVED" ? "Verified" : request.status === "REJECTED" ? "Rejected" : request.status === "UNDER_REVIEW" ? "Processing" : "Pending"}>{statusLabels[request.status] || request.status}</Badge>
       </div>
 
       <div className="space-y-4">
@@ -273,34 +214,6 @@ export default function ConsignmentRequestDetailPage() {
             <Card className="rounded-[2.5rem] border-pink-100/40 bg-white p-8 shadow-luxury">
               <TimelineWidget items={timelineItems} title="Hành trình ký gửi" />
             </Card>
-
-            {request.status === "SUBMITTED" && (
-              <Card className="rounded-[2.5rem] border-pink-100 bg-pink-50/50 p-8 text-center">
-                <Title level={5} className="!mb-6 !font-display uppercase tracking-widest text-xs">Thao tác yêu cầu</Title>
-                <Space orientation="vertical" className="w-full" size="middle">
-                  <Button
-                    type="primary"
-                    block
-                    size="large"
-                    onClick={handleAccept}
-                    loading={state.isProcessing}
-                    className="h-14 rounded-2xl shadow-luxury"
-                  >
-                    CHẤP NHẬN
-                  </Button>
-                  <Button
-                    block
-                    size="large"
-                    danger
-                    onClick={handleReject}
-                    loading={state.isProcessing}
-                    className="h-14 rounded-2xl border-red-200 text-red-500 hover:!bg-red-50"
-                  >
-                    TỪ CHỐI
-                  </Button>
-                </Space>
-              </Card>
-            )}
           </div>
         </Col>
       </Row>

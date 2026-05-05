@@ -4,6 +4,7 @@ import ConsignmentRequestDetailPage from "@/modules/seller/pages/ConsignmentRequ
 import ConsignmentMultiStepPage from "@/modules/seller/pages/ConsignmentMultiStepPage";
 import ConsignmentContractPage from "@/modules/seller/pages/ConsignmentContractPage";
 import MyProductsPage from "@/modules/seller/pages/MyProductsPage";
+import ProductDetailPage from "@/modules/buyer/pages/ProductDetailPage";
 import SalesReportPage from "@/modules/seller/pages/SalesReportPage";
 import FinancialPage from "@/modules/seller/pages/FinancialPage";
 import SellerProfilePage from "@/modules/seller/pages/SellerProfilePage";
@@ -33,6 +34,10 @@ export const sellerRoutes: RouteObject[] = [
   {
     path: "seller/products",
     element: <MyProductsPage />,
+  },
+  {
+    path: "seller/products/:productId",
+    element: <ProductDetailPage />,
   },
   {
     path: "seller/sales",

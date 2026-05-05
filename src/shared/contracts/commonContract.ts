@@ -51,9 +51,11 @@ export type PaginationParams = {
  * User status enum
  */
 export const UserStatus = {
+  PENDING_ACTIVATION: "PENDING_ACTIVATION",
   ACTIVE: "ACTIVE",
   SUSPENDED: "SUSPENDED",
-  INACTIVE: "INACTIVE",
+  LOCKED: "LOCKED",
+  DELETED: "DELETED",
 } as const;
 export type UserStatus = typeof UserStatus[keyof typeof UserStatus];
 
@@ -101,12 +103,10 @@ export type ProductCondition = typeof ProductCondition[keyof typeof ProductCondi
 export const ConsignmentRequestStatus = {
   DRAFT: "DRAFT",
   SUBMITTED: "SUBMITTED",
-  REVIEWING: "REVIEWING",
+  UNDER_REVIEW: "UNDER_REVIEW",
   APPROVED: "APPROVED",
   REJECTED: "REJECTED",
-  CONTRACTED: "CONTRACTED",
-  CONSIGNED: "CONSIGNED",
-  COMPLETED: "COMPLETED",
+  RECEIVED: "RECEIVED",
   CANCELLED: "CANCELLED",
 } as const;
 export type ConsignmentRequestStatus = typeof ConsignmentRequestStatus[keyof typeof ConsignmentRequestStatus];
@@ -115,12 +115,12 @@ export type ConsignmentRequestStatus = typeof ConsignmentRequestStatus[keyof typ
  * Consignment item status
  */
 export const ConsignmentItemStatus = {
-  PENDING: "PENDING",
-  APPROVED: "APPROVED",
+  PROPOSED: "PROPOSED",
+  UNDER_INSPECTION: "UNDER_INSPECTION",
+  ACCEPTED: "ACCEPTED",
   REJECTED: "REJECTED",
-  IN_STOCK: "IN_STOCK",
-  SOLD: "SOLD",
   RETURNED: "RETURNED",
+  CONVERTED_TO_PRODUCT: "CONVERTED_TO_PRODUCT",
 } as const;
 export type ConsignmentItemStatus = typeof ConsignmentItemStatus[keyof typeof ConsignmentItemStatus];
 
@@ -128,8 +128,10 @@ export type ConsignmentItemStatus = typeof ConsignmentItemStatus[keyof typeof Co
  * Order status
  */
 export const OrderStatus = {
-  PENDING: "PENDING",
+  PENDING_PAYMENT: "PENDING_PAYMENT",
+  PAID: "PAID",
   CONFIRMED: "CONFIRMED",
+  PACKING: "PACKING",
   SHIPPED: "SHIPPED",
   DELIVERED: "DELIVERED",
   COMPLETED: "COMPLETED",
@@ -158,7 +160,6 @@ export const ReturnStatus = {
   REJECTED: "REJECTED",
   ITEM_RECEIVED: "ITEM_RECEIVED",
   REFUNDED: "REFUNDED",
-  CANCELLED: "CANCELLED",
 } as const;
 export type ReturnStatus = typeof ReturnStatus[keyof typeof ReturnStatus];
 
@@ -168,9 +169,10 @@ export type ReturnStatus = typeof ReturnStatus[keyof typeof ReturnStatus];
 export const WithdrawalStatus = {
   PENDING: "PENDING",
   APPROVED: "APPROVED",
+  PROCESSING_TRANSFER: "PROCESSING_TRANSFER",
+  PAID: "PAID",
   REJECTED: "REJECTED",
-  TRANSFERRED: "TRANSFERRED",
-  FAILED: "FAILED",
+  CANCELLED: "CANCELLED",
 } as const;
 export type WithdrawalStatus = typeof WithdrawalStatus[keyof typeof WithdrawalStatus];
 
@@ -178,6 +180,7 @@ export type WithdrawalStatus = typeof WithdrawalStatus[keyof typeof WithdrawalSt
  * Voucher status
  */
 export const VoucherStatus = {
+  DRAFT: "DRAFT",
   ACTIVE: "ACTIVE",
   INACTIVE: "INACTIVE",
   EXPIRED: "EXPIRED",
@@ -239,9 +242,8 @@ export type NotificationStatus = typeof NotificationStatus[keyof typeof Notifica
  */
 export const ContractStatus = {
   DRAFT: "DRAFT",
-  PENDING_SIGNATURE: "PENDING_SIGNATURE",
   SIGNED: "SIGNED",
-  REJECTED: "REJECTED",
+  EXPIRED: "EXPIRED",
   TERMINATED: "TERMINATED",
 } as const;
 export type ContractStatus = typeof ContractStatus[keyof typeof ContractStatus];

@@ -101,4 +101,90 @@
     border-bottom-width: 2px !important;
     border-radius: 999px;
   }
+
+  .luxury-table .ant-table {
+    border-radius: 24px;
+  }
+
+  .luxury-table .ant-table-thead > tr > th,
+  .luxury-table .ant-table-tbody > tr > td {
+    padding: 18px 20px !important;
+    vertical-align: middle;
+  }
+
+  .luxury-table .ant-table-tbody > tr > td {
+    border-bottom-color: rgba(242, 222, 234, 0.65) !important;
+  }
+
+  .luxury-table .ant-table-cell > * + * {
+    margin-top: 8px;
+  }
+
+  .luxury-select .ant-select-selector,
+  .luxury-datepicker .ant-picker,
+  .luxury-input-number.ant-input-number {
+    min-height: 48px !important;
+    padding-inline: 14px !important;
+    border-radius: 16px !important;
+  }
+
+  .luxury-radio.ant-radio-wrapper,
+  .luxury-radio-box.ant-radio-wrapper,
+  .luxury-checkbox.ant-checkbox-wrapper {
+    align-items: flex-start;
+    gap: 12px;
+    line-height: 1.5;
+  }
+
+  .luxury-radio.ant-radio-wrapper > span:last-child,
+  .luxury-radio-box.ant-radio-wrapper > span:last-child,
+  .luxury-checkbox.ant-checkbox-wrapper > span:last-child {
+    flex: 1;
+    min-width: 0;
+    padding-inline-start: 4px;
+  }
+
+  .luxury-radio-box.ant-radio-wrapper {
+    display: flex;
+  }
+
+  .luxury-steps .ant-steps-item-title {
+    line-height: 1.35 !important;
+    padding-inline-end: 12px !important;
+  }
+
+  .luxury-steps .ant-steps-item-description {
+    margin-top: 6px;
+    line-height: 1.45;
+  }
+
+  .luxury-upload .ant-upload,
+  .luxury-upload-large .ant-upload {
+    margin-inline-end: 12px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .luxury-upload .ant-upload-list-item,
+  .luxury-upload-large .ant-upload-list-item {
+    border-radius: 18px !important;
+  }
+
+  .luxury-modal .ant-modal-content {
+    border-radius: 28px !important;
+    padding: 28px !important;
+  }
+
+  .luxury-modal .ant-modal-header {
+    margin-bottom: 20px !important;
+  }
+
+  .luxury-pagination.ant-pagination {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .luxury-progress .ant-progress-inner {
+    border-radius: 999px !important;
+  }
 }

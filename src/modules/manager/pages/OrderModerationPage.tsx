@@ -28,9 +28,34 @@ import { useNavigate } from "react-router-dom";
 import { orderApi } from "@/modules/order/api/orderApi";
 import { useAuth } from "@/shared/context/AuthContext";
 import type { OrderSummary } from "@/shared/contracts/orderContract";
+import type { OrderStatus } from "@/shared/contracts/commonContract";
 import { Badge, Button, EmptyState } from "@/shared/ui";
 
 const { Title, Paragraph } = Typography;
+
+const ORDER_STATUS_BADGE: Record<string, string> = {
+  PENDING_PAYMENT: "Pending",
+  PAID: "Processing",
+  CONFIRMED: "Processing",
+  PACKING: "Processing",
+  SHIPPED: "Processing",
+  DELIVERED: "Verified",
+  COMPLETED: "Verified",
+  CANCELLED: "Rejected",
+  REFUNDED: "Inactive",
+};
+
+const ORDER_STATUS_LABELS: Record<string, string> = {
+  PENDING_PAYMENT: "Chờ thanh toán",
+  PAID: "Đã thanh toán",
+  CONFIRMED: "Đã xác nhận",
+  PACKING: "Đang đóng gói",
+  SHIPPED: "Đang giao",
+  DELIVERED: "Đã giao",
+  COMPLETED: "Hoàn tất",
+  CANCELLED: "Đã hủy",
+  REFUNDED: "Đã hoàn tiền",
+};
 
 interface PageState {
   orders: OrderSummary[];
@@ -64,6 +89,8 @@ export default function OrderModerationPage() {
       try {
         setState((prev) => ({ ...prev, isLoading: true }));
         const response = await orderApi.getOrders({
+          orderCode: state.filters.search.trim() || undefined,
+          status: (state.filters.status || undefined) as OrderStatus | undefined,
           page: state.page,
           size: state.size,
         });
@@ -85,7 +112,7 @@ export default function OrderModerationPage() {
       }
     };
     fetchOrders();
-  }, [user, state.page, state.size]);
+  }, [user, state.page, state.size, state.filters.search, state.filters.status]);
 
   const handleApproveOrder = (orderId: string) => {
     Modal.confirm({
@@ -140,15 +167,9 @@ export default function OrderModerationPage() {
       title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Trạng thái</span>,
       dataIndex: "status",
       key: "status",
-      render: (status: string) => {
-        const statusMap: Record<string, string> = {
-          PENDING: "Pending",
-          CONFIRMED: "Verified",
-          CANCELLED: "Rejected",
-          DELIVERED: "Verified",
-        };
-        return <Badge status={statusMap[status] || "Pending"}>{status}</Badge>;
-      },
+      render: (status: string) => (
+        <Badge status={ORDER_STATUS_BADGE[status] || "Pending"}>{ORDER_STATUS_LABELS[status] || status}</Badge>
+      ),
     },
     {
       title: "",
@@ -159,7 +180,7 @@ export default function OrderModerationPage() {
       render: (_: any, record: OrderSummary) => (
         <Space size="middle">
           <Button type="text" icon={<EyeOutlined />} className="text-slate-400 hover:!text-primary" onClick={() => navigate(`/manager/orders/${record.id}`)} />
-          {record.status === "PENDING" && (
+          {record.status === "PENDING_PAYMENT" && (
             <>
               <Button type="text" icon={<CheckCircleOutlined />} className="text-emerald-500 hover:!bg-emerald-50 rounded-xl font-bold" onClick={() => handleApproveOrder(record.id)}>Duyệt</Button>
               <Button type="text" danger icon={<CloseCircleOutlined />} className="hover:!bg-rose-50 rounded-xl font-bold" onClick={() => handleRejectOrder(record.id)}>Hủy</Button>
@@ -191,19 +212,41 @@ export default function OrderModerationPage() {
       <Card className="rounded-[2.5rem] border-pink-100/40 bg-white p-6 shadow-sm">
         <div className="mb-10 flex flex-col gap-6 md:flex-row md:items-center">
           <Input
+            allowClear
             prefix={<SearchOutlined className="text-slate-400" />}
             placeholder="Tìm theo mã đơn hàng..."
+            value={state.filters.search}
+            onChange={(event) =>
+              setState((prev) => ({
+                ...prev,
+                page: 0,
+                filters: { ...prev.filters, search: event.target.value },
+              }))
+            }
             className="h-12 w-full md:w-80 rounded-2xl border-slate-100 bg-slate-50/50 font-medium"
           />
           <Select
             placeholder="Lọc trạng thái"
+            value={state.filters.status}
+            onChange={(status) =>
+              setState((prev) => ({
+                ...prev,
+                page: 0,
+                filters: { ...prev.filters, status },
+              }))
+            }
             className="h-12 min-w-[200px] luxury-select"
             options={[
               { label: "Tất cả", value: "" },
-              { label: "Chờ duyệt", value: "PENDING" },
+              { label: "Chờ thanh toán", value: "PENDING_PAYMENT" },
+              { label: "Đã thanh toán", value: "PAID" },
               { label: "Đã xác nhận", value: "CONFIRMED" },
+              { label: "Đang đóng gói", value: "PACKING" },
+              { label: "Đang giao", value: "SHIPPED" },
               { label: "Đã giao", value: "DELIVERED" },
+              { label: "Hoàn tất", value: "COMPLETED" },
               { label: "Đã hủy", value: "CANCELLED" },
+              { label: "Đã hoàn tiền", value: "REFUNDED" },
             ]}
           />
         </div>

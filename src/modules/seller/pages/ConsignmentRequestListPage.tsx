@@ -91,17 +91,25 @@ export default function ConsignmentRequestListPage() {
       dataIndex: "status",
       key: "status",
       render: (status: string) => {
-        // Map backend status to UI status if they differ, otherwise pass through
         const statusMap: Record<string, string> = {
-          PENDING: "Pending",
-          ACCEPTED: "Verified",
-          REJECTED: "Rejected",
-          CANCELLED: "Inactive",
+          DRAFT: "Inactive",
           SUBMITTED: "Submitted",
+          UNDER_REVIEW: "Processing",
           APPROVED: "Verified",
-          REVIEWING: "OnlineReview",
+          REJECTED: "Rejected",
+          RECEIVED: "Processing",
+          CANCELLED: "Inactive",
         };
-        return <Badge status={statusMap[status] || status}>{status}</Badge>;
+        const statusLabels: Record<string, string> = {
+          DRAFT: "Bản nháp",
+          SUBMITTED: "Đã gửi",
+          UNDER_REVIEW: "Đang xem xét",
+          APPROVED: "Đã duyệt",
+          REJECTED: "Bị từ chối",
+          RECEIVED: "Đã tiếp nhận",
+          CANCELLED: "Đã hủy",
+        };
+        return <Badge status={statusMap[status] || "Pending"}>{statusLabels[status] || status}</Badge>;
       },
     },
     {
@@ -141,7 +149,7 @@ export default function ConsignmentRequestListPage() {
   const stats = [
     { label: "Yêu cầu đã gửi", value: state.total, icon: <ReconciliationOutlined />, color: "bg-primary/5 text-primary" },
     { label: "Đã được duyệt", value: state.requests.filter(r => r.status === ConsignmentRequestStatus.APPROVED).length, icon: <AuditOutlined />, color: "bg-emerald-50 text-emerald-500" },
-    { label: "Đang chờ xử lý", value: state.requests.filter(r => r.status === ConsignmentRequestStatus.SUBMITTED || r.status === ConsignmentRequestStatus.REVIEWING).length, icon: <ClockCircleOutlined />, color: "bg-blue-50 text-blue-500" },
+    { label: "Đang chờ xử lý", value: state.requests.filter(r => r.status === ConsignmentRequestStatus.SUBMITTED || r.status === ConsignmentRequestStatus.UNDER_REVIEW).length, icon: <ClockCircleOutlined />, color: "bg-blue-50 text-blue-500" },
   ];
 
   return (

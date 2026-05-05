@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
+import { env } from '@/app/config/env';
 
 type WSClient = {
   connect: () => void;
@@ -22,9 +23,7 @@ export function useStompClient(wsPath = '/ws') {
   const connect = useCallback(() => {
     const url = urlRef.current;
     try {
-      const proto = window.location.protocol === 'https:' ? 'wss' : 'ws';
-      const host = window.location.host;
-      const wsUrl = `${proto}://${host}${url}`;
+      const wsUrl = url.startsWith('ws://') || url.startsWith('wss://') ? url : env.wsBaseUrl;
       const ws = new WebSocket(wsUrl);
       socketRef.current = ws;
 

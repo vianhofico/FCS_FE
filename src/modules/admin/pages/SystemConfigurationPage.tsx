@@ -78,7 +78,7 @@ export default function SystemConfigurationPage() {
                 <Title level={4} className="!m-0 !font-display uppercase tracking-widest text-base">Thông tin chung</Title>
               </div>
 
-              <div className="grid grid-cols-1 gap-x-8 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-x-8 gap-y-2 md:grid-cols-2">
                 <Form.Item label={<span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Tên hệ thống</span>} name="siteName" rules={[{ required: true }]}>
                   <Input className="h-12 rounded-2xl border-slate-100 bg-slate-50/50 font-medium" />
                 </Form.Item>
@@ -103,8 +103,8 @@ export default function SystemConfigurationPage() {
                   { name: "emailNotifications", label: "Thông báo Email", desc: "Gửi cập nhật quan trọng qua hòm thư điện tử." },
                   { name: "smsNotifications", label: "Thông báo SMS", desc: "Gửi mã xác thực và cảnh báo qua tin nhắn văn bản." },
                 ].map((item) => (
-                  <div key={item.name} className="flex items-center justify-between rounded-[2rem] bg-slate-50/50 p-6 border border-slate-100/50">
-                    <div className="space-y-1">
+                  <div key={item.name} className="flex flex-wrap items-center justify-between gap-5 rounded-[2rem] border border-slate-100/50 bg-slate-50/50 p-6">
+                    <div className="min-w-0 flex-1 space-y-1">
                       <div className="font-bold text-slate-700">{item.label}</div>
                       <div className="text-xs text-slate-400 font-medium italic">{item.desc}</div>
                     </div>

@@ -14,7 +14,7 @@ interface LoginFormValues {
 
 function getDefaultRouteByRoles(roles: UserRole[] = []) {
   if (roles.includes("ADMIN")) return "/admin/dashboard";
-  if (roles.includes("MANAGER")) return "/manager";
+  if (roles.includes("MANAGER")) return "/manager/orders/moderation";
   if (roles.includes("SELLER")) return "/seller/consignments";
   return "/buyer/products";
 }
@@ -67,7 +67,7 @@ export default function LoginPage() {
               {(formError || error) && (
                 <div className="mb-6 text-left">
                   <Alert
-                    message="Lỗi đăng nhập"
+                    title="Lỗi đăng nhập"
                     description={formError || error}
                     type="error"
                     showIcon

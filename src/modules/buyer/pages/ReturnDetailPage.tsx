@@ -37,9 +37,8 @@ interface ReturnDetailPageState {
 const RETURN_STATUS_STEPS: Record<string, number> = {
   PENDING: 0,
   APPROVED: 1,
-  IN_TRANSIT: 2,
-  RECEIVED: 3,
-  REFUNDED: 4,
+  ITEM_RECEIVED: 2,
+  REFUNDED: 3,
 };
 
 /**
@@ -96,7 +95,8 @@ export default function ReturnDetailPage() {
       onOk: async () => {
         try {
           const response = await returnApi.updateReturnStatus(returnId!, {
-            status: "CANCELLED",
+            status: "REJECTED",
+            reason: "Người mua hủy yêu cầu trả hàng",
           });
           if (response.success) {
             message.success("Đã hủy yêu cầu trả hàng");
@@ -143,10 +143,16 @@ export default function ReturnDetailPage() {
   const statusMap: Record<string, string> = {
     PENDING: "Pending",
     APPROVED: "Verified",
-    IN_TRANSIT: "Processing",
-    RECEIVED: "Processing",
+    REJECTED: "Rejected",
+    ITEM_RECEIVED: "Processing",
     REFUNDED: "Verified",
-    CANCELLED: "Rejected",
+  };
+  const statusLabels: Record<string, string> = {
+    PENDING: "Đang chờ",
+    APPROVED: "Đã duyệt",
+    REJECTED: "Bị từ chối",
+    ITEM_RECEIVED: "Đã nhận hàng",
+    REFUNDED: "Đã hoàn tiền",
   };
 
   return (
@@ -160,7 +166,7 @@ export default function ReturnDetailPage() {
         >
           Quay lại danh sách
         </Button>
-        <Badge status={statusMap[state.returnData.status] || "Pending"}>{state.returnData.status}</Badge>
+        <Badge status={statusMap[state.returnData.status] || "Pending"}>{statusLabels[state.returnData.status] || state.returnData.status}</Badge>
       </div>
 
       <div className="space-y-4">

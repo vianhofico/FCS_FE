@@ -6,6 +6,7 @@
 import { Navigate } from "react-router-dom";
 import type { RouteObject } from "react-router-dom";
 import OrderModerationPage from "@/modules/manager/pages/OrderModerationPage";
+import OrderDetailPage from "@/modules/buyer/pages/OrderDetailPage";
 import DisputeResolutionPage from "@/modules/manager/pages/DisputeResolutionPage";
 import ApprovalsPage from "@/modules/manager/pages/ApprovalsPage";
 import ReturnsModerationPage from "@/modules/manager/pages/ReturnsModerationPage";
@@ -25,6 +26,10 @@ export const managerRoutes: RouteObject[] = [
       {
         path: "orders/moderation",
         element: <OrderModerationPage />,
+      },
+      {
+        path: "orders/:orderId",
+        element: <OrderDetailPage />,
       },
       {
         path: "disputes/resolution",

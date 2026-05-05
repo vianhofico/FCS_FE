@@ -251,13 +251,11 @@ export default function FinancialPage() {
               columns={columns}
               dataSource={state.withdrawals.map((w) => ({ ...w, key: w.id }))}
               pagination={{ pageSize: 5 }}
+              locale={{
+                emptyText: <EmptyState title="Chưa có giao dịch" description="Lịch sử rút tiền của bạn sẽ hiển thị tại đây." />,
+              }}
               className="luxury-table"
             />
-            {state.withdrawals.length === 0 && (
-              <div className="py-10">
-                <EmptyState title="Chưa có giao dịch" description="Lịch sử rút tiền của bạn sẽ hiển thị tại đây." />
-              </div>
-            )}
           </Card>
         </Col>
 

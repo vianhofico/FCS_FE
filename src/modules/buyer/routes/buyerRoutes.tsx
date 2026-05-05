@@ -12,6 +12,7 @@ import OrderDetailPage from "@/modules/buyer/pages/OrderDetailPage";
 import MyReturnsPage from "@/modules/buyer/pages/MyReturnsPage";
 import ReturnDetailPage from "@/modules/buyer/pages/ReturnDetailPage";
 import ProductReviewPage from "@/modules/buyer/pages/ProductReviewPage";
+import WishlistPage from "@/modules/buyer/pages/WishlistPage";
 
 /**
  * Buyer routes
@@ -31,6 +32,10 @@ export const buyerRoutes: RouteObject[] = [
   {
     path: "buyer/products/:productId/review",
     element: <ProductReviewPage />,
+  },
+  {
+    path: "buyer/wishlist",
+    element: <WishlistPage />,
   },
   {
     path: "buyer/cart",

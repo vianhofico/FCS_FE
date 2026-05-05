@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react';
-import { App, Form, Input, InputNumber, Col, Typography, Steps, Card, Upload } from 'antd';
+import { App, Form, Input, InputNumber, Typography, Steps, Card, Upload } from 'antd';
 import {
   ArrowLeftOutlined,
   ArrowRightOutlined,
@@ -59,8 +59,8 @@ export default function ConsignmentMultiStepPage() {
       await form.validateFields();
       setCurrent(current + 1);
       window.scrollTo(0, 0);
-    } catch (error) {
-      console.error('Validation failed:', error);
+    } catch {
+      return;
     }
   };
 
@@ -216,15 +216,15 @@ export default function ConsignmentMultiStepPage() {
             </div>
 
             <div className="mt-10 rounded-[2.5rem] border border-pink-100 bg-white p-8 text-left space-y-6">
-               <div className="flex justify-between border-b border-pink-50 pb-4">
+               <div className="flex flex-wrap justify-between gap-3 border-b border-pink-50 pb-4">
                  <Text className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Sản phẩm</Text>
                  <Text className="font-bold text-slate-800">{form.getFieldValue('name')}</Text>
                </div>
-               <div className="flex justify-between border-b border-pink-50 pb-4">
+               <div className="flex flex-wrap justify-between gap-3 border-b border-pink-50 pb-4">
                  <Text className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Giá đề xuất</Text>
                  <Text className="font-display text-xl font-black text-primary">{(form.getFieldValue('price') || 0).toLocaleString()}₫</Text>
                </div>
-               <div className="flex justify-between">
+               <div className="flex flex-wrap justify-between gap-3">
                  <Text className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Phí dịch vụ ước tính</Text>
                  <Text className="font-bold text-slate-500 italic">~ 15%</Text>
                </div>
@@ -254,8 +254,8 @@ export default function ConsignmentMultiStepPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-        <Col lg={4}>
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-12">
+        <div className="lg:col-span-4">
           <div className="sticky top-32">
             <Steps
               orientation="vertical"
@@ -268,10 +268,10 @@ export default function ConsignmentMultiStepPage() {
               }))}
             />
           </div>
-        </Col>
+        </div>
 
-        <Col lg={8}>
-          <Card className="rounded-[2.5rem] border-pink-100/40 bg-white p-10 shadow-luxury min-h-[600px] flex flex-col">
+        <div className="lg:col-span-8">
+          <Card className="rounded-[2rem] border-pink-100/40 bg-white p-4 shadow-luxury min-h-[600px] flex flex-col sm:p-8 lg:p-10">
             <Form
               form={form}
               layout="vertical"
@@ -285,7 +285,7 @@ export default function ConsignmentMultiStepPage() {
 
               {renderStepContent()}
 
-              <div className="mt-20 flex gap-4 pt-8 border-t border-pink-50">
+              <div className="mt-20 flex flex-col gap-4 border-t border-pink-50 pt-8 sm:flex-row">
                 {current > 0 && (
                   <Button
                     size="large"
@@ -321,7 +321,7 @@ export default function ConsignmentMultiStepPage() {
               </div>
             </Form>
           </Card>
-        </Col>
+        </div>
       </div>
     </div>
   );

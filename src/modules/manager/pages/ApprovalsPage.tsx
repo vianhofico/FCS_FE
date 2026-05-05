@@ -22,6 +22,10 @@ import { Badge, Button, EmptyState } from "@/shared/ui";
 
 const { Title, Paragraph } = Typography;
 
+const CONSIGNOR_LABELS: Record<string, string> = {
+  "cccccccc-cccc-cccc-cccc-cccccccccccc": "consignor_jane",
+};
+
 type ApprovalRequest = ConsignmentRequestSummary;
 
 interface PageState {
@@ -61,7 +65,7 @@ export default function ApprovalsPage() {
 
         if (response.success && response.data) {
           const approvals = response.data.content.filter((request) =>
-            ["SUBMITTED", "REVIEWING", "APPROVED", "REJECTED"].includes(request.status)
+            ["SUBMITTED", "UNDER_REVIEW", "APPROVED", "REJECTED"].includes(request.status)
           );
 
           setState((prev) => ({
@@ -70,7 +74,7 @@ export default function ApprovalsPage() {
             total: response.data?.totalElements || approvals.length,
             stats: {
               total: approvals.length,
-              pending: approvals.filter((a) => ["SUBMITTED", "REVIEWING"].includes(a.status)).length,
+              pending: approvals.filter((a) => ["SUBMITTED", "UNDER_REVIEW"].includes(a.status)).length,
               approved: approvals.filter((a) => a.status === "APPROVED").length,
             },
             isLoading: false,
@@ -145,12 +149,17 @@ export default function ApprovalsPage() {
     {
       title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Loại phê duyệt</span>,
       key: "type",
-      render: () => <span className="font-bold text-slate-700">CONSIGNMENT_REQUEST</span>,
+      render: () => <span className="font-bold text-slate-700">Yêu cầu ký gửi</span>,
     },
     {
       title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Người yêu cầu</span>,
       key: "requester",
-      render: (_: unknown, record: ApprovalRequest) => <span className="text-slate-500 font-medium">{record.consignorId}</span>,
+      render: (_: unknown, record: ApprovalRequest) => (
+        <div className="flex flex-col">
+          <span className="font-bold text-slate-700">{CONSIGNOR_LABELS[record.consignorId] || "Người ký gửi"}</span>
+          <span className="font-mono text-[10px] text-slate-400">#{record.consignorId.slice(-8).toUpperCase()}</span>
+        </div>
+      ),
     },
     {
       title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Nội dung</span>,
@@ -163,11 +172,18 @@ export default function ApprovalsPage() {
       key: "status",
       render: (status: string) => {
         const statusMap: Record<string, string> = {
-          PENDING: "Pending",
+          SUBMITTED: "Submitted",
+          UNDER_REVIEW: "Processing",
           APPROVED: "Verified",
           REJECTED: "Rejected",
         };
-        return <Badge status={statusMap[status] || "Pending"}>{status}</Badge>;
+        const statusLabels: Record<string, string> = {
+          SUBMITTED: "Đã gửi",
+          UNDER_REVIEW: "Đang xem xét",
+          APPROVED: "Đã duyệt",
+          REJECTED: "Bị từ chối",
+        };
+        return <Badge status={statusMap[status] || "Pending"}>{statusLabels[status] || status}</Badge>;
       },
     },
     {
@@ -176,7 +192,7 @@ export default function ApprovalsPage() {
       align: "right" as const,
       render: (_: unknown, record: ApprovalRequest) => (
         <Space size="middle">
-          {["SUBMITTED", "REVIEWING"].includes(record.status) && (
+          {["SUBMITTED", "UNDER_REVIEW"].includes(record.status) && (
             <>
               <Button
                 type="text"
@@ -222,7 +238,7 @@ export default function ApprovalsPage() {
         <div className="space-y-4">
           <Title className="!m-0 !font-display !text-4xl !font-bold !leading-tight !tracking-tight md:!text-6xl uppercase">Phê duyệt hệ thống</Title>
           <Paragraph className="max-w-lg text-lg font-medium text-slate-400 opacity-80 italic">
-            Quản lý và kiểm soát các yêu cầu xác minh người bán, cập nhật hoa hồng và các thay đổi quan trọng khác.
+            Quản lý và kiểm soát các yêu cầu ký gửi, xác minh sản phẩm và các thay đổi quan trọng khác.
           </Paragraph>
         </div>
         <div className="flex items-center gap-4 rounded-3xl bg-white/50 px-8 py-4 backdrop-blur-md border border-pink-100/50">
@@ -246,7 +262,7 @@ export default function ApprovalsPage() {
                 </div>
                 <div>
                   <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{s.label}</div>
-                  <div className="font-display text-2xl font-bold text-slate-800">Requests</div>
+                  <div className="font-display text-2xl font-bold text-slate-800">Yêu cầu</div>
                 </div>
               </div>
             </Card>

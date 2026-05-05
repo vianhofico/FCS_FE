@@ -130,12 +130,18 @@ export default function ConsignmentContractPage() {
       key: "status",
       render: (status: string) => {
         const statusMap: Record<string, string> = {
+          DRAFT: "Pending",
           SIGNED: "Verified",
-          PENDING_SIGNATURE: "Pending",
-          REJECTED: "Rejected",
+          EXPIRED: "Inactive",
           TERMINATED: "Rejected",
         };
-        return <Badge status={statusMap[status] || "Pending"}>{status}</Badge>;
+        const statusLabels: Record<string, string> = {
+          DRAFT: "Bản nháp",
+          SIGNED: "Đã ký",
+          EXPIRED: "Hết hạn",
+          TERMINATED: "Đã chấm dứt",
+        };
+        return <Badge status={statusMap[status] || "Pending"}>{statusLabels[status] || status}</Badge>;
       },
     },
     {
@@ -180,7 +186,7 @@ export default function ConsignmentContractPage() {
             >
               Chấm dứt
             </Button>
-          ) : record.status === "PENDING_SIGNATURE" ? (
+          ) : record.status === "DRAFT" ? (
             <Button
               type="primary"
               onClick={() => navigate(`/seller/consignments/${record.requestId}/sign`)}

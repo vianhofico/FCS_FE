@@ -10,6 +10,25 @@ import { Badge, EmptyState } from "@/shared/ui";
 
 const { Title, Paragraph } = Typography;
 
+const TRANSACTION_TYPE_LABELS: Record<string, string> = {
+  ORDER: "Đơn hàng",
+  WITHDRAWAL: "Rút tiền",
+  REFUND: "Hoàn tiền",
+  WALLET: "Ví người dùng",
+};
+
+const TRANSACTION_STATUS_BADGE: Record<string, string> = {
+  COMPLETED: "Verified",
+  PENDING: "Pending",
+  FAILED: "Rejected",
+};
+
+const TRANSACTION_STATUS_LABELS: Record<string, string> = {
+  COMPLETED: "Hoàn tất",
+  PENDING: "Chờ xử lý",
+  FAILED: "Thất bại",
+};
+
 interface Transaction {
   id: string;
   type: string;
@@ -99,7 +118,7 @@ export default function FinancialReviewPage() {
       key: "type",
       render: (type: string) => (
         <span className="inline-flex items-center rounded-lg bg-slate-50 px-2.5 py-1 text-xs font-bold text-slate-500 border border-slate-100">
-          {type}
+          {TRANSACTION_TYPE_LABELS[type] || type}
         </span>
       ),
     },
@@ -113,14 +132,9 @@ export default function FinancialReviewPage() {
       title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Trạng thái</span>,
       dataIndex: "status",
       key: "status",
-      render: (status: string) => {
-        const statusMap: Record<string, string> = {
-          COMPLETED: "Verified",
-          PENDING: "Pending",
-          FAILED: "Rejected",
-        };
-        return <Badge status={statusMap[status] || "Pending"}>{status}</Badge>;
-      },
+      render: (status: string) => (
+        <Badge status={TRANSACTION_STATUS_BADGE[status] || "Pending"}>{TRANSACTION_STATUS_LABELS[status] || status}</Badge>
+      ),
     },
     {
       title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Ngày giao dịch</span>,
@@ -159,7 +173,7 @@ export default function FinancialReviewPage() {
           </div>
           <div>
             <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Số dư hệ thống</div>
-            <div className="font-display text-2xl font-bold text-slate-800">Financial Integrity</div>
+            <div className="font-display text-2xl font-bold text-slate-800">Đối soát an toàn</div>
           </div>
         </div>
       </div>

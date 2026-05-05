@@ -11,6 +11,11 @@ import { analyticsApi } from "@/modules/analytics/api/analyticsApi";
 
 const { Title, Paragraph } = Typography;
 
+const REPORT_TYPE_LABELS: Record<string, string> = {
+  REVENUE: "Doanh thu",
+  CONSIGNMENT: "Ký gửi",
+};
+
 interface Report {
   id: string;
   title: string;
@@ -57,7 +62,7 @@ export default function ReportingPage() {
         const revenueRows = Array.isArray(revenueData) ? revenueData : revenueData ? [revenueData] : [];
         const consignmentByStatus = consignmentResponse.data?.totalByStatus || consignmentResponse.data?.byStatus || {};
         const activeListings = Object.entries(consignmentByStatus)
-          .filter(([status]) => ["APPROVED", "ACCEPTED", "REVIEWING", "SUBMITTED"].includes(status))
+          .filter(([status]) => ["APPROVED", "UNDER_REVIEW", "SUBMITTED", "RECEIVED"].includes(status))
           .reduce((sum, [, value]) => sum + value, 0);
         const reports: Report[] = [
           {
@@ -120,7 +125,7 @@ export default function ReportingPage() {
       key: "type",
       render: (type: string) => (
         <span className="inline-flex items-center rounded-lg bg-slate-50 px-2.5 py-1 text-xs font-bold text-slate-500 border border-slate-100">
-          {type}
+          {REPORT_TYPE_LABELS[type] || type}
         </span>
       ),
     },
@@ -177,7 +182,7 @@ export default function ReportingPage() {
           </div>
           <div>
             <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Trạng thái dữ liệu</div>
-            <div className="font-display text-2xl font-bold text-slate-800">Real-time Analytics</div>
+            <div className="font-display text-2xl font-bold text-slate-800">Dữ liệu thời gian thực</div>
           </div>
         </div>
       </div>
@@ -192,7 +197,7 @@ export default function ReportingPage() {
                 </div>
                 <div>
                   <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{s.label}</div>
-                  <div className="font-display text-2xl font-bold text-slate-800">Stats</div>
+                  <div className="font-display text-2xl font-bold text-slate-800">Chỉ số</div>
                 </div>
               </div>
             </Card>

@@ -13,7 +13,7 @@ export const wishlistApi = {
    */
   getWishlist: async (query: WishlistQuery = {}): Promise<ApiResponse<PageResponse<WishlistItem>>> => {
     const response = await http.get<ApiResponse<PageResponse<WishlistItem>>>(
-      `${endpoints.products}/wishlist`,
+      endpoints.wishlist,
       { params: query }
     );
     return response.data;
@@ -24,7 +24,7 @@ export const wishlistApi = {
    */
   addToWishlist: async (productId: string): Promise<ApiResponse<WishlistItem>> => {
     const response = await http.post<ApiResponse<WishlistItem>>(
-      `${endpoints.products}/wishlist/${productId}`,
+      `${endpoints.wishlist}/${productId}`,
       {}
     );
     return response.data;
@@ -35,7 +35,7 @@ export const wishlistApi = {
    */
   removeFromWishlist: async (productId: string): Promise<ApiResponse<Record<string, unknown>>> => {
     const response = await http.delete<ApiResponse<Record<string, unknown>>>(
-      `${endpoints.products}/wishlist/${productId}`
+      `${endpoints.wishlist}/${productId}`
     );
     return response.data;
   },

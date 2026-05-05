@@ -78,7 +78,7 @@ export default function SecurityPage() {
                 <Title level={4} className="!m-0 !font-display uppercase tracking-widest text-base">Chính sách mật khẩu</Title>
               </div>
 
-              <div className="grid grid-cols-1 gap-x-8 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-x-8 gap-y-2 md:grid-cols-2">
                 <Form.Item label={<span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Độ dài tối thiểu</span>} name="passwordMinLength" rules={[{ required: true }]}>
                   <InputNumber min={4} max={20} className="w-full h-12 rounded-2xl border-slate-100 bg-slate-50/50 font-medium flex items-center" />
                 </Form.Item>
@@ -92,8 +92,8 @@ export default function SecurityPage() {
                     { name: "passwordRequireSymbols", label: "Yêu cầu ký tự đặc biệt", desc: "Mật khẩu phải chứa ít nhất một ký tự đặc biệt (!@#$%^&*)." },
                     { name: "passwordRequireNumbers", label: "Yêu cầu chữ số", desc: "Mật khẩu phải chứa ít nhất một chữ số (0-9)." },
                   ].map((item) => (
-                    <div key={item.name} className="flex items-center justify-between rounded-[2rem] bg-slate-50/50 p-6 border border-slate-100/50">
-                      <div className="space-y-1">
+                    <div key={item.name} className="flex flex-wrap items-center justify-between gap-5 rounded-[2rem] border border-slate-100/50 bg-slate-50/50 p-6">
+                      <div className="min-w-0 flex-1 space-y-1">
                         <div className="font-bold text-slate-700">{item.label}</div>
                         <div className="text-xs text-slate-400 font-medium italic">{item.desc}</div>
                       </div>
@@ -127,7 +127,7 @@ export default function SecurityPage() {
                   <InputNumber min={30} max={1440} className="w-full h-12 rounded-2xl border-slate-100 bg-slate-50/50 font-medium flex items-center" />
                 </Form.Item>
 
-                <div className="flex items-center justify-between rounded-[2rem] bg-slate-50/50 p-6 border border-slate-100/50 md:col-span-2">
+                <div className="flex flex-wrap items-center justify-between gap-5 rounded-[2rem] border border-slate-100/50 bg-slate-50/50 p-6 md:col-span-2">
                   <div className="space-y-1">
                     <div className="font-bold text-slate-700">Xác thực 2 yếu tố (2FA)</div>
                     <div className="text-xs text-slate-400 font-medium italic">Thêm một lớp bảo mật thứ hai cho tài khoản người dùng.</div>

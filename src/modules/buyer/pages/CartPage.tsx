@@ -10,12 +10,12 @@ import {
   ShoppingCartOutlined,
 } from "@ant-design/icons";
 import {
+  App,
   Button,
   Card,
   Col,
   Divider,
   InputNumber,
-  message,
   Popconfirm,
   Row,
   Spin,
@@ -41,6 +41,7 @@ interface CartPageState {
 
 export default function CartPage() {
   const navigate = useNavigate();
+  const { message } = App.useApp();
   const { user, isAuthenticated } = useAuth();
   const [state, setState] = useState<CartPageState>({
     cartItems: [],
@@ -193,16 +194,16 @@ export default function CartPage() {
               <Title level={4} className="!font-display !m-0 uppercase tracking-widest text-slate-800">Tóm tắt đơn hàng</Title>
               
               <div className="space-y-4">
-                <div className="flex justify-between font-medium text-slate-500">
+                <div className="flex flex-wrap justify-between gap-3 font-medium text-slate-500">
                   <span>Tạm tính ({state.cartItems.length} sản phẩm)</span>
                   <span>{state.total.toLocaleString()}₫</span>
                 </div>
-                <div className="flex justify-between font-medium text-slate-500">
+                <div className="flex flex-wrap justify-between gap-3 font-medium text-slate-500">
                   <span>Phí vận chuyển</span>
                   <span className="italic">Tính tại bước tiếp theo</span>
                 </div>
                 <Divider className="my-4 border-border/60" />
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-end justify-between gap-4">
                   <span className="font-display text-lg font-black uppercase tracking-tight text-slate-800">Tổng cộng</span>
                   <span className="font-display text-2xl font-black text-primary tracking-tight">{state.total.toLocaleString()}₫</span>
                 </div>
@@ -219,7 +220,7 @@ export default function CartPage() {
                   THANH TOÁN NGAY
                 </Button>
                 
-                <div className="rounded-2xl border border-primary/10 bg-primary/5 p-4 flex gap-3">
+                <div className="flex gap-4 rounded-2xl border border-primary/10 bg-primary/5 p-4">
                   <SafetyCertificateOutlined className="text-primary text-xl" />
                   <p className="text-[10px] leading-relaxed font-bold text-primary/70 uppercase tracking-widest">
                     Mọi giao dịch đều được Re:Wear bảo hộ 100%. Xác thực hàng thật, hoàn tiền x2 nếu sai phạm.

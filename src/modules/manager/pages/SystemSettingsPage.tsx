@@ -142,7 +142,7 @@ export default function SystemSettingsPage() {
                 <Title level={4} className="!m-0 !font-display uppercase tracking-widest text-base">Cấu hình vận hành</Title>
               </div>
 
-              <div className="grid grid-cols-1 gap-x-8 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-x-8 gap-y-2 md:grid-cols-2">
                 <Form.Item
                   label={<span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Tên nền tảng</span>}
                   name="platformName"
@@ -176,8 +176,8 @@ export default function SystemSettingsPage() {
                   { name: "maintenanceMode", label: "Chế độ bảo trì", desc: "Tạm ngưng hoạt động của website để thực hiện các thay đổi kỹ thuật." },
                   { name: "emailNotifications", label: "Thông báo hệ thống", desc: "Gửi cập nhật tự động về đơn hàng và yêu cầu phê duyệt qua email." },
                 ].map((item) => (
-                  <div key={item.name} className="flex items-center justify-between rounded-[2rem] bg-slate-50/50 p-6 border border-slate-100/50">
-                    <div className="space-y-1">
+                  <div key={item.name} className="flex flex-wrap items-center justify-between gap-5 rounded-[2rem] border border-slate-100/50 bg-slate-50/50 p-6">
+                    <div className="min-w-0 flex-1 space-y-1">
                       <div className="font-bold text-slate-700">{item.label}</div>
                       <div className="text-xs text-slate-400 font-medium italic">{item.desc}</div>
                     </div>
@@ -201,11 +201,11 @@ export default function SystemSettingsPage() {
                 </div>
 
                 <div className="space-y-6">
-                  <div className="flex justify-between items-center px-2">
+                  <div className="flex flex-wrap items-center justify-between gap-3 px-2">
                     <span className="text-xs font-bold uppercase tracking-widest text-slate-400">API Version</span>
                     <span className="font-display font-bold text-slate-700 bg-slate-50 px-3 py-1 rounded-lg border border-slate-100">v1.0.0</span>
                   </div>
-                  <div className="flex justify-between items-center px-2">
+                  <div className="flex flex-wrap items-center justify-between gap-3 px-2">
                     <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Last Updated</span>
                     <span className="font-medium text-slate-500">{new Date().toLocaleDateString()}</span>
                   </div>

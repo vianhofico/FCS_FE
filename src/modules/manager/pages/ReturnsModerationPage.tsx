@@ -12,6 +12,22 @@ import { Badge, Button, EmptyState } from "@/shared/ui";
 
 const { Title, Paragraph } = Typography;
 
+const RETURN_STATUS_BADGE: Record<string, string> = {
+  PENDING: "Pending",
+  APPROVED: "Verified",
+  REJECTED: "Rejected",
+  ITEM_RECEIVED: "Processing",
+  REFUNDED: "Verified",
+};
+
+const RETURN_STATUS_LABELS: Record<string, string> = {
+  PENDING: "Chờ duyệt",
+  APPROVED: "Đã duyệt",
+  REJECTED: "Từ chối",
+  ITEM_RECEIVED: "Đã nhận hàng",
+  REFUNDED: "Đã hoàn tiền",
+};
+
 interface PageState {
   returns: ReturnRequestSummary[];
   isLoading: boolean;
@@ -134,14 +150,9 @@ export default function ReturnsModerationPage() {
       title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Trạng thái</span>,
       dataIndex: "status",
       key: "status",
-      render: (status: string) => {
-        const statusMap: Record<string, string> = {
-          PENDING: "Pending",
-          APPROVED: "Verified",
-          REJECTED: "Rejected",
-        };
-        return <Badge status={statusMap[status] || "Pending"}>{status}</Badge>;
-      },
+      render: (status: string) => (
+        <Badge status={RETURN_STATUS_BADGE[status] || "Pending"}>{RETURN_STATUS_LABELS[status] || status}</Badge>
+      ),
     },
     {
       title: "",
@@ -201,7 +212,7 @@ export default function ReturnsModerationPage() {
           </div>
           <div>
             <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Quy trình xử lý</div>
-            <div className="font-display text-2xl font-bold text-slate-800">Return Policy</div>
+            <div className="font-display text-2xl font-bold text-slate-800">Chính sách hoàn trả</div>
           </div>
         </div>
       </div>
@@ -216,7 +227,7 @@ export default function ReturnsModerationPage() {
                 </div>
                 <div>
                   <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{s.label}</div>
-                  <div className="font-display text-2xl font-bold text-slate-800">Requests</div>
+                  <div className="font-display text-2xl font-bold text-slate-800">Yêu cầu</div>
                 </div>
               </div>
             </Card>
@@ -235,17 +246,11 @@ export default function ReturnsModerationPage() {
           dataSource={state.returns.map((ret) => ({ ...ret, key: ret.id }))}
           pagination={false}
           scroll={{ x: "max-content" }}
+          locale={{
+            emptyText: <EmptyState title="Mọi thứ đã xong" description="Hiện không có yêu cầu hoàn trả nào đang chờ phê duyệt." />,
+          }}
           className="luxury-table"
         />
-
-        {state.returns.length === 0 && (
-          <div className="py-20 text-center">
-            <EmptyState
-              title="Mọi thứ đã xong"
-              description="Hiện không có yêu cầu hoàn trả nào đang chờ phê duyệt."
-            />
-          </div>
-        )}
       </Card>
     </div>
   );

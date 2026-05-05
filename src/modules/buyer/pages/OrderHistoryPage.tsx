@@ -80,26 +80,46 @@ export default function OrderHistoryPage() {
   const columns = [
     {
       title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Mã đơn hàng</span>,
-      dataIndex: "id",
-      key: "id",
-      render: (id: string) => <span className="font-mono text-xs font-bold text-slate-400">#{id.slice(-8).toUpperCase()}</span>,
+      dataIndex: "orderCode",
+      key: "orderCode",
+      render: (orderCode: string, record: OrderSummary) => (
+        <span className="font-mono text-xs font-bold text-slate-400">{orderCode || `#${record.id.slice(-8).toUpperCase()}`}</span>
+      ),
     },
     {
       title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Ngày đặt</span>,
       dataIndex: "createdAt",
       key: "date",
-      render: (date: string) => (
-        <div className="flex flex-col">
-          <span className="font-bold text-slate-700">{new Date(date).toLocaleDateString()}</span>
-          <span className="text-[10px] text-slate-400">{new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-        </div>
-      ),
+      render: (date?: string) => {
+        if (!date) return <span className="text-sm italic text-slate-400">Chưa có dữ liệu</span>;
+
+        const orderDate = new Date(date);
+        if (Number.isNaN(orderDate.getTime())) return <span className="text-sm italic text-slate-400">Chưa có dữ liệu</span>;
+
+        return (
+          <div className="flex flex-col">
+            <span className="font-bold text-slate-700">{orderDate.toLocaleDateString()}</span>
+            <span className="text-[10px] text-slate-400">{orderDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+          </div>
+        );
+      },
     },
     {
       title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Sản phẩm</span>,
-      dataIndex: "itemCount",
       key: "items",
-      render: (count: number) => <span className="font-bold text-slate-600">{count} món</span>,
+      render: (_: unknown, record: OrderSummary) => {
+        const items = record.items ?? [];
+        const firstItem = items[0];
+        const productName = firstItem?.productName ?? firstItem?.productNameSnapshot ?? "Không có sản phẩm";
+        const remainingCount = Math.max(items.length - 1, 0);
+
+        return (
+          <div className="flex max-w-xs flex-col gap-1">
+            <span className="line-clamp-1 font-bold text-slate-700">{productName}</span>
+            {remainingCount > 0 && <span className="text-xs font-medium text-slate-400">+{remainingCount} sản phẩm khác</span>}
+          </div>
+        );
+      },
     },
     {
       title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Tổng thanh toán</span>,
@@ -113,14 +133,28 @@ export default function OrderHistoryPage() {
       key: "status",
       render: (status: string) => {
         const statusMap: Record<string, string> = {
-          PENDING: "Pending",
+          PENDING_PAYMENT: "Pending",
+          PAID: "Processing",
           CONFIRMED: "Verified",
+          PACKING: "Processing",
           SHIPPED: "Processing",
           DELIVERED: "Verified",
+          COMPLETED: "Verified",
           CANCELLED: "Rejected",
           REFUNDED: "Inactive",
         };
-        return <Badge status={statusMap[status] || "Pending"}>{status}</Badge>;
+        const statusLabels: Record<string, string> = {
+          PENDING_PAYMENT: "Chờ thanh toán",
+          PAID: "Đã thanh toán",
+          CONFIRMED: "Đã xác nhận",
+          PACKING: "Đang đóng gói",
+          SHIPPED: "Đang giao",
+          DELIVERED: "Đã giao",
+          COMPLETED: "Hoàn tất",
+          CANCELLED: "Đã hủy",
+          REFUNDED: "Đã hoàn tiền",
+        };
+        return <Badge status={statusMap[status] || "Pending"}>{statusLabels[status] || status}</Badge>;
       },
     },
     {
@@ -186,11 +220,15 @@ export default function OrderHistoryPage() {
               allowClear
               options={[
                 { label: "Tất cả", value: "" },
-                { label: "Đang chờ", value: "PENDING" },
+                { label: "Chờ thanh toán", value: "PENDING_PAYMENT" },
+                { label: "Đã thanh toán", value: "PAID" },
                 { label: "Đã xác nhận", value: "CONFIRMED" },
+                { label: "Đang đóng gói", value: "PACKING" },
                 { label: "Đang giao", value: "SHIPPED" },
                 { label: "Đã giao", value: "DELIVERED" },
+                { label: "Hoàn tất", value: "COMPLETED" },
                 { label: "Đã hủy", value: "CANCELLED" },
+                { label: "Đã hoàn tiền", value: "REFUNDED" },
               ]}
             />
           </div>

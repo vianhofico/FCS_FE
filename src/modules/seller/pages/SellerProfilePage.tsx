@@ -136,6 +136,7 @@ export default function SellerProfilePage() {
           requiredMark={false}
           autoComplete="off"
           size="large"
+          className="space-y-2"
         >
           {/* Business Information */}
           <div className="mb-10">
@@ -144,7 +145,7 @@ export default function SellerProfilePage() {
               <div className="h-px flex-1 bg-pink-100/50" />
             </div>
 
-            <Row gutter={24}>
+            <Row gutter={[28, 12]}>
               <Col xs={24} md={12}>
                 <Form.Item
                   name="businessName"
@@ -168,7 +169,7 @@ export default function SellerProfilePage() {
               </Col>
             </Row>
 
-            <Row gutter={24}>
+            <Row gutter={[28, 12]}>
               <Col xs={24} md={12}>
                 <Form.Item
                   name="businessPhone"
@@ -205,7 +206,7 @@ export default function SellerProfilePage() {
               <div className="h-px flex-1 bg-pink-100/50" />
             </div>
 
-            <Row gutter={24}>
+            <Row gutter={[28, 12]}>
               <Col xs={24} md={12}>
                 <Form.Item
                   name="businessLicense"
@@ -234,7 +235,7 @@ export default function SellerProfilePage() {
               <div className="h-px flex-1 bg-pink-100/50" />
             </div>
 
-            <Row gutter={24}>
+            <Row gutter={[28, 12]}>
               <Col xs={24} md={12}>
                 <Form.Item
                   name="bankName"
@@ -292,7 +293,7 @@ export default function SellerProfilePage() {
           </div>
 
           {/* Actions */}
-          <div className="mt-12 flex justify-end gap-4 border-t border-pink-50 pt-8">
+          <div className="mt-12 flex flex-col justify-end gap-4 border-t border-pink-50 pt-8 sm:flex-row">
             <Button
               size="large"
               onClick={() => form.resetFields()}

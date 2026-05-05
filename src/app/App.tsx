@@ -1,4 +1,4 @@
-import { ConfigProvider } from "antd";
+import { App as AntdApp, ConfigProvider } from "antd";
 import { RouterProvider } from "react-router-dom";
 
 import { router } from "@/app/router/router";
@@ -26,18 +26,32 @@ const luxuryTheme = {
     },
     Card: {
       borderRadiusLG: 24,
+      paddingLG: 28,
+      padding: 24,
       boxShadowTertiary: "0 24px 60px rgba(217, 74, 122, 0.1)",
+    },
+    Form: {
+      itemMarginBottom: 24,
+      labelHeight: 28,
     },
     Input: {
       borderRadiusLG: 14,
       controlHeightLG: 48,
+      paddingBlockLG: 11,
+      paddingInlineLG: 16,
     },
     Menu: {
       itemBorderRadius: 14,
+      itemMarginInline: 4,
+      itemPaddingInline: 14,
       itemSelectedBg: "#fff1f6",
       itemSelectedColor: "#d94a7a",
       itemHoverBg: "#fff1f6",
       itemHoverColor: "#bf3b69",
+    },
+    Table: {
+      cellPaddingBlock: 18,
+      cellPaddingInline: 20,
     },
   },
 };
@@ -45,9 +59,11 @@ const luxuryTheme = {
 export function App() {
   return (
     <ConfigProvider theme={luxuryTheme}>
-      <AuthProvider>
-        <RouterProvider router={router} />
-      </AuthProvider>
+      <AntdApp>
+        <AuthProvider>
+          <RouterProvider router={router} />
+        </AuthProvider>
+      </AntdApp>
     </ConfigProvider>
   );
 }

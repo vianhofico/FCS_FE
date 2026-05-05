@@ -13,11 +13,11 @@ import {
   StarFilled,
 } from "@ant-design/icons";
 import {
+  App,
   Avatar,
   Card,
   Col,
   Divider,
-  message,
   Progress,
   Rate,
   Row,
@@ -25,7 +25,7 @@ import {
   Typography,
 } from "antd";
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import { orderApi } from "@/modules/order/api/orderApi";
 import { productApi } from "@/modules/product/api/productApi";
@@ -50,7 +50,11 @@ interface ProductDetailPageState {
 export default function ProductDetailPage() {
   const { productId } = useParams<{ productId: string }>();
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
+  const location = useLocation();
+  const { message } = App.useApp();
+  const { user, isAuthenticated, hasRole } = useAuth();
+  const isSellerContext = location.pathname.startsWith("/seller/products") && hasRole("SELLER");
+  const canBuyProduct = !isSellerContext;
   const [state, setState] = useState<ProductDetailPageState>({
     product: null,
     reviews: [],
@@ -123,7 +127,7 @@ export default function ProductDetailPage() {
       <EmptyState
         title="Không tìm thấy sản phẩm"
         description="Thông tin sản phẩm có thể đã bị thay đổi hoặc không tồn tại."
-        action={<Button icon={<ArrowLeftOutlined />} onClick={() => navigate("/buyer/products")} type="primary">Quay lại cửa hàng</Button>}
+        action={<Button icon={<ArrowLeftOutlined />} onClick={() => navigate(isSellerContext ? "/seller/products" : "/buyer/products")} type="primary">Quay lại danh sách</Button>}
       />
     </div>
   );
@@ -136,7 +140,7 @@ export default function ProductDetailPage() {
       <div className="flex items-center gap-4">
         <Button
           icon={<ArrowLeftOutlined />}
-          onClick={() => navigate("/buyer/products")}
+          onClick={() => navigate(isSellerContext ? "/seller/products" : "/buyer/products")}
           type="text"
           className="rounded-xl border-border/60 bg-white/50 text-slate-500 transition-soft hover:border-primary hover:text-primary px-4 py-2 h-auto"
         >
@@ -199,53 +203,55 @@ export default function ProductDetailPage() {
               </div>
             </div>
 
-            <Card className="rounded-[2rem] border-pink-100/50 bg-white/50 shadow-sm backdrop-blur-md">
-              <div className="space-y-8">
-                <div className="space-y-4">
-                  <div className="flex justify-between">
-                    <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Số lượng</span>
-                    <span className="text-xs font-bold text-primary italic">Chỉ còn 1 sản phẩm duy nhất</span>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="flex flex-1 items-center justify-between rounded-2xl border border-pink-100 bg-white p-1">
-                      <Button
-                        type="text"
-                        icon={<MinusOutlined />}
-                        disabled={state.quantity <= 1}
-                        onClick={() => setState(p => ({ ...p, quantity: p.quantity - 1 }))}
-                        className="h-10 w-10 text-primary flex items-center justify-center"
-                      />
-                      <span className="font-display text-lg font-bold">{state.quantity}</span>
-                      <Button
-                        type="text"
-                        icon={<PlusOutlined />}
-                        onClick={() => setState(p => ({ ...p, quantity: p.quantity + 1 }))}
-                        className="h-10 w-10 text-primary flex items-center justify-center"
-                      />
+            {canBuyProduct && (
+              <Card className="rounded-[2rem] border-pink-100/50 bg-white/50 shadow-sm backdrop-blur-md">
+                <div className="space-y-8">
+                  <div className="space-y-4">
+                    <div className="flex flex-wrap justify-between gap-3">
+                      <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Số lượng</span>
+                      <span className="text-xs font-bold text-primary italic">Chỉ còn 1 sản phẩm duy nhất</span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="flex flex-1 items-center justify-between rounded-2xl border border-pink-100 bg-white p-1">
+                        <Button
+                          type="text"
+                          icon={<MinusOutlined />}
+                          disabled={state.quantity <= 1}
+                          onClick={() => setState(p => ({ ...p, quantity: p.quantity - 1 }))}
+                          className="h-10 w-10 text-primary flex items-center justify-center"
+                        />
+                        <span className="font-display text-lg font-bold">{state.quantity}</span>
+                        <Button
+                          type="text"
+                          icon={<PlusOutlined />}
+                          onClick={() => setState(p => ({ ...p, quantity: p.quantity + 1 }))}
+                          className="h-10 w-10 text-primary flex items-center justify-center"
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <Button
-                    type="primary"
-                    size="large"
-                    icon={<ShoppingCartOutlined />}
-                    className="h-14 rounded-2xl font-bold shadow-luxury"
-                    loading={state.isAddingToCart}
-                    onClick={handleAddToCart}
-                  >
-                    THÊM VÀO GIỎ
-                  </Button>
-                  <Button
-                    size="large"
-                    className="h-14 rounded-2xl border-primary text-primary font-bold transition-soft hover:!bg-primary hover:!text-white"
-                  >
-                    MUA NGAY
-                  </Button>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <Button
+                      type="primary"
+                      size="large"
+                      icon={<ShoppingCartOutlined />}
+                      className="h-14 rounded-2xl font-bold shadow-luxury"
+                      loading={state.isAddingToCart}
+                      onClick={handleAddToCart}
+                    >
+                      THÊM VÀO GIỎ
+                    </Button>
+                    <Button
+                      size="large"
+                      className="h-14 rounded-2xl border-primary text-primary font-bold transition-soft hover:!bg-primary hover:!text-white"
+                    >
+                      MUA NGAY
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </Card>
+              </Card>
+            )}
 
             <div className="space-y-8">
               <div>
@@ -253,7 +259,7 @@ export default function ProductDetailPage() {
                 <Paragraph className="text-lg leading-relaxed text-slate-600/80">{product.description || "Chưa có mô tả chi tiết cho sản phẩm này."}</Paragraph>
               </div>
 
-              <div className="grid grid-cols-2 gap-x-12 gap-y-6 rounded-[2rem] bg-pink-50/30 p-8 border border-pink-100/20">
+              <div className="grid grid-cols-1 gap-x-12 gap-y-7 rounded-[2rem] border border-pink-100/20 bg-pink-50/30 p-8 sm:grid-cols-2">
                 <div>
                   <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/60">Tình trạng</div>
                   <div className="mt-1 text-base font-bold text-slate-700">{conditionPercent}/100 - Rất mới</div>
@@ -313,8 +319,8 @@ export default function ProductDetailPage() {
                   <Card key={review.id} className="rounded-3xl border-pink-100/40 bg-white transition-soft hover:shadow-luxury">
                     <div className="flex items-start gap-4">
                       <Avatar size={48} className="bg-pink-50 text-primary font-bold">{review.reviewedBy?.[0]?.toUpperCase()}</Avatar>
-                      <div className="flex-1 space-y-2">
-                        <div className="flex items-center justify-between">
+                      <div className="min-w-0 flex-1 space-y-2">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
                           <Title level={5} className="!m-0 !font-sans !font-bold text-slate-800">{review.reviewedBy}</Title>
                           <Text className="text-xs font-bold text-slate-400">{new Date(review.createdAt || "").toLocaleDateString()}</Text>
                         </div>

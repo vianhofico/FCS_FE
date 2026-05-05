@@ -68,8 +68,10 @@ http.interceptors.response.use(
       }
     }
 
+    const requestUrl = error?.config?.url ?? "";
+
     // Handle 403 - redirect to forbidden page
-    if (status === 403 && window.location.pathname !== "/forbidden") {
+    if (status === 403 && !requestUrl.includes("/notifications") && window.location.pathname !== "/forbidden") {
       window.location.href = "/forbidden";
     }
 

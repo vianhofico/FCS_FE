@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { Button, Result } from "antd";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/shared/context/AuthContext";
 import type { UserRole } from "@/shared/contracts/commonContract";
 
@@ -13,7 +12,6 @@ type RoleGuardProps = GuardProps & {
 };
 
 export function AuthGuard({ children }: GuardProps) {
-  const navigate = useNavigate();
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
@@ -26,7 +24,7 @@ export function AuthGuard({ children }: GuardProps) {
         status="403"
         title="Chưa đăng nhập"
         subTitle="Vui lòng đăng nhập để tiếp tục khám phá Re:Wear."
-        extra={<Button type="primary" onClick={() => navigate("/auth/login")}>Đăng nhập ngay</Button>}
+        extra={<Button type="primary" href="/auth/login">Đăng nhập ngay</Button>}
       />
     );
   }
@@ -35,7 +33,6 @@ export function AuthGuard({ children }: GuardProps) {
 }
 
 export function RoleGuard({ children, requiredRoles }: RoleGuardProps) {
-  const navigate = useNavigate();
   const { isAuthenticated, isLoading, hasRole } = useAuth();
 
   if (isLoading) {
@@ -48,7 +45,7 @@ export function RoleGuard({ children, requiredRoles }: RoleGuardProps) {
         status="403"
         title="Chưa đăng nhập"
         subTitle="Vui lòng đăng nhập để tiếp tục."
-        extra={<Button type="primary" onClick={() => navigate("/auth/login")}>Đăng nhập ngay</Button>}
+        extra={<Button type="primary" href="/auth/login">Đăng nhập ngay</Button>}
       />
     );
   }

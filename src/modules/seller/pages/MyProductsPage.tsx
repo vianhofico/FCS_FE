@@ -23,6 +23,7 @@ import {
   Space,
   Spin,
   Table,
+  Tag,
   Typography,
 } from "antd";
 import { useEffect, useState } from "react";
@@ -121,9 +122,14 @@ export default function MyProductsPage() {
     {
       title: <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Độ mới</span>,
       key: "condition",
-      render: (_: any, record: ProductSummary) => (
-        <Badge status="Active">{record.condition}/100</Badge>
-      ),
+      render: (_: any, record: ProductSummary) => {
+        const condition = record.conditionPercent ?? record.condition;
+        return (
+          <Tag color="success" className="inline-flex items-center rounded-full border-0 px-3.5 py-1 text-[10px] font-bold uppercase leading-5 tracking-wider">
+            {condition != null ? `${condition}/100` : "—"}
+          </Tag>
+        );
+      },
     },
     {
       title: <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Trạng thái</span>,
@@ -161,8 +167,9 @@ export default function MyProductsPage() {
           <Button
             type="text"
             icon={<EditOutlined />}
-            onClick={() => navigate(`/seller/products/${record.id}/edit`)}
-            className="text-slate-400 hover:!text-primary"
+            disabled
+            title="Chức năng chỉnh sửa sản phẩm chưa được hỗ trợ"
+            className="text-slate-300"
           />
           <Popconfirm title="Xóa sản phẩm này?" okText="Xác nhận" cancelText="Hủy">
             <Button type="text" danger icon={<DeleteOutlined />} className="hover:!bg-red-50" />

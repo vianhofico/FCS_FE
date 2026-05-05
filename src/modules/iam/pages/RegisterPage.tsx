@@ -75,7 +75,7 @@ export default function RegisterPage() {
               {error && (
                 <div className="mb-6">
                   <Alert
-                    message="Lỗi đăng ký"
+                    title="Lỗi đăng ký"
                     description={error}
                     type="error"
                     showIcon

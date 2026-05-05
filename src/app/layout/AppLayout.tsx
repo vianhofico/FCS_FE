@@ -12,6 +12,7 @@ import {
   SettingOutlined,
   ShopOutlined,
   ShoppingCartOutlined,
+  HeartOutlined,
   TagsOutlined,
   TeamOutlined,
   UserOutlined,
@@ -36,9 +37,10 @@ const guestMenuItems: NavigationItem[] = [
 const buyerMenuItems: NavigationItem[] = [
   ...guestMenuItems,
   { key: "/buyer/cart", icon: <ShoppingCartOutlined />, label: "Giỏ hàng" },
+  { key: "/buyer/wishlist", icon: <HeartOutlined />, label: "Yêu thích" },
   { key: "/buyer/orders", icon: <FileDoneOutlined />, label: "Đơn hàng" },
   { key: "/buyer/returns", icon: <ReconciliationOutlined />, label: "Đổi/trả" },
-  { key: "/notification", icon: <BellFilled />, label: "Thông báo" },
+  { key: "/notifications", icon: <BellFilled />, label: "Thông báo" },
 ];
 
 const sellerMenuItems: NavigationItem[] = [
@@ -119,8 +121,8 @@ export function AppLayout() {
   return (
     <Layout className="min-h-screen bg-white font-sans">
       <Header className="sticky top-0 z-50 h-auto border-none bg-transparent px-0 shadow-none backdrop-blur-0">
-        <div className="mx-auto flex max-w-[1440px] items-center gap-4 px-4 pt-1 pb-0 sm:px-6 lg:px-8">
-          <div className="flex min-w-0 flex-1 items-center justify-between gap-4">
+        <div className="mx-auto flex max-w-[1440px] items-center gap-5 px-4 pt-2 pb-1 sm:px-6 lg:px-8">
+          <div className="flex min-w-0 flex-1 items-center justify-between gap-5">
             <button
               type="button"
               onClick={() => navigate("/")}
@@ -129,16 +131,15 @@ export function AppLayout() {
               <span className="site-deco site-logo inline-flex items-center text-2xl md:text-3xl lg:text-[2.35rem] transition-soft group-hover:text-primary-hover">Re:Wear</span>
             </button>
 
-            <div className="mx-2 hidden min-w-0 flex-1 overflow-x-auto overflow-y-hidden lg:block xl:mx-4">{menu}</div>
+            <div className="mx-3 hidden min-w-0 flex-1 overflow-x-auto overflow-y-hidden lg:block xl:mx-5">{menu}</div>
 
-
-            <Space size={12} className="shrink-0 -mt-0.5">
+            <Space size={14} className="shrink-0 -mt-0.5">
               {isAuthenticated ? (
                 <>
                   <Dropdown
                     menu={{
                       items: [
-                        { key: "notifications", label: "Thông báo", onClick: () => navigate("/notification") },
+                        { key: "notifications", label: "Thông báo", onClick: () => navigate("/notifications") },
                         { key: "refresh", label: "Làm mới", onClick: () => refresh() },
                       ],
                     }}
@@ -162,7 +163,7 @@ export function AppLayout() {
                       ],
                     }}
                   >
-                    <button className="flex items-center gap-2 rounded-xl border border-pink-100 bg-white/80 px-2.5 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition-soft hover:border-primary/30 hover:text-primary luxury-shadow">
+                    <button className="flex items-center gap-3 rounded-xl border border-pink-100 bg-white/80 px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition-soft hover:border-primary/30 hover:text-primary luxury-shadow">
                       <Avatar size={30} icon={<UserOutlined />} className="bg-primary" />
                       <span className="hidden max-w-32 truncate md:inline">{user?.username}</span>
                     </button>
@@ -173,13 +174,13 @@ export function AppLayout() {
                   <Button
                     type="primary"
                     icon={<LoginOutlined />}
-                    onClick={() => navigate("/auth/login")}
+                    href="/auth/login"
                     className="rounded-xl h-10 px-5 font-bold bg-primary hover:!bg-primary-hover border-none shadow-sm"
                   >
                     Đăng nhập
                   </Button>
                   <Button
-                    onClick={() => navigate("/auth/register")}
+                    href="/auth/register"
                     className="rounded-xl font-bold border-pink-100 hover:border-primary hover:text-primary"
                   >
                     Đăng ký
@@ -199,7 +200,7 @@ export function AppLayout() {
       </Header>
 
       <Content className="relative min-h-[calc(100vh-104px)] overflow-hidden bg-white">
-        <main className="relative mx-auto w-full max-w-[1440px] px-4 py-5 sm:px-6 lg:px-8">
+        <main className="relative mx-auto w-full max-w-[1440px] px-4 py-7 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
           <Outlet />
         </main>
       </Content>
@@ -232,7 +233,7 @@ export function AppLayout() {
                 Đăng xuất
               </Button>
             ) : (
-              <Button block type="primary" onClick={() => { navigate("/auth/login"); setDrawerOpen(false); }} size="large" className="h-14 rounded-2xl font-bold bg-primary border-none">
+              <Button block type="primary" href="/auth/login" size="large" className="h-14 rounded-2xl font-bold bg-primary border-none">
                 Đăng nhập ngay
               </Button>
             )}

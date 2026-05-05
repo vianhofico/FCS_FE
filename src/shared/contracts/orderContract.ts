@@ -69,6 +69,8 @@ export type OrderSummary = {
   paymentMethod: PaymentMethod;
   trackingNumber?: string;
   shippingProvider?: string;
+  items?: OrderItem[];
+  itemCount?: number;
   createdAt?: string;
 };
 
@@ -80,6 +82,7 @@ export type OrderDetail = OrderSummary & {
   subTotal: number;
   shippingFee: number;
   discountAmount: number;
+  shippingAddressId?: string;
   shippingAddress?: {
     fullName: string;
     phone: string;

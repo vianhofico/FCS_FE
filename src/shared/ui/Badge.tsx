@@ -6,6 +6,7 @@ const STATUS_COLORS: Record<string, string> = {
   Inactive: 'default',
   Verified: 'success',
   Pending: 'warning',
+  Processing: 'processing',
   Suspended: 'error',
   Enabled: 'success',
   Disabled: 'error',
@@ -23,7 +24,8 @@ const STATUS_LABELS: Record<string, string> = {
   Active: 'Hoạt động',
   Inactive: 'Tạm ngưng',
   Verified: 'Đã xác minh',
-  Pending: 'Chờ duyệt',
+  Pending: 'Chờ xử lý',
+  Processing: 'Đang xử lý',
   Suspended: 'Bị khóa',
   Enabled: 'Đang bật',
   Disabled: 'Đã tắt',
@@ -44,9 +46,9 @@ type Props = {
 
 export const Badge: React.FC<Props> = ({ status, children }) => {
   const color = (status && STATUS_COLORS[status]) || 'default';
-  const label = (status && STATUS_LABELS[status]) || (typeof children === 'string' ? children : undefined);
+  const label = (typeof children === 'string' ? children : undefined) || (status && STATUS_LABELS[status]);
   return (
-    <Tag color={color} className="rounded-full px-3 py-0.5 text-[10px] font-bold uppercase tracking-wider border-0">
+    <Tag color={color} className="inline-flex items-center rounded-full border-0 px-3.5 py-1 text-[10px] font-bold uppercase leading-5 tracking-wider">
       {label || children}
     </Tag>
   );

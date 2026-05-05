@@ -6,6 +6,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  App,
   Card,
   Spin,
   Form,
@@ -13,7 +14,6 @@ import {
   Radio,
   Divider,
   Table,
-  message,
   Modal,
   Row,
   Col,
@@ -53,6 +53,7 @@ interface CheckoutPageState {
  */
 export default function CheckoutPage() {
   const navigate = useNavigate();
+  const { message } = App.useApp();
   const { user } = useAuth();
   const [form] = Form.useForm<IamAddressRequest>();
 
@@ -191,9 +192,15 @@ export default function CheckoutPage() {
         state.shippingOptions.find((option) => option.id === state.selectedShippingOptionId) ||
         state.shippingOptions[0] ||
         null;
+      const selectedAddress = state.addresses.find((address) => address.id === state.selectedAddressId);
 
       if (!selectedShippingOption) {
         message.error("Vui lòng chọn phương thức vận chuyển");
+        return;
+      }
+
+      if (!selectedAddress) {
+        message.error("Vui lòng chọn địa chỉ giao hàng");
         return;
       }
 
@@ -210,6 +217,14 @@ export default function CheckoutPage() {
           provider: selectedShippingOption.provider,
           serviceLevel: selectedShippingOption.serviceLevel,
           etaDays: selectedShippingOption.etaDays,
+          address: {
+            fullName: selectedAddress.fullName,
+            phone: selectedAddress.phone,
+            street: selectedAddress.street,
+            ward: selectedAddress.ward,
+            district: selectedAddress.district,
+            city: selectedAddress.city,
+          },
         }),
       };
 
@@ -287,7 +302,7 @@ export default function CheckoutPage() {
 
   return (
     <div className="mx-auto max-w-[1200px] space-y-10 pb-20">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <Button
           icon={<ArrowLeftOutlined />}
           onClick={() => navigate("/buyer/cart")}
@@ -345,7 +360,7 @@ export default function CheckoutPage() {
                   <div className="flex items-start gap-4 rounded-3xl border border-pink-50 bg-pink-50/10 p-5 transition-soft hover:bg-white hover:shadow-md">
                     <HomeOutlined className="mt-1 text-primary/60 text-lg" />
                     <div className="flex-1">
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
                         <span className="text-base font-bold text-slate-800">{address.street}</span>
                         <span className="text-[10px] font-bold uppercase tracking-widest text-primary/60 bg-primary/5 px-2 py-0.5 rounded-full">
                           {address.type}
@@ -382,7 +397,7 @@ export default function CheckoutPage() {
               >
                 {state.shippingOptions.map((option) => (
                   <Radio key={option.id} value={option.id} className="luxury-radio w-full block">
-                    <div className="flex items-center justify-between rounded-3xl border border-pink-50 bg-pink-50/10 p-5 transition-soft hover:bg-white hover:shadow-md">
+                    <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-pink-50 bg-pink-50/10 p-5 transition-soft hover:bg-white hover:shadow-md">
                       <div>
                         <div className="text-base font-bold text-slate-800">
                           {option.provider} - {option.serviceLevel}
@@ -436,18 +451,18 @@ export default function CheckoutPage() {
               className="rounded-[2.5rem] border-pink-100/40 bg-white p-8 shadow-luxury"
             >
               <div className="space-y-5">
-                <div className="flex justify-between font-medium text-slate-500">
+                <div className="flex flex-wrap justify-between gap-3 font-medium text-slate-500">
                   <span>Tạm tính:</span>
                   <span className="font-bold text-slate-700">{subTotal.toLocaleString()}₫</span>
                 </div>
-                <div className="flex justify-between font-medium text-slate-500">
+                <div className="flex flex-wrap justify-between gap-3 font-medium text-slate-500">
                   <span>Phí vận chuyển:</span>
                   <span className="font-bold text-slate-700">{shippingFee.toLocaleString()}₫</span>
                 </div>
 
                 {selectedShippingOption && (
                   <div className="rounded-2xl bg-pink-50/30 p-4 text-[11px] font-bold uppercase tracking-widest text-primary/70">
-                    <div className="flex justify-between">
+                    <div className="flex flex-wrap justify-between gap-3">
                       <span>{selectedShippingOption.provider}</span>
                       <span>{selectedShippingOption.serviceLevel}</span>
                     </div>
@@ -456,7 +471,7 @@ export default function CheckoutPage() {
 
                 <Divider className="my-6 border-pink-100/50" />
 
-                <div className="flex justify-between items-end">
+                <div className="flex flex-wrap items-end justify-between gap-4">
                   <span className="font-display text-lg font-black uppercase tracking-tight text-slate-800">Tổng thanh toán</span>
                   <span className="font-display text-3xl font-black text-primary tracking-tight">{total.toLocaleString()}₫</span>
                 </div>
@@ -520,7 +535,7 @@ export default function CheckoutPage() {
           <Form.Item name="street" label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Số nhà & Tên đường</span>} rules={[{ required: true, message: "Vui lòng nhập địa chỉ" }]}>
             <Input placeholder="123 Nguyễn Huệ" className="rounded-2xl border-pink-100" />
           </Form.Item>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Form.Item name="district" label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Quận / Huyện</span>} rules={[{ required: true, message: "Vui lòng nhập quận/huyện" }]}>
               <Input placeholder="Quận 1" className="rounded-2xl border-pink-100" />
             </Form.Item>
@@ -531,7 +546,7 @@ export default function CheckoutPage() {
           <Form.Item name="phone" label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Số điện thoại nhận hàng</span>} rules={[{ required: true, message: "Vui lòng nhập số điện thoại" }]}>
             <Input placeholder="09xx xxx xxx" className="rounded-2xl border-pink-100" />
           </Form.Item>
-          <div className="mt-10 flex gap-4">
+          <div className="mt-10 flex flex-col gap-4 sm:flex-row">
             <Button block size="large" onClick={() => setState((prev) => ({ ...prev, showAddressModal: false }))}>HỦY BỎ</Button>
             <Button type="primary" block size="large" htmlType="submit">LƯU ĐỊA CHỈ</Button>
           </div>

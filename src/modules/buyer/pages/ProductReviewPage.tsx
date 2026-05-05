@@ -6,12 +6,12 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
+  App,
   Card,
   Form,
   Input,
   Rate,
   Spin,
-  message,
   Upload,
   Typography,
   Row,
@@ -46,6 +46,7 @@ interface ProductReviewPageState {
 export default function ProductReviewPage() {
   const { productId } = useParams<{ productId: string }>();
   const navigate = useNavigate();
+  const { message } = App.useApp();
   const [form] = Form.useForm();
 
   const [state, setState] = useState<ProductReviewPageState>({
@@ -60,6 +61,7 @@ export default function ProductReviewPage() {
     uploadingMedia: false,
     uploadedFiles: [],
   });
+  const [ratingError, setRatingError] = useState<string | null>(null);
 
   // Load product details
   useEffect(() => {
@@ -103,9 +105,11 @@ export default function ProductReviewPage() {
 
   const handleSubmit = async (_values: { title: string; description: string }) => {
     if (state.rating === 0) {
-      message.error("Vui lòng chọn mức độ hài lòng");
+      setRatingError("Vui lòng chọn mức độ hài lòng");
       return;
     }
+
+    setRatingError(null);
 
     if (!state.title.trim()) {
       message.error("Vui lòng nhập tiêu đề đánh giá");
@@ -172,7 +176,7 @@ export default function ProductReviewPage() {
 
   return (
     <div className="mx-auto max-w-[1200px] space-y-12 pb-20">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <Button
           icon={<ArrowLeftOutlined />}
           onClick={() => navigate(`/buyer/products/${productId}`)}
@@ -202,11 +206,19 @@ export default function ProductReviewPage() {
               className="space-y-8"
               size="large"
             >
-              <Form.Item label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Mức độ hài lòng</span>} required>
-                <div className="flex items-center gap-6 rounded-2xl bg-slate-50 p-6 border border-slate-100">
+              <Form.Item
+                label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Mức độ hài lòng</span>}
+                validateStatus={ratingError ? "error" : undefined}
+                help={ratingError}
+                required
+              >
+                <div className="flex flex-wrap items-center gap-6 rounded-2xl border border-slate-100 bg-slate-50 p-6">
                   <Rate
                     value={state.rating}
-                    onChange={(value) => setState((prev) => ({ ...prev, rating: value }))}
+                    onChange={(value) => {
+                      setRatingError(null);
+                      setState((prev) => ({ ...prev, rating: value }));
+                    }}
                     className="!text-3xl !text-yellow-400"
                   />
                   <span className="font-display text-lg font-bold text-slate-400">

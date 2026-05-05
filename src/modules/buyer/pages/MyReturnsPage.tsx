@@ -111,10 +111,17 @@ export default function MyReturnsPage() {
           PENDING: "Pending",
           APPROVED: "Verified",
           REJECTED: "Rejected",
-          COMPLETED: "Verified",
+          ITEM_RECEIVED: "Processing",
           REFUNDED: "Verified",
         };
-        return <Badge status={statusMap[status] || "Pending"}>{status}</Badge>;
+        const statusLabels: Record<string, string> = {
+          PENDING: "Đang chờ",
+          APPROVED: "Đã duyệt",
+          REJECTED: "Bị từ chối",
+          ITEM_RECEIVED: "Đã nhận hàng",
+          REFUNDED: "Đã hoàn tiền",
+        };
+        return <Badge status={statusMap[status] || "Pending"}>{statusLabels[status] || status}</Badge>;
       },
     },
     {
@@ -187,7 +194,7 @@ export default function MyReturnsPage() {
                 { label: "Đang chờ", value: "PENDING" },
                 { label: "Đã duyệt", value: "APPROVED" },
                 { label: "Bị từ chối", value: "REJECTED" },
-                { label: "Hoàn tất", value: "COMPLETED" },
+                { label: "Đã nhận hàng", value: "ITEM_RECEIVED" },
                 { label: "Đã hoàn tiền", value: "REFUNDED" },
               ]}
             />

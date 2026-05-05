@@ -16,7 +16,7 @@ export const GradeBadge: React.FC<Props> = ({ grade }) => {
   return (
     <Tag
       style={{ backgroundColor: config.color, color: '#fff', fontSize: 10, fontWeight: 700, border: 'none' }}
-      className="rounded-full px-2 leading-5"
+      className="inline-flex items-center rounded-full px-2.5 py-0.5 leading-5"
       title={config.label}
     >
       {grade}
