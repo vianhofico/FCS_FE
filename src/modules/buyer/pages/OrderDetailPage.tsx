@@ -111,6 +111,7 @@ const PAYMENT_METHOD_LABELS: Record<string, string> = {
   VNPAY: "VNPAY",
   MOMO: "Ví MoMo",
   BANK_TRANSFER: "Chuyển khoản ngân hàng",
+  ONLINE_PAYMENT: "Online",
 };
 
 function formatOrderStatus(status: string) {
