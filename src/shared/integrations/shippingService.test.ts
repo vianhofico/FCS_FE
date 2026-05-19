@@ -10,10 +10,11 @@ test("returns deterministic shipping quotes", async () => {
     subtotal: 400,
   });
 
-  assert.equal(options.length, 3);
-  assert.equal(options[0].provider, "VNPost");
+  assert.equal(options.length, 2);
+  assert.equal(options[0].provider, "Nhận hàng trực tiếp tại kho");
+  assert.equal(options[0].fee, 0);
+  assert.equal(options[1].provider, "Shop vận chuyển");
   assert.ok(options[1].fee > options[0].fee);
-  assert.ok(options[2].etaDays > options[0].etaDays);
 });
 
 test("builds carrier tracking urls", () => {

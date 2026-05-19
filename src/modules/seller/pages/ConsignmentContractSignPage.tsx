@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, Row, Col, Typography, Divider, message, Spin, Checkbox } from 'antd';
+import { Card, Row, Col, Typography, Divider, message, Spin, Checkbox, Input } from 'antd';
 import {
   SafetyCertificateOutlined,
   FileProtectOutlined,
@@ -18,6 +18,7 @@ import { consignmentApi } from '../api/consignmentApi';
 import type { ConsignmentRequestDetail } from '@/shared/contracts/consignmentContract';
 import { Button, Badge } from '@/shared/ui';
 import { useAuth } from '@/shared/context/AuthContext';
+import { useEsignClient } from '@/shared/hooks/useEsignClient';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -25,8 +26,10 @@ export default function ConsignmentContractSignPage() {
   const { requestId } = useParams<{ requestId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { sign } = useEsignClient();
   const [isSigning, setIsSigning] = useState(false);
   const [isAgreed, setIsAgreed] = useState(false);
+  const [signatureName, setSignatureName] = useState(user?.username || user?.email || '');
   const [loading, setLoading] = useState(true);
   const [request, setRequest] = useState<ConsignmentRequestDetail | null>(null);
 
@@ -53,10 +56,17 @@ export default function ConsignmentContractSignPage() {
       return;
     }
 
+    if (!signatureName.trim()) {
+      message.warning("Vui lòng nhập tên người ký");
+      return;
+    }
+
     setIsSigning(true);
     try {
-      // Simulation of E-signing process
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await sign(contract.id, {
+        acceptedTerms: true,
+        signatureName: signatureName.trim(),
+      });
       message.success("Hợp đồng đã được ký kết thành công!");
       navigate(`/seller/consignments/${requestId}`);
     } catch (err) {
@@ -78,6 +88,16 @@ export default function ConsignmentContractSignPage() {
   }
 
   const contract = request.contract;
+
+  if (contract.status === 'SIGNED') {
+    return (
+      <div className="mx-auto max-w-2xl py-20 text-center">
+        <Title level={3}>Hợp đồng đã được ký</Title>
+        <Paragraph>Hợp đồng này đã được ký bởi {contract.signedByName || 'người ký gửi'}.</Paragraph>
+        <Button onClick={() => navigate(`/seller/consignments/${requestId}`)}>Quay lại chi tiết ký gửi</Button>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-[1200px] space-y-12 pb-20">
@@ -197,6 +217,16 @@ export default function ConsignmentContractSignPage() {
                   </Paragraph>
                 </div>
 
+                <div className="space-y-3 text-left">
+                  <Text className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Tên người ký</Text>
+                  <Input
+                    value={signatureName}
+                    onChange={(event) => setSignatureName(event.target.value)}
+                    placeholder="Nhập họ tên người ký"
+                    className="h-12 rounded-2xl border-pink-100 font-bold"
+                  />
+                </div>
+
                 <div className="p-6 rounded-2xl bg-slate-50 text-left border border-slate-100">
                   <Checkbox
                     checked={isAgreed}
@@ -216,7 +246,7 @@ export default function ConsignmentContractSignPage() {
                   icon={<SignatureOutlined />}
                   onClick={handleSign}
                   loading={isSigning}
-                  disabled={!isAgreed}
+                  disabled={!isAgreed || !signatureName.trim()}
                   className="h-16 rounded-2xl font-black shadow-luxury text-lg tracking-widest uppercase"
                 >
                   KÝ HỢP ĐỒNG NGAY

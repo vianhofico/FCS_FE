@@ -45,6 +45,38 @@
     transition: all 400ms var(--ease-soft);
   }
 
+  .responsive-page {
+    @apply mx-auto w-full max-w-[1440px] space-y-8 pb-14 sm:space-y-10 sm:pb-16 lg:space-y-12 lg:pb-20;
+  }
+
+  .responsive-section {
+    @apply rounded-[1.75rem] border border-border/60 bg-white/75 p-4 shadow-sm backdrop-blur-sm sm:rounded-[2.25rem] sm:p-6 lg:rounded-[3rem] lg:p-8;
+  }
+
+  .page-hero {
+    @apply relative overflow-hidden rounded-[2rem] bg-white px-5 py-8 shadow-xl shadow-pink-100/35 sm:rounded-[2.5rem] sm:px-8 sm:py-10 lg:rounded-[3rem] lg:px-12 lg:py-14 xl:px-16;
+  }
+
+  .page-title {
+    @apply !m-0 !font-display !text-3xl !font-black !leading-[1.05] !tracking-tight !text-slate-900 sm:!text-4xl md:!text-5xl lg:!text-6xl;
+  }
+
+  .page-subtitle {
+    @apply max-w-2xl text-sm font-medium !leading-relaxed text-slate-500 sm:text-base lg:text-lg;
+  }
+
+  .responsive-toolbar {
+    @apply flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between;
+  }
+
+  .responsive-card {
+    @apply rounded-[1.5rem] border-border/50 bg-white shadow-sm sm:rounded-[2rem] lg:rounded-[2.5rem];
+  }
+
+  .responsive-table-card {
+    @apply overflow-hidden rounded-[1.5rem] border-border/50 bg-white shadow-sm sm:rounded-[2rem] lg:rounded-[2.5rem];
+  }
+
   .luxury-shadow {
     box-shadow: 0 30px 60px -12px rgba(217, 74, 122, 0.1),
                 0 18px 36px -18px rgba(0, 0, 0, 0.05);
@@ -186,5 +218,50 @@
 
   .luxury-progress .ant-progress-inner {
     border-radius: 999px !important;
+  }
+
+  .ant-card .ant-card-body {
+    min-width: 0;
+  }
+
+  .ant-table-wrapper {
+    max-width: 100%;
+  }
+
+  .ant-drawer .ant-drawer-content-wrapper {
+    max-width: 100vw;
+  }
+
+  .ant-drawer .ant-drawer-body {
+    overflow-x: hidden;
+  }
+
+  @media (max-width: 640px) {
+    body {
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .site-deco {
+      font-size: 1.55rem;
+    }
+
+    .ant-card .ant-card-body {
+      padding: 18px !important;
+    }
+
+    .luxury-table .ant-table-thead > tr > th,
+    .luxury-table .ant-table-tbody > tr > td {
+      padding: 12px 14px !important;
+    }
+
+    .luxury-modal .ant-modal-content {
+      border-radius: 22px !important;
+      padding: 20px !important;
+    }
+
+    .luxury-steps.ant-steps-vertical .ant-steps-item {
+      padding-bottom: 12px;
+    }
   }
 }

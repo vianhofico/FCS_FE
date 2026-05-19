@@ -124,7 +124,7 @@ export default function ConsignmentMultiStepPage() {
       case 1:
         return (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="rounded-[2rem] border border-dashed border-pink-200 bg-pink-50/20 p-12 text-center">
+            <div className="rounded-[1.75rem] border border-dashed border-pink-200 bg-pink-50/20 p-6 text-center sm:rounded-[2rem] sm:p-10 lg:p-12">
               <Upload
                 listType="picture-card"
                 multiple
@@ -215,7 +215,7 @@ export default function ConsignmentMultiStepPage() {
               </Paragraph>
             </div>
 
-            <div className="mt-10 rounded-[2.5rem] border border-pink-100 bg-white p-8 text-left space-y-6">
+            <div className="mt-10 space-y-6 rounded-[1.75rem] border border-pink-100 bg-white p-5 text-left sm:rounded-[2.5rem] sm:p-8">
                <div className="flex flex-wrap justify-between gap-3 border-b border-pink-50 pb-4">
                  <Text className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Sản phẩm</Text>
                  <Text className="font-bold text-slate-800">{form.getFieldValue('name')}</Text>
@@ -237,27 +237,28 @@ export default function ConsignmentMultiStepPage() {
   };
 
   return (
-    <div className="mx-auto max-w-[1200px] space-y-12 pb-20">
-      <div className="flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-end">
+    <div className="responsive-page max-w-[1200px]">
+      <div className="responsive-toolbar items-start lg:items-end">
         <div className="space-y-4">
-          <Title className="!m-0 !font-display !text-4xl !font-bold !leading-tight !tracking-tight md:!text-6xl uppercase">Ký gửi sản phẩm</Title>
-          <Paragraph className="max-w-lg text-lg font-medium text-slate-400 opacity-80 italic">
+          <Title className="page-title uppercase">Ký gửi sản phẩm</Title>
+          <Paragraph className="page-subtitle italic">
             Chia sẻ những tuyệt tác thời trang của bạn với cộng đồng yêu cái đẹp. Quy trình minh bạch và chuyên nghiệp.
           </Paragraph>
         </div>
         <Button
           icon={<ArrowLeftOutlined />}
           onClick={() => navigate('/seller/consignments')}
-          className="rounded-xl border-pink-100 text-slate-400 font-bold hover:border-primary h-12 px-6"
+          className="h-12 w-full rounded-xl border-pink-100 px-6 font-bold text-slate-400 hover:border-primary sm:w-auto"
         >
           HỦY BỎ
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-12">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-12">
         <div className="lg:col-span-4">
-          <div className="sticky top-32">
+          <div className="rounded-[1.5rem] border border-pink-100/50 bg-white/70 p-4 sm:rounded-[2rem] sm:p-5 lg:sticky lg:top-32 lg:border-none lg:bg-transparent lg:p-0">
             <Steps
+              responsive
               orientation="vertical"
               current={current}
               className="luxury-steps"
@@ -271,7 +272,7 @@ export default function ConsignmentMultiStepPage() {
         </div>
 
         <div className="lg:col-span-8">
-          <Card className="rounded-[2rem] border-pink-100/40 bg-white p-4 shadow-luxury min-h-[600px] flex flex-col sm:p-8 lg:p-10">
+          <Card className="responsive-card flex min-h-[520px] flex-col border-pink-100/40 p-1 shadow-luxury sm:min-h-[560px] sm:p-4 lg:p-6">
             <Form
               form={form}
               layout="vertical"
@@ -285,13 +286,13 @@ export default function ConsignmentMultiStepPage() {
 
               {renderStepContent()}
 
-              <div className="mt-20 flex flex-col gap-4 border-t border-pink-50 pt-8 sm:flex-row">
+              <div className="mt-12 flex flex-col gap-4 border-t border-pink-50 pt-6 sm:mt-16 sm:flex-row sm:pt-8">
                 {current > 0 && (
                   <Button
                     size="large"
                     icon={<ArrowLeftOutlined />}
                     onClick={handlePrev}
-                    className="h-14 rounded-2xl px-8 font-bold border-pink-100 text-slate-400"
+                    className="h-14 rounded-2xl border-pink-100 px-8 font-bold text-slate-400"
                   >
                     QUAY LẠI
                   </Button>

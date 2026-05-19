@@ -3,6 +3,7 @@ import ConsignmentRequestListPage from "@/modules/seller/pages/ConsignmentReques
 import ConsignmentRequestDetailPage from "@/modules/seller/pages/ConsignmentRequestDetailPage";
 import ConsignmentMultiStepPage from "@/modules/seller/pages/ConsignmentMultiStepPage";
 import ConsignmentContractPage from "@/modules/seller/pages/ConsignmentContractPage";
+import ConsignmentContractSignPage from "@/modules/seller/pages/ConsignmentContractSignPage";
 import MyProductsPage from "@/modules/seller/pages/MyProductsPage";
 import ProductDetailPage from "@/modules/buyer/pages/ProductDetailPage";
 import SalesReportPage from "@/modules/seller/pages/SalesReportPage";
@@ -24,6 +25,10 @@ export const sellerRoutes: RouteObject[] = [
       {
         path: ":requestId",
         element: <ConsignmentRequestDetailPage />,
+      },
+      {
+        path: ":requestId/contract/sign",
+        element: <ConsignmentContractSignPage />,
       },
     ],
   },

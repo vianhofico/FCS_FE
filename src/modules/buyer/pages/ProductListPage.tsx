@@ -209,7 +209,7 @@ export default function BuyerProductListPage() {
   const productGrid = (
     <Row gutter={[24, 32]}>
       {state.products.map((product) => (
-        <Col xs={24} sm={12} md={8} key={product.id}>
+        <Col xs={24} sm={12} md={8} xl={6} key={product.id}>
           <Card
             hoverable
             className="group overflow-hidden rounded-3xl border-border/40 bg-white transition-premium hover:shadow-luxury"
@@ -347,8 +347,8 @@ export default function BuyerProductListPage() {
   );
 
   return (
-    <div className="space-y-12">
-      <section className="relative overflow-hidden rounded-[3rem] bg-white px-6 py-12 shadow-xl shadow-pink-100/40 md:px-12 lg:px-16">
+    <div className="responsive-page">
+      <section className="page-hero">
         <div className="pointer-events-none absolute -right-20 -top-24 h-80 w-80 rounded-full bg-primary/5 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-24 -left-20 h-72 w-72 rounded-full bg-pink-100/40 blur-3xl" />
         <Row gutter={[48, 48]} align="middle" className="relative z-10">
@@ -360,26 +360,26 @@ export default function BuyerProductListPage() {
               </div>
 
               <div className="space-y-2">
-                <Title className="!m-0 !font-display !text-5xl !font-black !leading-tight !tracking-tight !text-slate-900 md:!text-6xl lg:!text-7xl uppercase">
+                <Title className="page-title uppercase">
                   Phong cách
                 </Title>
-                <Title className="!m-0 !font-display !text-5xl !font-light italic !leading-tight !tracking-tight !text-primary md:!text-6xl lg:!text-7xl uppercase">
+                <Title className="page-title !font-light italic !text-primary uppercase">
                   thời trang bền vững
                 </Title>
-                <Title className="!m-0 !font-display !text-5xl !font-black !leading-tight !tracking-tight !text-slate-900 md:!text-6xl lg:!text-7xl uppercase">
+                <Title className="page-title uppercase">
                   cho Gen Z.
                 </Title>
               </div>
 
-              <Paragraph className="max-w-md text-base font-medium !leading-relaxed text-slate-500 opacity-80 md:text-lg">
+              <Paragraph className="page-subtitle">
                 Nền tảng mua sắm thời trang ký gửi Local Brand dành cho giới trẻ.
               </Paragraph>
 
-              <Space size="middle" className="flex flex-wrap">
-                <Button type="primary" size="large" className="h-12 rounded-2xl px-8 font-black shadow-luxury">
+              <Space size="middle" className="flex w-full flex-wrap">
+                <Button type="primary" size="large" className="h-12 rounded-2xl px-7 font-black shadow-luxury sm:px-8">
                   Khám phá ngay <ArrowRightOutlined />
                 </Button>
-                <div className="flex items-center gap-4 rounded-full border border-pink-100 bg-white/70 px-5 py-3 shadow-sm backdrop-blur">
+                <div className="flex min-w-0 items-center gap-3 rounded-2xl border border-pink-100 bg-white/70 px-4 py-3 shadow-sm backdrop-blur sm:rounded-full sm:px-5">
                   <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-white">
                     <StarFilled />
                   </div>
@@ -393,7 +393,7 @@ export default function BuyerProductListPage() {
           </Col>
 
           <Col xs={24} lg={12}>
-            <div className="relative mx-auto max-w-xl overflow-hidden rounded-[3rem] shadow-2xl shadow-pink-200/50 lg:ml-auto">
+            <div className="relative mx-auto max-w-xl overflow-hidden rounded-[2rem] shadow-2xl shadow-pink-200/50 sm:rounded-[3rem] lg:ml-auto">
               <img loading="lazy" src={heroImage} alt="Thời trang ký gửi thế hệ mới" className="aspect-[4/5] w-full object-cover" />
             </div>
           </Col>
@@ -410,13 +410,13 @@ export default function BuyerProductListPage() {
 
         {/* Content Area */}
         <div className="flex-1 space-y-8">
-          <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
+          <div className="responsive-toolbar items-start md:items-end">
             <div className="space-y-2">
-              <Title className="!m-0 !font-display !text-3xl !font-black uppercase tracking-tight">Bộ sưu tập mới</Title>
+              <Title className="!m-0 !font-display !text-2xl !font-black uppercase tracking-tight sm:!text-3xl">Bộ sưu tập mới</Title>
               <Text className="text-sm font-medium text-slate-400">Đã kiểm định chất lượng: {state.totalElements} sản phẩm</Text>
             </div>
 
-            <Space size={12} className="w-full sm:w-auto">
+            <Space size={12} className="w-full flex-wrap sm:w-auto">
               <Button
                 icon={<FilterOutlined />}
                 onClick={() => setShowMobileFilters(true)}
@@ -427,7 +427,7 @@ export default function BuyerProductListPage() {
               <Select
                 value={state.sortBy}
                 onChange={(val) => setState(prev => ({ ...prev, sortBy: val, page: 0 }))}
-                className="h-11 min-w-[200px]"
+                className="h-11 min-w-full sm:min-w-[200px]"
                 suffixIcon={<SortAscendingOutlined className="text-primary" />}
                 options={[
                   { label: "Mới nhất", value: "newest" },
@@ -474,9 +474,10 @@ export default function BuyerProductListPage() {
         placement="left"
         onClose={() => setShowMobileFilters(false)}
         open={showMobileFilters}
+        size={360}
         className="rounded-r-[2rem]"
       >
-        <div className="p-2">{filterContent}</div>
+        <div className="p-1 sm:p-2">{filterContent}</div>
       </Drawer>
     </div>
   );

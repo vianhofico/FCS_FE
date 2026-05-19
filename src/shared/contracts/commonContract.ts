@@ -145,6 +145,7 @@ export type OrderStatus = typeof OrderStatus[keyof typeof OrderStatus];
  */
 export const PaymentMethod = {
   COD: "COD",
+  ONLINE_PAYMENT: "ONLINE_PAYMENT",
   VNPAY: "VNPAY",
   MOMO: "MOMO",
   BANK_TRANSFER: "BANK_TRANSFER",

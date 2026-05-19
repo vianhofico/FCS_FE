@@ -30,6 +30,7 @@ import {
 } from "@ant-design/icons";
 import { orderApi } from "@/modules/order/api/orderApi";
 import { returnApi } from "@/modules/order/api/returnApi";
+import { paymentApi } from "@/modules/order/api/paymentApi";
 import type { OrderDetail, OrderItem } from "@/shared/contracts/orderContract";
 import { useAuth } from "@/shared/context/AuthContext";
 import TimelineWidget from "@/shared/components/TimelineWidget";
@@ -50,6 +51,7 @@ interface OrderDetailPageState {
   };
   isSubmittingReturn: boolean;
   isConfirmingReceipt: boolean;
+  isRegeneratingQr: boolean;
 }
 
 const RETURN_REASONS = [
@@ -140,6 +142,7 @@ export default function OrderDetailPage() {
     returnForm: { itemIds: [], reason: "", description: "" },
     isSubmittingReturn: false,
     isConfirmingReceipt: false,
+    isRegeneratingQr: false,
   });
 
   // Load order details
@@ -272,6 +275,29 @@ export default function OrderDetailPage() {
     });
   };
 
+  const handleRegenerateQr = async () => {
+    try {
+      setState((prev) => ({ ...prev, isRegeneratingQr: true }));
+      const response = await paymentApi.createOnlinePayment(orderId!);
+      if (response.success) {
+        message.success("Tạo QR thanh toán thành công");
+        // Reload order to get updated payment session
+        const orderResponse = await orderApi.getOrderDetail(orderId!);
+        if (orderResponse.success) {
+          setState((prev) => ({ ...prev, order: orderResponse.data || null }));
+        }
+        // Navigate to payment QR page
+        navigate(`/buyer/payments/${orderId}`);
+      } else {
+        message.error(response.message || "Không thể tạo QR thanh toán");
+      }
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : "Tạo QR thanh toán thất bại");
+    } finally {
+      setState((prev) => ({ ...prev, isRegeneratingQr: false }));
+    }
+  };
+
   if (!state.order) {
     return (
       <div className="mx-auto max-w-4xl space-y-6">
@@ -302,6 +328,7 @@ export default function OrderDetailPage() {
   const canConfirmReceipt = isBuyerContext && order.status === "DELIVERED";
   const canReviewOrder = isBuyerContext && order.status === "COMPLETED";
   const canRequestReturn = isBuyerContext && order.status === "COMPLETED";
+  const canRegenerateQr = isBuyerContext && order.status === "PENDING_PAYMENT" && order.paymentMethod === "ONLINE_PAYMENT";
   const shippingSnapshot = parseShippingSnapshot(order.shippingSnapshot);
   const shippingAddress = order.shippingAddress ?? shippingSnapshot?.address ?? null;
   const statusMap: Record<string, string> = {
@@ -534,6 +561,12 @@ export default function OrderDetailPage() {
                   {canCancelOrder && (
                     <Button danger block size="large" onClick={handleCancelOrder} className="h-12 rounded-xl font-bold border-red-100 text-red-500">
                       HỦY ĐƠN HÀNG
+                    </Button>
+                  )}
+
+                  {canRegenerateQr && (
+                    <Button type="primary" block size="large" loading={state.isRegeneratingQr} onClick={handleRegenerateQr} className="h-12 rounded-xl font-bold">
+                      TẠO LẠI MÃ QR THANH TOÁN
                     </Button>
                   )}
 

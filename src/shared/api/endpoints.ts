@@ -14,6 +14,7 @@ export const endpoints = {
   consignments: `${API_PREFIX}/consignments`,
   orders: `${API_PREFIX}/orders`,
   vouchers: `${API_PREFIX}/vouchers`,
+  payments: `${API_PREFIX}/payments`,
   cart: `${API_PREFIX}/cart`,
   wishlist: `${API_PREFIX}/wishlist`,
   wallets: `${API_PREFIX}/financial/wallets`,

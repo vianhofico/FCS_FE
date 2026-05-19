@@ -7,6 +7,7 @@ import ProductListPage from "@/modules/buyer/pages/ProductListPage";
 import ProductDetailPage from "@/modules/buyer/pages/ProductDetailPage";
 import CartPage from "@/modules/buyer/pages/CartPage";
 import CheckoutPage from "@/modules/buyer/pages/CheckoutPage";
+import PaymentQrPage from "@/modules/buyer/pages/PaymentQrPage";
 import OrderHistoryPage from "@/modules/buyer/pages/OrderHistoryPage";
 import OrderDetailPage from "@/modules/buyer/pages/OrderDetailPage";
 import MyReturnsPage from "@/modules/buyer/pages/MyReturnsPage";
@@ -44,6 +45,10 @@ export const buyerRoutes: RouteObject[] = [
   {
     path: "buyer/checkout",
     element: <CheckoutPage />,
+  },
+  {
+    path: "buyer/payments/:orderId",
+    element: <PaymentQrPage />,
   },
   {
     path: "buyer/orders",

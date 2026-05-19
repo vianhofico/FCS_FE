@@ -4,13 +4,14 @@
  */
 
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   App,
   Card,
   Spin,
   Form,
   Input,
+  Select,
   Radio,
   Divider,
   Table,
@@ -22,12 +23,14 @@ import {
 import { ArrowLeftOutlined, HomeOutlined, SafetyCertificateOutlined } from "@ant-design/icons";
 import { iamApi } from "@/modules/iam/api/iamApi";
 import { orderApi } from "@/modules/order/api/orderApi";
+import { paymentApi } from "@/modules/order/api/paymentApi";
+import { productApi } from "@/modules/product/api/productApi";
 import type { CartItem, OrderCreateRequest } from "@/shared/contracts/orderContract";
 import type { IamAddress, IamAddressRequest } from "@/shared/contracts/iamContract";
 import type { PaymentMethod } from "@/shared/contracts/commonContract";
-import { PaymentMethod as PaymentMethodEnum } from "@/shared/contracts/commonContract";
+import { AddressType, PaymentMethod as PaymentMethodEnum, ProductStatus as ProductStatusEnum } from "@/shared/contracts/commonContract";
 import { useAuth } from "@/shared/context/AuthContext";
-import { createPaymentSession, isOnlinePayment, type PaymentCheckoutSession } from "@/shared/integrations/paymentGateway";
+import { isOnlinePayment } from "@/shared/integrations/paymentGateway";
 import { getShippingOptions, type ShippingOption } from "@/shared/integrations/shippingService";
 import { Button } from "@/shared/ui";
 
@@ -45,7 +48,6 @@ interface CheckoutPageState {
   error: string | null;
   showAddressModal: boolean;
   newAddress: IamAddressRequest;
-  paymentSession: PaymentCheckoutSession | null;
 }
 
 /**
@@ -53,9 +55,13 @@ interface CheckoutPageState {
  */
 export default function CheckoutPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { message } = App.useApp();
   const { user } = useAuth();
   const [form] = Form.useForm<IamAddressRequest>();
+  const checkoutMode = searchParams.get("mode") || "cart";
+  const buyNowProductId = searchParams.get("productId");
+  const buyNowQuantity = Math.max(Number(searchParams.get("quantity") || 1), 1);
 
   const [state, setState] = useState<CheckoutPageState>({
     cartItems: [],
@@ -77,7 +83,6 @@ export default function CheckoutPage() {
       phone: "",
       type: "HOME",
     },
-    paymentSession: null,
   });
 
   // Load cart and addresses
@@ -88,16 +93,48 @@ export default function CheckoutPage() {
       try {
         setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
-        // Load cart
-        const cartResponse = await orderApi.getCart(user.id);
-        // Load addresses
         const addressResponse = await iamApi.getUserAddresses(user.id);
 
-        if (cartResponse.success && cartResponse.data) {
+        if (checkoutMode === "buy-now" && buyNowProductId) {
+          const productResponse = await productApi.getProductDetail(buyNowProductId);
+          if (!productResponse.success || !productResponse.data) {
+            throw new Error("Không thể tải thông tin sản phẩm để thanh toán");
+          }
+
+          const product = productResponse.data;
+
+          if (product.status !== ProductStatusEnum.SELLING) {
+            setState((prev) => ({
+              ...prev,
+              cartItems: [],
+              isLoading: false,
+              error: `Sản phẩm ${product.sku} hiện không khả dụng để mua.`,
+            }));
+            message.error(`Sản phẩm ${product.sku} hiện không khả dụng để mua.`);
+            return;
+          }
+
           setState((prev) => ({
             ...prev,
-            cartItems: cartResponse.data.items.map((item) => ({ ...item, quantity: item.quantity ?? 1 })),
+            cartItems: [{
+              id: product.id,
+              userId: user.id,
+              productId: product.id,
+              productName: product.name,
+              productImage: product.imageUrl,
+              sku: product.sku,
+              salePrice: product.salePrice,
+              quantity: buyNowQuantity,
+            }],
           }));
+        } else {
+          const cartResponse = await orderApi.getCart(user.id);
+          if (cartResponse.success && cartResponse.data) {
+            setState((prev) => ({
+              ...prev,
+              cartItems: cartResponse.data.items.map((item) => ({ ...item, quantity: item.quantity ?? 1 })),
+            }));
+          }
         }
 
         if (addressResponse.success && addressResponse.data) {
@@ -120,7 +157,7 @@ export default function CheckoutPage() {
     };
 
     loadData();
-  }, [user]);
+  }, [buyNowProductId, buyNowQuantity, checkoutMode, user]);
 
   useEffect(() => {
     const loadShippingOptions = async () => {
@@ -147,6 +184,15 @@ export default function CheckoutPage() {
 
     void loadShippingOptions();
   }, [state.addresses, state.cartItems, state.selectedAddressId]);
+
+  useEffect(() => {
+    if (!state.showAddressModal) return;
+
+    form.setFieldsValue({
+      fullName: user?.fullName ?? "",
+      type: AddressType.HOME,
+    });
+  }, [form, state.showAddressModal, user?.fullName]);
 
   const handleAddressCreate = async (values: IamAddressRequest) => {
     if (!user) return;
@@ -232,19 +278,20 @@ export default function CheckoutPage() {
 
       if (response.success && response.data) {
         if (isOnlinePayment(state.paymentMethod)) {
-          const paymentSession = await createPaymentSession({
-            orderId: response.data.id,
-            amount: orderData.totalAmount,
-            method: state.paymentMethod,
-          });
-
-          setState((prev) => ({ ...prev, paymentSession }));
-          message.info(`Phiên thanh toán đã sẵn sàng với ${paymentSession.providerName}`);
+          message.info("Đơn hàng đã được tạo, chuyển đến màn hình thanh toán");
+          try {
+            // Create online payment session immediately so QR is ready when user arrives
+            await paymentApi.createOnlinePayment(response.data.id);
+          } catch (err) {
+            // Non-fatal: still navigate to QR page where session creation will be retried
+            // eslint-disable-next-line no-console
+            console.warn("Failed to pre-create online payment session", err);
+          }
+          navigate(`/buyer/payments/${response.data.id}`);
         } else {
           message.success("Đã đặt hàng thành công!");
+          navigate(`/buyer/orders/${response.data.id}`);
         }
-
-        navigate(`/buyer/orders/${response.data.id}`);
       }
     } catch {
       message.error("Lỗi khi tạo đơn hàng");
@@ -427,9 +474,7 @@ export default function CheckoutPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[
                   { value: PaymentMethodEnum.COD, label: "Thanh toán khi nhận hàng (COD)", desc: "Trả tiền mặt khi Shipper giao tới." },
-                  { value: PaymentMethodEnum.VNPAY, label: "Cổng thanh toán VNPAY", desc: "Thanh toán qua QR, ATM, Thẻ quốc tế." },
-                  { value: PaymentMethodEnum.MOMO, label: "Ví điện tử MOMO", desc: "Nhanh chóng, tiện lợi qua ứng dụng MoMo." },
-                  { value: PaymentMethodEnum.BANK_TRANSFER, label: "Chuyển khoản ngân hàng", desc: "Chuyển trực tiếp tới STK của Re:Wear." },
+                  { value: PaymentMethodEnum.ONLINE_PAYMENT, label: "Thanh toán Online", desc: "Thanh toán nhanh bằng mã QR ngân hàng." },
                 ].map((item) => (
                   <Radio key={item.value} value={item.value} className="luxury-radio-box block h-full">
                     <div className="h-full rounded-3xl border border-pink-50 bg-pink-50/10 p-5 transition-soft hover:bg-white hover:shadow-md">
@@ -487,22 +532,6 @@ export default function CheckoutPage() {
                   ĐẶT HÀNG NGAY
                 </Button>
 
-                {state.paymentSession && (
-                  <Card size="small" className="mt-6 border-emerald-100 bg-emerald-50/30 rounded-2xl">
-                    <div className="space-y-2">
-                      <div className="text-xs font-bold text-emerald-700 uppercase tracking-widest">Cổng thanh toán đã sẵn sàng</div>
-                      <div className="text-[10px] text-slate-500">Nhà cung cấp: {state.paymentSession.providerName}</div>
-                      <Button
-                        type="primary"
-                        block
-                        className="bg-emerald-500 hover:bg-emerald-600 border-none rounded-xl h-10 mt-2 font-bold"
-                        onClick={() => window.open(state.paymentSession?.redirectUrl || "", "_blank", "noopener,noreferrer")}
-                      >
-                        MỞ CỔNG THANH TOÁN
-                      </Button>
-                    </div>
-                  </Card>
-                )}
 
                 <div className="flex items-center gap-3 rounded-2xl border border-primary/10 bg-primary/5 p-4 mt-6">
                   <SafetyCertificateOutlined className="text-primary text-xl" />
@@ -532,9 +561,15 @@ export default function CheckoutPage() {
           className="mt-6"
           size="large"
         >
+            <Form.Item name="fullName" label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Người nhận</span>} rules={[{ required: true, message: "Vui lòng nhập tên người nhận" }]}>
+              <Input placeholder="Nguyễn Văn A" className="rounded-2xl border-pink-100" />
+            </Form.Item>
           <Form.Item name="street" label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Số nhà & Tên đường</span>} rules={[{ required: true, message: "Vui lòng nhập địa chỉ" }]}>
             <Input placeholder="123 Nguyễn Huệ" className="rounded-2xl border-pink-100" />
           </Form.Item>
+            <Form.Item name="ward" label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Phường / Xã</span>} rules={[{ required: true, message: "Vui lòng nhập phường/xã" }]}>
+              <Input placeholder="Phường Bến Nghé" className="rounded-2xl border-pink-100" />
+            </Form.Item>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Form.Item name="district" label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Quận / Huyện</span>} rules={[{ required: true, message: "Vui lòng nhập quận/huyện" }]}>
               <Input placeholder="Quận 1" className="rounded-2xl border-pink-100" />
@@ -546,6 +581,16 @@ export default function CheckoutPage() {
           <Form.Item name="phone" label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Số điện thoại nhận hàng</span>} rules={[{ required: true, message: "Vui lòng nhập số điện thoại" }]}>
             <Input placeholder="09xx xxx xxx" className="rounded-2xl border-pink-100" />
           </Form.Item>
+            <Form.Item name="type" label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Loại địa chỉ</span>} rules={[{ required: true, message: "Vui lòng chọn loại địa chỉ" }]}>
+              <Select
+                className="rounded-2xl"
+                options={[
+                  { label: "Nhà riêng", value: AddressType.HOME },
+                  { label: "Văn phòng", value: AddressType.OFFICE },
+                  { label: "Khác", value: AddressType.OTHER },
+                ]}
+              />
+            </Form.Item>
           <div className="mt-10 flex flex-col gap-4 sm:flex-row">
             <Button block size="large" onClick={() => setState((prev) => ({ ...prev, showAddressModal: false }))}>HỦY BỎ</Button>
             <Button type="primary" block size="large" htmlType="submit">LƯU ĐỊA CHỈ</Button>

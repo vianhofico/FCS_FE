@@ -1,10 +1,11 @@
 import { useCallback } from 'react';
 
+import { consignmentApi } from '@/modules/seller/api/consignmentApi';
+import type { SignConsignmentContractRequest } from '@/shared/contracts/consignmentContract';
+
 export function useEsignClient() {
-  const sign = useCallback(async (contractId: string) => {
-    // Placeholder: open esign modal or redirect — use contractId in real flow
-    console.log('esign sign called for', contractId);
-    return { success: true, signedAt: new Date().toISOString(), contractId };
+  const sign = useCallback((contractId: string, payload: SignConsignmentContractRequest) => {
+    return consignmentApi.signConsignmentContract(contractId, payload);
   }, []);
 
   return { sign };

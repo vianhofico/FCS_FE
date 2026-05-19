@@ -26,7 +26,7 @@ export default function MediaUploader({ multiple = true, onUpload }: Props) {
         return acc;
       }, []);
       const res = await mediaApi.upload(files);
-      const urls = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
+      const urls = res.data.map((file) => file.url);
       message.success('Files uploaded');
       onUpload?.(urls);
     } catch {

@@ -2,6 +2,7 @@ import {
   AuditOutlined,
   BellFilled,
   DashboardOutlined,
+  ReloadOutlined,
   DollarOutlined,
   FileDoneOutlined,
   LoginOutlined,
@@ -17,9 +18,9 @@ import {
   TeamOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { Avatar, Badge, Button, Drawer, Dropdown, Layout, Menu, Space } from "antd";
+import { Avatar, Badge, Button, Drawer, Dropdown, Empty, Layout, Menu, Space, Spin } from "antd";
 import type { MenuProps } from "antd";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 
 import { useAuth } from "@/shared/context/AuthContext";
@@ -94,62 +95,100 @@ function getSelectedKeys(menuItems: NavigationItem[], pathname: string) {
   return keys.length ? [keys.sort((a, b) => b.length - a.length)[0]] : [];
 }
 
+function getDisplayName(user: ReturnType<typeof useAuth>["user"]) {
+  return user?.fullName || user?.username?.replaceAll("_", " ") || "Tài khoản";
+}
+
 export function AppLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { unread, refresh } = useNotifications();
+  const { items: notifications, loading: notificationsLoading, unread, refresh } = useNotifications();
   const { isAuthenticated, hasRole, logout, user } = useAuth();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const menuItems = useMemo(() => getMenuItems(hasRole, isAuthenticated), [hasRole, isAuthenticated]);
   const selectedKeys = getSelectedKeys(menuItems, location.pathname);
+  const displayName = getDisplayName(user);
+  const notificationPreview = notifications.slice(0, 5);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0 });
+  }, [location.pathname]);
 
   const handleLogout = () => {
+    setDrawerOpen(false);
     logout();
     navigate("/");
   };
 
-  const menu = (
-    <Menu
-      mode="horizontal"
-      items={menuItems}
-      selectedKeys={selectedKeys.length ? selectedKeys : ["/"]}
-      onClick={({ key }) => navigate(key)}
-      className="luxury-menu flex min-w-max self-center border-none bg-transparent text-[10px] font-bold uppercase tracking-widest text-slate-500 h-12 leading-[48px]"
-    />
-  );
-
   return (
     <Layout className="min-h-screen bg-white font-sans">
-      <Header className="sticky top-0 z-50 h-auto border-none bg-transparent px-0 shadow-none backdrop-blur-0">
-        <div className="mx-auto flex max-w-[1440px] items-center gap-5 px-4 pt-2 pb-1 sm:px-6 lg:px-8">
-          <div className="flex min-w-0 flex-1 items-center justify-between gap-5">
+      <Header className="sticky top-0 z-50 h-auto border-none bg-white/90 px-0 shadow-sm shadow-pink-100/30 backdrop-blur-xl">
+        <div className="mx-auto flex min-h-16 max-w-[1440px] items-center gap-3 px-3 py-2 sm:min-h-[72px] sm:px-5 lg:px-8">
+          <div className="flex min-w-0 flex-1 items-center justify-between gap-3 sm:gap-5">
             <button
               type="button"
               onClick={() => navigate("/")}
               className="group flex min-w-fit self-center border-0 bg-transparent p-0 leading-none"
             >
-              <span className="site-deco site-logo inline-flex items-center text-2xl md:text-3xl lg:text-[2.35rem] transition-soft group-hover:text-primary-hover">Re:Wear</span>
+              <span className="site-deco site-logo inline-flex items-center whitespace-nowrap transition-soft group-hover:text-primary-hover">Re:Wear</span>
             </button>
 
-            <div className="mx-3 hidden min-w-0 flex-1 overflow-x-auto overflow-y-hidden lg:block xl:mx-5">{menu}</div>
+            <div className="min-w-0 flex-1" />
 
-            <Space size={14} className="shrink-0 -mt-0.5">
+            <Space size={10} align="center" className="shrink-0 sm:[&_.ant-space-item]:flex">
               {isAuthenticated ? (
                 <>
                   <Dropdown
-                    menu={{
-                      items: [
-                        { key: "notifications", label: "Thông báo", onClick: () => navigate("/notifications") },
-                        { key: "refresh", label: "Làm mới", onClick: () => refresh() },
-                      ],
-                    }}
+                    trigger={["hover"]}
                     placement="bottomRight"
+                    dropdownRender={() => (
+                      <div className="w-80 overflow-hidden rounded-2xl border border-pink-100 bg-white shadow-xl shadow-pink-100/40">
+                        <div className="flex items-center justify-between border-b border-pink-50 px-4 py-3">
+                          <span className="text-sm font-bold text-slate-700">Thông báo</span>
+                          <Button
+                            type="text"
+                            size="small"
+                            icon={<ReloadOutlined />}
+                            loading={notificationsLoading}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              refresh();
+                            }}
+                            className="flex h-8 w-8 items-center justify-center rounded-full text-primary hover:!bg-pink-50 hover:!text-primary-hover"
+                          />
+                        </div>
+
+                        <div className="max-h-80 overflow-y-auto py-1">
+                          {notificationsLoading && notificationPreview.length === 0 ? (
+                            <div className="flex items-center justify-center py-8">
+                              <Spin size="small" />
+                            </div>
+                          ) : notificationPreview.length > 0 ? (
+                            notificationPreview.map((notification) => (
+                              <button
+                                key={notification.id}
+                                type="button"
+                                onClick={() => navigate(notification.actionUrl || "/notifications")}
+                                className="block w-full border-0 bg-transparent px-4 py-3 text-left transition-soft hover:bg-pink-50/70"
+                              >
+                                <div className="truncate text-sm font-bold text-slate-700">{notification.title}</div>
+                                <div className="mt-1 line-clamp-2 text-xs leading-5 text-slate-500">
+                                  {notification.message || notification.content || "Không có nội dung"}
+                                </div>
+                              </button>
+                            ))
+                          ) : (
+                            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Chưa có thông báo" className="my-6" />
+                          )}
+                        </div>
+                      </div>
+                    )}
                   >
                     <Badge count={unread} size="small" offset={[-2, 5]} color="#f472b6" className="font-bold">
                       <Button
                         type="text"
                         icon={<BellFilled style={{ fontSize: '18px' }} />}
-                        className="text-gray-400 hover:text-primary hover:bg-pink-50 w-10 h-10 flex items-center justify-center rounded-xl transition-all"
+                        className="flex h-10 w-10 items-center justify-center rounded-xl px-0 text-gray-400 transition-all hover:bg-pink-50 hover:text-primary"
                       />
                     </Badge>
                   </Dropdown>
@@ -158,14 +197,14 @@ export function AppLayout() {
                     placement="bottomRight"
                     menu={{
                       items: [
-                        { key: "profile", label: user?.username || "Tài khoản" },
+                        { key: "profile", label: displayName },
                         { key: "logout", icon: <LogoutOutlined />, label: "Đăng xuất", onClick: handleLogout },
                       ],
                     }}
                   >
-                    <button className="flex items-center gap-3 rounded-xl border border-pink-100 bg-white/80 px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition-soft hover:border-primary/30 hover:text-primary luxury-shadow">
-                      <Avatar size={30} icon={<UserOutlined />} className="bg-primary" />
-                      <span className="hidden max-w-32 truncate md:inline">{user?.username}</span>
+                    <button className="flex h-11 min-w-0 items-center gap-2 rounded-xl border border-pink-100 bg-white/85 px-2.5 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition-soft hover:border-primary/30 hover:text-primary sm:gap-3 sm:px-3">
+                      <Avatar size={30} icon={<UserOutlined />} className="shrink-0 bg-primary" />
+                      <span className="hidden max-w-28 truncate md:inline lg:max-w-32">{displayName}</span>
                     </button>
                   </Dropdown>
                 </>
@@ -192,15 +231,15 @@ export function AppLayout() {
                 type="text"
                 icon={<MenuOutlined />}
                 onClick={() => setDrawerOpen(true)}
-                className="lg:hidden text-primary"
+                className="flex h-10 w-10 items-center justify-center px-0 text-primary"
               />
             </Space>
           </div>
         </div>
       </Header>
 
-      <Content className="relative min-h-[calc(100vh-104px)] overflow-hidden bg-white">
-        <main className="relative mx-auto w-full max-w-[1440px] px-4 py-7 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+      <Content className="relative min-h-[calc(100vh-72px)] overflow-hidden bg-white">
+        <main className="relative mx-auto w-full max-w-[1440px] px-3 py-5 sm:px-5 sm:py-7 lg:px-8 lg:py-10">
           <Outlet />
         </main>
       </Content>
@@ -211,10 +250,11 @@ export function AppLayout() {
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         styles={{ body: { padding: '24px 0' } }}
+        size={360}
         className="rewear-drawer"
       >
         <div className="flex h-full flex-col">
-          <div className="px-6 mb-6">
+          <div className="mb-5 px-5 sm:px-6">
             <div className="mt-2 text-sm text-slate-500 italic">Cửa hàng thời trang ký gửi cao cấp.</div>
           </div>
           <Menu

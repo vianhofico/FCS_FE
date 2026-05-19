@@ -10,6 +10,7 @@ import type {
   ConsignmentRequestDetail,
   ConsignmentContract,
   ConsignmentQuery,
+  SignConsignmentContractRequest,
 } from "@/shared/contracts/consignmentContract";
 
 export const consignmentApi = {
@@ -70,6 +71,17 @@ export const consignmentApi = {
     const response = await http.get<ApiResponse<PageResponse<ConsignmentContract>>>(
       `${endpoints.consignments}/contracts`,
       { params: query }
+    );
+    return response.data;
+  },
+
+  signConsignmentContract: async (
+    contractId: string,
+    payload: SignConsignmentContractRequest
+  ): Promise<ApiResponse<ConsignmentContract>> => {
+    const response = await http.patch<ApiResponse<ConsignmentContract>>(
+      `${endpoints.consignments}/contracts/${contractId}/sign`,
+      payload
     );
     return response.data;
   },

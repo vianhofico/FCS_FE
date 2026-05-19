@@ -94,7 +94,12 @@ export type ConsignmentContract = {
   agreedPrice?: number;
   validUntil?: string;
   signedAt?: string;
-  signedBy?: string;
+  signedByUserId?: string;
+  signedByName?: string;
+  signatureMethod?: string;
+  signatureIpAddress?: string;
+  signatureUserAgent?: string;
+  signatureHash?: string;
   createdAt?: string;
 };
 
@@ -106,6 +111,11 @@ export type ConsignmentContractCreateRequest = {
   commissionRate?: number;
   agreedPrice?: number;
   validUntil?: string;
+};
+
+export type SignConsignmentContractRequest = {
+  acceptedTerms: boolean;
+  signatureName: string;
 };
 
 /**

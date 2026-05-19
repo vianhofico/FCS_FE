@@ -99,6 +99,17 @@ export default function ProductDetailPage() {
     fetchData();
   }, [productId]);
 
+  const handleBuyNow = () => {
+    if (!isAuthenticated || !user) {
+      message.info("Vui lòng đăng nhập để mua hàng");
+      navigate("/auth/login");
+      return;
+    }
+    if (!state.product) return;
+
+    navigate(`/buyer/checkout?mode=buy-now&productId=${state.product.id}&quantity=${state.quantity}`);
+  };
+
   const handleAddToCart = async () => {
     if (!isAuthenticated || !user) {
       message.info("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng");
@@ -245,6 +256,7 @@ export default function ProductDetailPage() {
                     <Button
                       size="large"
                       className="h-14 rounded-2xl border-primary text-primary font-bold transition-soft hover:!bg-primary hover:!text-white"
+                      onClick={handleBuyNow}
                     >
                       MUA NGAY
                     </Button>

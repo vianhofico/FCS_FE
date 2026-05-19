@@ -34,7 +34,10 @@ function getWsBaseUrl(): string {
   return requiredEnv("VITE_WS_BASE_URL");
 }
 
+const apiBaseUrl = getApiBaseUrl();
+
 export const env = {
-  apiBaseUrl: getApiBaseUrl(),
+  apiBaseUrl,
   wsBaseUrl: getWsBaseUrl(),
+  googleOAuthUrl: `${apiBaseUrl}/oauth2/authorization/google`,
 } as const;

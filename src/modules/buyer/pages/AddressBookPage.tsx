@@ -4,13 +4,14 @@
  */
 
 import { useEffect, useState } from 'react';
-import { Card, Spin, Row, Col, Typography, Modal, Form, Input, Space, Popconfirm, message } from 'antd';
+import { Card, Spin, Row, Col, Typography, Modal, Form, Input, Select, Space, Popconfirm, message } from 'antd';
 import { HomeOutlined, PlusOutlined, EnvironmentOutlined, DeleteOutlined, EditOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { iamApi } from "@/modules/iam/api/iamApi";
 import { useAuth } from '@/shared/context/AuthContext';
 import { Button, EmptyState, Badge } from '@/shared/ui';
 import type { IamAddress, IamAddressRequest } from "@/shared/contracts/iamContract";
+import { AddressType } from "@/shared/contracts/commonContract";
 
 const { Title, Paragraph } = Typography;
 
@@ -41,6 +42,15 @@ export default function AddressBookPage() {
   useEffect(() => {
     fetchAddresses();
   }, [user?.id]);
+
+  useEffect(() => {
+    if (!isModalVisible) return;
+
+    form.setFieldsValue({
+      fullName: user?.fullName ?? "",
+      type: AddressType.HOME,
+    });
+  }, [form, isModalVisible, user?.fullName]);
 
   const handleAddAddress = async (values: IamAddressRequest) => {
     if (!user?.id) return;
@@ -171,8 +181,14 @@ export default function AddressBookPage() {
           className="mt-6"
           size="large"
         >
+          <Form.Item name="fullName" label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Người nhận</span>} rules={[{ required: true, message: "Vui lòng nhập tên người nhận" }]}>
+            <Input placeholder="Nguyễn Văn A" className="rounded-2xl border-pink-100" />
+          </Form.Item>
           <Form.Item name="street" label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Số nhà & Tên đường</span>} rules={[{ required: true, message: "Vui lòng nhập địa chỉ" }]}>
             <Input placeholder="123 Nguyễn Huệ" className="rounded-2xl border-pink-100" />
+          </Form.Item>
+          <Form.Item name="ward" label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Phường / Xã</span>} rules={[{ required: true, message: "Vui lòng nhập phường/xã" }]}>
+            <Input placeholder="Phường Bến Nghé" className="rounded-2xl border-pink-100" />
           </Form.Item>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Form.Item name="district" label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Quận / Huyện</span>} rules={[{ required: true, message: "Vui lòng nhập quận/huyện" }]}>
@@ -184,6 +200,16 @@ export default function AddressBookPage() {
           </div>
           <Form.Item name="phone" label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Số điện thoại nhận hàng</span>} rules={[{ required: true, message: "Vui lòng nhập số điện thoại" }]}>
             <Input placeholder="09xx xxx xxx" className="rounded-2xl border-pink-100" />
+          </Form.Item>
+          <Form.Item name="type" label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Loại địa chỉ</span>} rules={[{ required: true, message: "Vui lòng chọn loại địa chỉ" }]}>
+            <Select
+              className="rounded-2xl"
+              options={[
+                { label: "Nhà riêng", value: AddressType.HOME },
+                { label: "Văn phòng", value: AddressType.OFFICE },
+                { label: "Khác", value: AddressType.OTHER },
+              ]}
+            />
           </Form.Item>
           <div className="mt-10 flex flex-col gap-4 sm:flex-row">
             <Button block size="large" onClick={() => setIsModalVisible(false)}>HỦY BỎ</Button>

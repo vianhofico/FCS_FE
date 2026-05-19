@@ -189,7 +189,7 @@ export default function ConsignmentContractPage() {
           ) : record.status === "DRAFT" ? (
             <Button
               type="primary"
-              onClick={() => navigate(`/seller/consignments/${record.requestId}/sign`)}
+              onClick={() => navigate(`/seller/consignments/${record.requestId}/contract/sign`)}
               className="rounded-xl font-bold"
             >
               Ký ngay

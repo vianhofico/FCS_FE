@@ -26,5 +26,5 @@ export async function createPaymentSession(request: PaymentCheckoutRequest): Pro
 }
 
 export function isOnlinePayment(method: PaymentMethod) {
-  return method === "VNPAY" || method === "MOMO" || method === "BANK_TRANSFER";
+  return method === "ONLINE_PAYMENT";
 }

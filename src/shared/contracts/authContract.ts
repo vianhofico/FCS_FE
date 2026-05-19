@@ -21,6 +21,7 @@ export type LoginResponse = {
   userId: string;
   username: string;
   email: string;
+  fullName?: string;
   roles: UserRole[];
 };
 
@@ -30,6 +31,7 @@ export type LoginResponse = {
 export type RegisterRequest = {
   username: string;
   email: string;
+  fullName?: string;
   password: string;
   phone?: string;
 };
@@ -85,6 +87,7 @@ export type UserProfile = {
   id: string;
   username: string;
   email: string;
+  fullName?: string;
   phone?: string;
   status: UserStatus;
   roles: UserRole[];

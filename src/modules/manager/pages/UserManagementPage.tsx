@@ -142,15 +142,15 @@ export default function UserManagementPage() {
   ];
 
   return (
-    <div className="mx-auto max-w-[1440px] space-y-12 pb-20">
-      <div className="flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-end">
+    <div className="responsive-page">
+      <div className="responsive-toolbar items-start lg:items-end">
         <div className="space-y-4">
-          <Title className="!m-0 !font-display !text-4xl !font-bold !leading-tight !tracking-tight md:!text-6xl uppercase">Quản lý người dùng</Title>
-          <Paragraph className="max-w-lg text-lg font-medium text-slate-400 opacity-80 italic">
+          <Title className="page-title uppercase">Quản lý người dùng</Title>
+          <Paragraph className="page-subtitle italic">
             Kiểm soát quyền truy cập, theo dõi trạng thái và quản lý tài khoản người dùng trên toàn hệ thống.
           </Paragraph>
         </div>
-        <div className="flex items-center gap-4 rounded-3xl bg-white/50 px-8 py-4 backdrop-blur-md border border-pink-100/50">
+        <div className="flex w-full items-center gap-4 rounded-3xl border border-pink-100/50 bg-white/50 px-5 py-4 backdrop-blur-md sm:w-auto sm:px-8">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/5 text-primary text-xl">
             <UserOutlined />
           </div>
@@ -164,7 +164,7 @@ export default function UserManagementPage() {
       <Row gutter={[24, 24]}>
         {stats.map((s, i) => (
           <Col key={i} xs={24} sm={8}>
-            <Card className="rounded-[2rem] border-pink-100/50 bg-white/50 shadow-sm backdrop-blur-md transition-soft hover:shadow-luxury">
+            <Card className="responsive-card border-pink-100/50 bg-white/50 backdrop-blur-md transition-soft hover:shadow-luxury">
               <div className="flex items-center gap-5">
                 <div className={`flex h-14 w-14 items-center justify-center rounded-2xl text-2xl font-black ${s.color}`}>
                   {s.value}
@@ -179,7 +179,7 @@ export default function UserManagementPage() {
         ))}
       </Row>
 
-      <Card className="rounded-[2.5rem] border-pink-100/40 bg-white p-6 shadow-sm">
+      <Card className="responsive-card border-pink-100/40 bg-white p-1 shadow-sm sm:p-4">
         <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-4">
             <SearchOutlined className="text-xl text-primary/60" />
@@ -199,6 +199,7 @@ export default function UserManagementPage() {
           dataSource={state.users.map((user) => ({ ...user, key: user.id }))}
           pagination={false}
           className="luxury-table"
+          scroll={{ x: 760 }}
         />
 
         {state.users.length === 0 && (

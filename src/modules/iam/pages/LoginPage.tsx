@@ -1,8 +1,9 @@
-import { LockOutlined, UserOutlined } from "@ant-design/icons";
-import { Alert, Card, Form, Input, Space, Spin } from "antd";
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { GoogleOutlined, LockOutlined, UserOutlined } from "@ant-design/icons";
+import { Alert, Card, Divider, Form, Input, Space, Spin } from "antd";
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
+import { env } from "@/app/config/env";
 import { useAuth } from "@/shared/context/AuthContext";
 import { Button } from "@/shared/ui";
 import type { UserRole } from "@/shared/contracts/commonContract";
@@ -22,8 +23,20 @@ function getDefaultRouteByRoles(roles: UserRole[] = []) {
 export default function LoginPage() {
   const [form] = Form.useForm<LoginFormValues>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { login, isLoading, error, clearError } = useAuth();
   const [formError, setFormError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const oauthError = searchParams.get("oauthError");
+    if (oauthError) {
+      setFormError(oauthError);
+    }
+  }, [searchParams]);
+
+  const handleGoogleLogin = () => {
+    window.location.href = env.googleOAuthUrl;
+  };
 
   const handleSubmit = async (values: LoginFormValues) => {
     try {
@@ -127,6 +140,20 @@ export default function LoginPage() {
                     loading={isLoading}
                   >
                     ĐĂNG NHẬP
+                  </Button>
+
+                  <Divider plain className="text-xs font-bold uppercase tracking-[0.18em] text-text-light/60">
+                    hoặc
+                  </Divider>
+
+                  <Button
+                    type="default"
+                    block
+                    icon={<GoogleOutlined />}
+                    onClick={handleGoogleLogin}
+                    className="border-pink-100 bg-white font-bold text-text-dark shadow-sm hover:border-primary hover:text-primary"
+                  >
+                    Đăng nhập với Google
                   </Button>
 
                   <div className="text-center pt-2">

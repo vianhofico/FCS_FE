@@ -155,16 +155,16 @@ export default function CartPage() {
   ];
 
   return (
-    <div className="mx-auto max-w-[1440px] space-y-12 pb-20">
-      <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
+    <div className="responsive-page">
+      <div className="responsive-toolbar items-start md:items-center">
         <div className="space-y-2">
-          <Title className="!m-0 !font-display !text-4xl !font-black uppercase tracking-tight">Giỏ hàng của bạn</Title>
+          <Title className="!m-0 !font-display !text-3xl !font-black uppercase tracking-tight sm:!text-4xl">Giỏ hàng của bạn</Title>
           <Text className="text-sm font-medium text-slate-400">Chọn những sản phẩm tinh hoa cho phong cách của bạn</Text>
         </div>
         <Button 
           icon={<ArrowLeftOutlined />} 
           onClick={() => navigate("/buyer/products")}
-          className="rounded-2xl border-primary/30 text-primary font-bold hover:bg-primary hover:text-white h-11"
+          className="h-11 w-full rounded-2xl border-primary/30 font-bold text-primary hover:bg-primary hover:text-white sm:w-auto"
         >
           Tiếp tục mua sắm
         </Button>
@@ -185,12 +185,12 @@ export default function CartPage() {
       ) : (
         <Row gutter={[32, 32]}>
           <Col xs={24} lg={16}>
-            <Card className="overflow-hidden rounded-[2.5rem] border-border/40 bg-white shadow-sm">
-              <Table columns={columns} dataSource={state.cartItems} pagination={false} rowKey="id" scroll={{ x: 720 }} className="luxury-table" />
+            <Card className="responsive-table-card">
+              <Table columns={columns} dataSource={state.cartItems} pagination={false} rowKey="id" scroll={{ x: 760 }} className="luxury-table" />
             </Card>
           </Col>
           <Col xs={24} lg={8}>
-            <Card className="sticky top-32 space-y-8 rounded-[2.5rem] border-border/60 bg-white/70 p-8 shadow-luxury backdrop-blur-md">
+            <Card className="responsive-card sticky top-24 space-y-6 border-border/60 bg-white/80 p-3 shadow-luxury backdrop-blur-md sm:space-y-8 sm:p-5 lg:top-32">
               <Title level={4} className="!font-display !m-0 uppercase tracking-widest text-slate-800">Tóm tắt đơn hàng</Title>
               
               <div className="space-y-4">
@@ -215,7 +215,7 @@ export default function CartPage() {
                   size="large" 
                   block 
                   className="h-14 rounded-2xl font-black shadow-luxury"
-                  onClick={() => navigate("/buyer/checkout")}
+                  onClick={() => navigate("/buyer/checkout?mode=cart")}
                 >
                   THANH TOÁN NGAY
                 </Button>

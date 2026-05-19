@@ -114,17 +114,17 @@ export default function AdminDashboardPage() {
   if (isLoading) return <div className="flex min-h-screen items-center justify-center"><Spin size="large" /></div>;
 
   return (
-    <div className="mx-auto max-w-[1440px] space-y-12 pb-20">
-      <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
+    <div className="responsive-page">
+      <div className="responsive-toolbar items-start md:items-end">
         <div className="space-y-4">
           <div className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-white">
             <GlobalOutlined className="text-primary" /> Admin Central
           </div>
-          <Title className="!m-0 !font-display !text-4xl !font-black !leading-tight !tracking-tight md:!text-6xl uppercase text-slate-900">Điều hành hệ thống</Title>
+          <Title className="page-title uppercase">Điều hành hệ thống</Title>
         </div>
-        <Space size="middle">
-          <Button size="large" className="rounded-2xl border-slate-200 font-bold uppercase tracking-widest text-[10px] h-12 px-8">Xuất báo cáo</Button>
-          <Button type="primary" size="large" className="h-12 rounded-2xl px-8 font-bold shadow-luxury uppercase tracking-widest text-[10px]">Cài đặt hệ thống</Button>
+        <Space size="middle" className="w-full flex-wrap sm:w-auto">
+          <Button size="large" className="h-12 w-full rounded-2xl border-slate-200 px-8 text-[10px] font-bold uppercase tracking-widest sm:w-auto">Xuất báo cáo</Button>
+          <Button type="primary" size="large" className="h-12 w-full rounded-2xl px-8 text-[10px] font-bold uppercase tracking-widest shadow-luxury sm:w-auto">Cài đặt hệ thống</Button>
         </Space>
       </div>
 
@@ -137,7 +137,7 @@ export default function AdminDashboardPage() {
           { label: "Sức khỏe hệ thống", value: `${stats.systemHealth}%`, icon: <GlobalOutlined />, color: "text-indigo-500", bg: "bg-indigo-50", trend: "Ổn định" },
         ].map((s, i) => (
           <Col key={i} xs={24} sm={12} lg={6}>
-            <Card className="overflow-hidden rounded-[2.5rem] border-border/40 bg-white shadow-sm transition-soft hover:shadow-md">
+            <Card className="responsive-card overflow-hidden transition-soft hover:shadow-md">
               <div className="flex items-start justify-between">
                 <div className={`flex h-14 w-14 items-center justify-center rounded-2xl text-2xl ${s.bg} ${s.color}`}>
                   {s.icon}
@@ -157,7 +157,7 @@ export default function AdminDashboardPage() {
         {/* System Monitoring */}
         <Col xs={24} lg={10}>
           <Card 
-            className="h-full rounded-[3rem] border-border/60 bg-white/70 p-4 shadow-sm backdrop-blur-md"
+            className="responsive-card h-full border-border/60 bg-white/70 p-1 shadow-sm backdrop-blur-md sm:p-4"
             title={<span className="font-display text-xl font-black uppercase tracking-widest">Giám sát hệ thống</span>}
           >
             <div className="flex flex-col items-center py-10">
@@ -185,21 +185,22 @@ export default function AdminDashboardPage() {
         {/* Recent Activity */}
         <Col xs={24} lg={14}>
           <Card 
-            className="h-full rounded-[3rem] border-border/60 bg-white p-4 shadow-sm"
+            className="responsive-card h-full border-border/60 bg-white p-1 shadow-sm sm:p-4"
             title={<span className="font-display text-xl font-black uppercase tracking-widest">Hoạt động gần đây</span>}
             extra={<Button type="link" className="font-bold text-primary">Xem tất cả</Button>}
           >
-            <Table 
-              columns={columns} 
-              dataSource={activities} 
-              pagination={false} 
-              className="luxury-table" 
+            <Table
+              columns={columns}
+              dataSource={activities}
+              pagination={false}
+              className="luxury-table"
               rowKey="id"
+              scroll={{ x: 640 }}
             />
             {activities.length === 0 && <div className="py-20"><Empty description="Không có hoạt động mới" /></div>}
             
-            <div className="mt-8 rounded-3xl bg-slate-900 p-8 text-white">
-              <div className="flex items-center justify-between">
+            <div className="mt-8 rounded-3xl bg-slate-900 p-5 text-white sm:p-8">
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-2">
                   <Title level={4} className="!m-0 !font-display !text-white uppercase tracking-tight">Tối ưu hiệu suất</Title>
                   <Text className="text-slate-400 text-xs font-medium">Hệ thống của bạn đang chạy ở trạng thái tốt nhất.</Text>

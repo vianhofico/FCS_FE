@@ -198,7 +198,7 @@ export default function MyProductsPage() {
           type="primary"
           size="large"
           icon={<PlusOutlined />}
-          onClick={() => navigate("/seller/products/new")}
+          onClick={() => navigate("/seller/consignments/new")}
           className="h-14 rounded-2xl px-10 font-black shadow-luxury uppercase tracking-widest text-xs"
         >
           THÊM SẢN PHẨM MỚI
@@ -270,7 +270,7 @@ export default function MyProductsPage() {
                 title="Chưa có sản phẩm nào trong kho"
                 description="Hãy bắt đầu hành trình ký gửi món đồ đầu tiên của bạn để làm mới phong cách cho cộng đồng."
                 action={
-                  <Button type="primary" onClick={() => navigate("/seller/products/new")}>
+                  <Button type="primary" onClick={() => navigate("/seller/consignments/new")}>
                     Đăng bán ngay
                   </Button>
                 }

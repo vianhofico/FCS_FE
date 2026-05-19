@@ -13,34 +13,21 @@ export type ShippingQuoteRequest = {
   subtotal: number;
 };
 
-export async function getShippingOptions(request: ShippingQuoteRequest): Promise<ShippingOption[]> {
-  const baseFee = request.subtotal >= 500 ? 0 : 25;
-  const cityFactor = request.city && /hcm|hanoi/i.test(request.city) ? 0 : 10;
-
+export async function getShippingOptions(_request: ShippingQuoteRequest): Promise<ShippingOption[]> {
   return [
     {
-      id: "standard",
-      provider: "VNPost",
-      serviceLevel: "Standard",
-      fee: baseFee + cityFactor,
+      id: "warehouse-pickup",
+      provider: "Nhận hàng trực tiếp tại kho",
+      serviceLevel: "Tự đến kho nhận hàng",
+      fee: 0,
+      etaDays: 0,
+    },
+    {
+      id: "shop-shipping",
+      provider: "Shop vận chuyển",
+      serviceLevel: "Giao hàng tận nơi",
+      fee: 30000,
       etaDays: 3,
-      trackingUrl: "https://vnpost.vn/tra-cuu-hanh-trinh",
-    },
-    {
-      id: "express",
-      provider: "GHN",
-      serviceLevel: "Express",
-      fee: baseFee + cityFactor + 20,
-      etaDays: 1,
-      trackingUrl: "https://donhang.ghn.vn/",
-    },
-    {
-      id: "economy",
-      provider: "J&T Express",
-      serviceLevel: "Economy",
-      fee: Math.max(0, baseFee - 10 + cityFactor),
-      etaDays: 5,
-      trackingUrl: "https://jtexpress.vn/track",
     },
   ];
 }

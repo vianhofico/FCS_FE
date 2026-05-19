@@ -12,6 +12,7 @@ export type IamUserSummary = {
   id: string;
   username: string;
   email: string;
+  fullName?: string;
   phone?: string;
   status: UserStatus;
   roles?: UserRole[];
@@ -32,6 +33,7 @@ export type IamUserDetail = IamUserSummary & {
 export type IamUserUpdateRequest = {
   username?: string;
   email?: string;
+  fullName?: string;
   phone?: string;
 };
 

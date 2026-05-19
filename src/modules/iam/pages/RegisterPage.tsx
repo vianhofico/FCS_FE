@@ -9,6 +9,7 @@ import { Button } from "@/shared/ui";
 interface RegisterFormValues {
   username: string;
   email: string;
+  fullName?: string;
   password: string;
   confirmPassword: string;
   phone?: string;
@@ -28,6 +29,7 @@ export default function RegisterPage() {
       const response = await authApi.register({
         username: values.username,
         email: values.email,
+        fullName: values.fullName,
         password: values.password,
         phone: values.phone,
       });
@@ -119,15 +121,29 @@ export default function RegisterPage() {
                 </Form.Item>
               </div>
 
-              <Form.Item
-                name="phone"
-                label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Số điện thoại (tùy chọn)</span>}
-              >
-                <Input
-                  placeholder="09xx xxx xxx"
-                  className="rounded-2xl border-pink-100 bg-white shadow-sm transition-soft hover:border-primary/40 focus:border-primary h-12"
-                />
-              </Form.Item>
+              <div className="grid grid-cols-1 gap-x-6 md:grid-cols-2">
+                <Form.Item
+                  name="fullName"
+                  label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Họ và tên</span>}
+                  rules={[{ max: 120, message: "Họ và tên tối đa 120 ký tự" }]}
+                >
+                  <Input
+                    prefix={<UserOutlined className="text-primary/40" />}
+                    placeholder="Nguyễn Văn A"
+                    className="rounded-2xl border-pink-100 bg-white shadow-sm transition-soft hover:border-primary/40 focus:border-primary h-12"
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  name="phone"
+                  label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Số điện thoại (tùy chọn)</span>}
+                >
+                  <Input
+                    placeholder="09xx xxx xxx"
+                    className="rounded-2xl border-pink-100 bg-white shadow-sm transition-soft hover:border-primary/40 focus:border-primary h-12"
+                  />
+                </Form.Item>
+              </div>
 
               <div className="grid grid-cols-1 gap-x-6 md:grid-cols-2">
                 <Form.Item
@@ -181,7 +197,7 @@ export default function RegisterPage() {
                     TẠO TÀI KHOẢN
                   </Button>
 
-                  <div className="text-center">
+                  <div className="pt-2 text-center">
                     <span className="text-sm font-medium text-text-light">Đã có tài khoản? </span>
                     <Link to="/auth/login" className="text-sm font-bold text-primary hover:text-primary-hover">
                       Đăng nhập tại đây

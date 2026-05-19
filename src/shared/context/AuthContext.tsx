@@ -7,7 +7,7 @@ import { createContext, useContext, useState, useCallback, useEffect } from "rea
 /* eslint-disable react-refresh/only-export-components */
 import type { ReactNode } from "react";
 import { authApi } from "@/modules/iam/api/authApi";
-import type { UserProfile } from "@/shared/contracts/authContract";
+import type { LoginResponse, UserProfile } from "@/shared/contracts/authContract";
 import type { UserRole } from "@/shared/contracts/commonContract";
 
 /**
@@ -27,6 +27,7 @@ export interface AuthState {
  */
 interface AuthContextType extends AuthState {
   login: (identifier: string, password: string) => Promise<UserProfile>;
+  completeOAuthLogin: (payload: LoginResponse) => UserProfile;
   logout: () => void;
   refreshAccessToken: () => Promise<void>;
   updateProfile: (profile: UserProfile) => void;
@@ -69,6 +70,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   });
 
+  const persistSession = useCallback((payload: LoginResponse) => {
+    const { accessToken, refreshToken, userId, username, email, fullName, roles } = payload;
+    const userProfile: UserProfile = {
+      id: userId,
+      username,
+      email,
+      fullName,
+      roles,
+      status: "ACTIVE",
+    };
+
+    setState({
+      isAuthenticated: true,
+      isLoading: false,
+      user: userProfile,
+      accessToken,
+      refreshToken,
+      error: null,
+    });
+
+    localStorage.setItem(AUTH_STORAGE_KEYS.ACCESS_TOKEN, accessToken);
+    localStorage.setItem(AUTH_STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
+    localStorage.setItem(AUTH_STORAGE_KEYS.USER, JSON.stringify(userProfile));
+    return userProfile;
+  }, []);
+
   /**
    * Login with credentials
    */
@@ -79,30 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await authApi.login({ identifier, password });
 
       if (response.success && response.data) {
-        const { accessToken, refreshToken, userId, username, email, roles } = response.data;
-        const userProfile: UserProfile = {
-          id: userId,
-          username,
-          email,
-          roles,
-          status: "ACTIVE",
-        };
-
-        // Update state
-        setState({
-          isAuthenticated: true,
-          isLoading: false,
-          user: userProfile,
-          accessToken,
-          refreshToken,
-          error: null,
-        });
-
-        // Persist to localStorage
-        localStorage.setItem(AUTH_STORAGE_KEYS.ACCESS_TOKEN, accessToken);
-        localStorage.setItem(AUTH_STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
-        localStorage.setItem(AUTH_STORAGE_KEYS.USER, JSON.stringify(userProfile));
-        return userProfile;
+        return persistSession(response.data);
       }
 
       throw new Error(response.message || "Login failed");
@@ -116,7 +120,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }));
       throw err;
     }
-  }, []);
+  }, [persistSession]);
+
+  const completeOAuthLogin = useCallback((payload: LoginResponse) => persistSession(payload), [persistSession]);
 
   /**
    * Logout and clear session
@@ -166,7 +172,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logout();
       throw err;
     }
-  }, [state.refreshToken, logout])
+  }, [state.refreshToken, logout]);
 
   /**
    * Update user profile in context
@@ -236,6 +242,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value: AuthContextType = {
     ...state,
     login,
+    completeOAuthLogin,
     logout,
     refreshAccessToken,
     updateProfile,
