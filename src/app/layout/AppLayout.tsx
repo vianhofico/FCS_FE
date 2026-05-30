@@ -82,7 +82,18 @@ function getMenuItems(hasRole: ReturnType<typeof useAuth>["hasRole"], isAuthenti
   if (!isAuthenticated) return guestMenuItems;
   if (hasRole("ADMIN")) return adminMenuItems;
   if (hasRole("MANAGER")) return managerMenuItems;
-  if (hasRole("SELLER")) return sellerMenuItems;
+  if (hasRole("SELLER") && !hasRole("BUYER")) return sellerMenuItems;
+  if (hasRole("BUYER")) {
+    return [
+      ...buyerMenuItems,
+      { key: "/seller/consignments", icon: <ReconciliationOutlined />, label: "Yêu cầu ký gửi" },
+      { key: "/seller/contracts", icon: <FileDoneOutlined />, label: "Hợp đồng" },
+      { key: "/seller/products", icon: <ShopOutlined />, label: "Sản phẩm ký gửi" },
+      { key: "/seller/sales", icon: <TagsOutlined />, label: "Báo cáo bán hàng" },
+      { key: "/seller/financial", icon: <DollarOutlined />, label: "Ví tài chính" },
+      { key: "/seller/profile", icon: <UserOutlined />, label: "Hồ sơ ký gửi" },
+    ];
+  }
   return buyerMenuItems;
 }
 

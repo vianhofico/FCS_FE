@@ -55,7 +55,7 @@ export const router = createBrowserRouter([
       ...appRoutes.map((route) => ({ path: route.path, element: getRouteElement(route) })),
       ...guestBuyerRoutes,
       ...buyerRoutes.map((route) => guardRoute(route, ["BUYER"])),
-      ...sellerRoutes.map((route) => guardRoute(route, ["SELLER"])),
+      ...sellerRoutes.map((route) => guardRoute(route, ["SELLER", "BUYER"])),
       ...managerRoutes.map((route) => guardRoute(route, ["MANAGER"])),
       ...adminRoutes.map((route) => guardRoute(route, ["ADMIN"])),
       ...notificationRoutes.map((route) => guardRoute(route, ["BUYER", "SELLER", "MANAGER", "ADMIN"])),

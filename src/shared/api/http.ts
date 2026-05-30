@@ -2,13 +2,27 @@ import axios from "axios";
 import { env } from "@/app/config/env";
 import type { ApiErrorCode } from "@/shared/contracts/commonContract";
 
-export type ApiError = {
-  message: string;
+export class ApiError extends Error {
   status?: number;
   errorCode?: ApiErrorCode | null;
   errors?: Record<string, string> | null;
   details?: unknown;
-};
+
+  constructor(
+    message: string,
+    status?: number,
+    errorCode?: ApiErrorCode | null,
+    errors?: Record<string, string> | null,
+    details?: unknown
+  ) {
+    super(message);
+    this.status = status;
+    this.errorCode = errorCode;
+    this.errors = errors;
+    this.details = details;
+    Object.setPrototypeOf(this, ApiError.prototype);
+  }
+}
 
 /**
  * Get access token from localStorage
@@ -75,13 +89,13 @@ http.interceptors.response.use(
       window.location.href = "/forbidden";
     }
 
-    const apiError: ApiError = {
-      message: typeof parsed?.message === "string" ? parsed.message : error?.message || "Request failed",
+    const apiError = new ApiError(
+      typeof parsed?.message === "string" ? parsed.message : error?.message || "Request failed",
       status,
-      errorCode: parsed?.errorCode ?? null,
-      errors: parsed?.errors ?? null,
+      parsed?.errorCode ?? null,
+      parsed?.errors ?? null,
       details,
-    };
+    );
 
     return Promise.reject(apiError);
   },

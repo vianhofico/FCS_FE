@@ -53,7 +53,7 @@ export default function ProductDetailPage() {
   const location = useLocation();
   const { message } = App.useApp();
   const { user, isAuthenticated, hasRole } = useAuth();
-  const isSellerContext = location.pathname.startsWith("/seller/products") && hasRole("SELLER");
+  const isSellerContext = location.pathname.startsWith("/seller/products") && (hasRole("SELLER") || hasRole("BUYER"));
   const canBuyProduct = !isSellerContext;
   const [state, setState] = useState<ProductDetailPageState>({
     product: null,

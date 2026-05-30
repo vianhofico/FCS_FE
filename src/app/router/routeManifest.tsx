@@ -90,7 +90,7 @@ export const appRoutes: AppRouteItem[] = [
     element: <ConsignmentPage />,
     backendModule: "consignment",
     requireAuth: true,
-    requiredRoles: [UserRole.SELLER, UserRole.MANAGER, UserRole.ADMIN],
+    requiredRoles: [UserRole.BUYER, UserRole.SELLER, UserRole.MANAGER, UserRole.ADMIN],
   },
   {
     key: "order",
@@ -110,7 +110,7 @@ export const appRoutes: AppRouteItem[] = [
     element: <FinancialPage />,
     backendModule: "financial",
     requireAuth: true,
-    requiredRoles: [UserRole.SELLER, UserRole.MANAGER, UserRole.ADMIN],
+    requiredRoles: [UserRole.BUYER, UserRole.SELLER, UserRole.MANAGER, UserRole.ADMIN],
   },
   {
     key: "notification",
