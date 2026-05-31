@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Checkout Page (Buyer)
  * Review cart, select shipping address, and create order
  */
@@ -348,7 +348,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[1200px] space-y-10 pb-20">
+    <div className="mx-auto max-w-[1200px] space-y-14 pb-28">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <Button
           icon={<ArrowLeftOutlined />}

@@ -1,4 +1,4 @@
-import { CheckCircleOutlined, ClockCircleOutlined, CreditCardOutlined, ReloadOutlined } from "@ant-design/icons";
+﻿import { CheckCircleOutlined, ClockCircleOutlined, CreditCardOutlined, ReloadOutlined } from "@ant-design/icons";
 import { App, Card, Col, Divider, QRCode, Result, Row, Spin, Typography } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -168,7 +168,7 @@ export default function PaymentQrPage() {
   const checkoutUrl = state.session?.checkoutUrl || state.status?.checkoutUrl;
 
   return (
-    <div className="mx-auto max-w-[1180px] space-y-10 pb-20">
+    <div className="mx-auto max-w-[1180px] space-y-14 pb-28">
       <div className="space-y-3">
         <Text className="font-display text-sm font-bold uppercase tracking-[0.25em] text-primary/70">Thanh toán Online</Text>
         <Title className="!m-0 !font-display !text-4xl !font-black uppercase tracking-tight text-text-dark">Quét mã QR để thanh toán</Title>

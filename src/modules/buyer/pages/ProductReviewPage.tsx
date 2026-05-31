@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Product Review Page (Buyer)
  * Leave or edit product review
  */
@@ -175,7 +175,7 @@ export default function ProductReviewPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[1200px] space-y-12 pb-20">
+    <div className="mx-auto max-w-[1200px] space-y-14 pb-28">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <Button
           icon={<ArrowLeftOutlined />}

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Order History Page (Buyer)
  * View all orders with filtering
  */
@@ -82,8 +82,8 @@ export default function OrderHistoryPage() {
       title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Mã đơn hàng</span>,
       dataIndex: "orderCode",
       key: "orderCode",
-      render: (orderCode: string, record: OrderSummary) => (
-        <span className="font-mono text-xs font-bold text-slate-400">{orderCode || `#${record.id.slice(-8).toUpperCase()}`}</span>
+      render: (orderCode: string) => (
+        <span className="font-mono text-xs font-bold text-slate-400">{orderCode || "—"}</span>
       ),
     },
     {
@@ -185,7 +185,7 @@ export default function OrderHistoryPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[1440px] space-y-12 pb-20">
+    <div className="mx-auto max-w-[1440px] space-y-14 pb-28">
       <div className="flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-end">
         <div className="space-y-4">
           <Title className="!m-0 !font-display !text-4xl !font-bold !leading-tight !tracking-tight md:!text-6xl uppercase">Lịch sử đơn hàng</Title>

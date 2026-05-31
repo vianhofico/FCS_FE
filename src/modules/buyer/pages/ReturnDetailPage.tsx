@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Return Detail Page (Buyer)
  * View full return details and manage return process
  */
@@ -156,7 +156,7 @@ export default function ReturnDetailPage() {
   };
 
   return (
-    <div className="mx-auto max-w-[1200px] space-y-10 pb-20">
+    <div className="mx-auto max-w-[1200px] space-y-14 pb-28">
       <div className="flex items-center justify-between">
         <Button
           icon={<ArrowLeftOutlined />}

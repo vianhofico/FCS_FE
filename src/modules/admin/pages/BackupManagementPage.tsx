@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Backup Management Page (Admin)
  * System backup and restore management
  */
@@ -232,7 +232,7 @@ export default function BackupManagementPage() {
   ];
 
   return (
-    <div className="mx-auto max-w-[1440px] space-y-12 pb-20">
+    <div className="mx-auto max-w-[1440px] space-y-14 pb-28">
       <div className="flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-end">
         <div className="space-y-4">
           <Title className="!m-0 !font-display !text-4xl !font-bold !leading-tight !tracking-tight md:!text-6xl uppercase">Quản lý sao lưu</Title>

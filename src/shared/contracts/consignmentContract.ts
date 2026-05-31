@@ -4,88 +4,60 @@
 
 import type { ConsignmentRequestStatus, ConsignmentItemStatus, ContractStatus } from "@/shared/contracts/commonContract";
 
-/**
- * Consignment request summary (for lists)
- */
 export type ConsignmentRequestSummary = {
   id: string;
   code: string;
   consignorId: string;
   status: ConsignmentRequestStatus;
-  itemCount?: number;
   note?: string;
   createdAt?: string;
 };
 
-/**
- * Consignment request detail
- */
+export type ConsignmentItem = {
+  id: string;
+  requestId: string;
+  suggestedName: string;
+  suggestedPrice?: number;
+  originalPrice?: number;
+  suggestedBrandId?: string;
+  suggestedCategoryId?: string;
+  conditionNote?: string;
+  status: ConsignmentItemStatus;
+  rejectionReason?: string;
+  createdAt?: string;
+};
+
 export type ConsignmentRequestDetail = ConsignmentRequestSummary & {
-  items?: ConsignmentItem[];
+  item?: ConsignmentItem;
   contract?: ConsignmentContract;
   updatedAt?: string;
 };
 
-/**
- * Create consignment request
- */
-export type ConsignmentRequestCreateRequest = {
+/** Request body for creating a consignment (includes inline item details) */
+export type CreateConsignmentPayload = {
   consignorId: string;
-  code?: string;
-  status?: ConsignmentRequestStatus;
+  code: string;
+  status: ConsignmentRequestStatus;
   note?: string;
+  // inline item
+  suggestedName: string;
+  suggestedPrice?: number;
+  originalPrice?: number;
+  suggestedBrandId?: string;
+  suggestedCategoryId?: string;
+  conditionNote?: string;
 };
 
-/**
- * Update consignment request
- */
-export type ConsignmentRequestUpdateRequest = {
-  note?: string;
-};
-
-/**
- * Consignment status update request
- */
 export type ConsignmentStatusRequest = {
   status: ConsignmentRequestStatus;
   reason?: string;
 };
 
-/**
- * Consignment item
- */
-export type ConsignmentItem = {
-  id: string;
-  requestId: string;
-  suggestedName: string;
-  suggestedPrice: number;
-  conditionNote?: string;
-  status: ConsignmentItemStatus;
-  media?: Array<Record<string, unknown>>;
-  createdAt?: string;
-};
-
-/**
- * Create consignment item request
- */
-export type ConsignmentItemCreateRequest = {
-  requestId: string;
-  suggestedName: string;
-  suggestedPrice: number;
-  conditionNote?: string;
-};
-
-/**
- * Consignment item status update request
- */
 export type ConsignmentItemStatusRequest = {
   status: ConsignmentItemStatus;
   rejectionReason?: string;
 };
 
-/**
- * Consignment contract
- */
 export type ConsignmentContract = {
   id: string;
   requestId: string;
@@ -97,20 +69,14 @@ export type ConsignmentContract = {
   signedByUserId?: string;
   signedByName?: string;
   signatureMethod?: string;
-  signatureIpAddress?: string;
-  signatureUserAgent?: string;
-  signatureHash?: string;
   createdAt?: string;
 };
 
-/**
- * Create consignment contract request
- */
 export type ConsignmentContractCreateRequest = {
   requestId: string;
-  commissionRate?: number;
-  agreedPrice?: number;
-  validUntil?: string;
+  commissionRate: number;
+  agreedPrice: number;
+  validUntil: string;
 };
 
 export type SignConsignmentContractRequest = {
@@ -118,17 +84,11 @@ export type SignConsignmentContractRequest = {
   signatureName: string;
 };
 
-/**
- * Contract status update request
- */
 export type ConsignmentContractStatusRequest = {
   status: ContractStatus;
   reason?: string;
 };
 
-/**
- * Consignment query filters
- */
 export type ConsignmentQuery = {
   code?: string;
   consignorId?: string;
@@ -138,4 +98,25 @@ export type ConsignmentQuery = {
   page?: number;
   size?: number;
   sort?: string;
+};
+
+/** Media asset linked to a consignment request */
+export type MediaAsset = {
+  id: string;
+  ownerType: "CONSIGNMENT_REQUEST" | "CONSIGNMENT_ITEM" | "PRODUCT";
+  ownerId: string;
+  url: string;
+  mimeType?: string;
+  sizeBytes?: number;
+  displayOrder?: number;
+  isPrimary?: boolean;
+};
+
+/** Response from POST /api/v1/media/upload */
+export type UploadMediaResponse = {
+  fileName: string;
+  objectKey: string;
+  url: string;
+  contentType: string;
+  sizeBytes: number;
 };

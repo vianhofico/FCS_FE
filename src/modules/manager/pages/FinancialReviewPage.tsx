@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Financial Review Page (Manager)
  * Financial transaction review and oversight
  */
@@ -159,7 +159,7 @@ export default function FinancialReviewPage() {
   ];
 
   return (
-    <div className="mx-auto max-w-[1440px] space-y-12 pb-20">
+    <div className="mx-auto max-w-[1440px] space-y-14 pb-28">
       <div className="flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-end">
         <div className="space-y-4">
           <Title className="!m-0 !font-display !text-4xl !font-bold !leading-tight !tracking-tight md:!text-6xl uppercase">Kiểm soát tài chính</Title>

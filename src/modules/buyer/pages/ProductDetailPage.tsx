@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Product Detail Page (Buyer)
  * View full product details, reviews, and add to cart
  */
@@ -17,7 +17,7 @@ import {
   Avatar,
   Card,
   Col,
-  Divider,
+
   Progress,
   Rate,
   Row,
@@ -147,7 +147,7 @@ export default function ProductDetailPage() {
   const conditionPercent = product.conditionPercent ?? product.condition ?? 0;
 
   return (
-    <div className="mx-auto max-w-[1440px] space-y-12 pb-20">
+    <div className="mx-auto max-w-[1440px] space-y-14 pb-28">
       <div className="flex items-center gap-4">
         <Button
           icon={<ArrowLeftOutlined />}
@@ -192,11 +192,9 @@ export default function ProductDetailPage() {
 
         {/* Product Info Column */}
         <Col xs={24} md={12} lg={11}>
-          <div className="space-y-10">
+          <div className="space-y-14">
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <Text className="font-display text-sm font-bold uppercase tracking-[0.25em] text-primary/70">{product.brandId || "Local Brand"}</Text>
-                <Divider orientation="vertical" className="border-pink-100" />
                 <div className="flex items-center gap-1 text-yellow-400">
                   <StarFilled />
                   <span className="text-sm font-bold text-slate-700">{state.reviewSummary?.averageRating.toFixed(1) || "5.0"}</span>
@@ -220,7 +218,11 @@ export default function ProductDetailPage() {
                   <div className="space-y-4">
                     <div className="flex flex-wrap justify-between gap-3">
                       <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Số lượng</span>
-                      <span className="text-xs font-bold text-primary italic">Chỉ còn 1 sản phẩm duy nhất</span>
+                      {(product.stock ?? 0) > 0 ? (
+                        <span className="text-xs font-bold text-primary italic">Còn {product.stock} sản phẩm</span>
+                      ) : (
+                        <span className="text-xs font-bold text-red-400 italic">Hết hàng</span>
+                      )}
                     </div>
                     <div className="flex items-center gap-4">
                       <div className="flex flex-1 items-center justify-between rounded-2xl border border-pink-100 bg-white p-1">
@@ -235,6 +237,7 @@ export default function ProductDetailPage() {
                         <Button
                           type="text"
                           icon={<PlusOutlined />}
+                          disabled={state.quantity >= (product.stock ?? 1)}
                           onClick={() => setState(p => ({ ...p, quantity: p.quantity + 1 }))}
                           className="h-10 w-10 text-primary flex items-center justify-center"
                         />
@@ -265,7 +268,7 @@ export default function ProductDetailPage() {
               </Card>
             )}
 
-            <div className="space-y-8">
+            <div className="mt-8 space-y-8">
               <div>
                 <Title level={5} className="!mb-4 !font-display uppercase tracking-widest text-sm">Mô tả sản phẩm</Title>
                 <Paragraph className="text-lg leading-relaxed text-slate-600/80">{product.description || "Chưa có mô tả chi tiết cho sản phẩm này."}</Paragraph>

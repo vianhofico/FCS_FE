@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Order Moderation Page (Manager)
  * Review and moderate orders
  */
@@ -20,6 +20,7 @@ import {
   Space,
   Spin,
   Table,
+  Tooltip,
   Typography,
 } from "antd";
 import { useEffect, useState } from "react";
@@ -30,6 +31,7 @@ import { useAuth } from "@/shared/context/AuthContext";
 import type { OrderSummary } from "@/shared/contracts/orderContract";
 import type { OrderStatus } from "@/shared/contracts/commonContract";
 import { Badge, Button, EmptyState } from "@/shared/ui";
+import { formatPaymentMethod } from "@/shared/utils/formatters";
 
 const { Title, Paragraph } = Typography;
 
@@ -153,15 +155,47 @@ export default function OrderModerationPage() {
   const columns = [
     {
       title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Mã đơn hàng</span>,
-      dataIndex: "id",
-      key: "id",
-      render: (id: string) => <span className="font-mono text-xs font-bold text-slate-800">#{id.slice(-8).toUpperCase()}</span>,
+      key: "orderCode",
+      render: (_: any, record: OrderSummary) => (
+        <div className="flex flex-col gap-0.5">
+          <span className="font-mono text-xs font-bold text-slate-800">
+            {record.orderCode || `#${record.id.slice(-8).toUpperCase()}`}
+          </span>
+          {record.createdAt && (
+            <span className="text-[11px] text-slate-400">
+              {new Date(record.createdAt).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" })}
+            </span>
+          )}
+        </div>
+      ),
     },
     {
-      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Tổng thanh toán</span>,
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Sản phẩm</span>,
+      key: "items",
+      render: (_: any, record: OrderSummary) => {
+        const count = record.itemCount ?? record.items?.length ?? 0;
+        return (
+          <span className="inline-flex items-center rounded-xl bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+            {count} sản phẩm
+          </span>
+        );
+      },
+    },
+    {
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Thanh toán</span>,
+      dataIndex: "paymentMethod",
+      key: "paymentMethod",
+      render: (method: string) => (
+        <span className="text-xs font-medium text-slate-600">{formatPaymentMethod(method)}</span>
+      ),
+    },
+    {
+      title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Tổng tiền</span>,
       dataIndex: "totalAmount",
       key: "total",
-      render: (amount: number) => <span className="font-display text-lg font-bold text-primary">{amount.toLocaleString()}₫</span>,
+      render: (amount: number) => (
+        <span className="font-display text-base font-bold text-primary">{amount.toLocaleString()}₫</span>
+      ),
     },
     {
       title: <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Trạng thái</span>,
@@ -176,23 +210,40 @@ export default function OrderModerationPage() {
       key: "actions",
       align: "right" as const,
       fixed: "right" as const,
-      width: 220,
+      width: 130,
       render: (_: any, record: OrderSummary) => (
-        <Space size="middle">
-          <Button type="text" icon={<EyeOutlined />} className="text-slate-400 hover:!text-primary" onClick={() => navigate(`/manager/orders/${record.id}`)} />
+        <Space size={4}>
           {record.status === "PENDING_PAYMENT" && (
             <>
-              <Button type="text" icon={<CheckCircleOutlined />} className="text-emerald-500 hover:!bg-emerald-50 rounded-xl font-bold" onClick={() => handleApproveOrder(record.id)}>Duyệt</Button>
-              <Button type="text" danger icon={<CloseCircleOutlined />} className="hover:!bg-rose-50 rounded-xl font-bold" onClick={() => handleRejectOrder(record.id)}>Hủy</Button>
+              <Tooltip title="Duyệt đơn">
+                <Button
+                  type="text"
+                  icon={<CheckCircleOutlined />}
+                  className="!text-emerald-500 hover:!bg-emerald-50"
+                  onClick={() => handleApproveOrder(record.id)}
+                />
+              </Tooltip>
+              <Tooltip title="Hủy đơn">
+                <Button
+                  type="text"
+                  danger
+                  icon={<CloseCircleOutlined />}
+                  className="hover:!bg-rose-50"
+                  onClick={() => handleRejectOrder(record.id)}
+                />
+              </Tooltip>
             </>
           )}
+          <Tooltip title="Xem chi tiết">
+            <Button type="text" icon={<EyeOutlined />} className="text-slate-400 hover:!text-primary" onClick={() => navigate(`/manager/orders/${record.id}`)} />
+          </Tooltip>
         </Space>
       ),
     },
   ];
 
   return (
-    <div className="mx-auto max-w-[1440px] space-y-12 pb-20">
+    <div className="mx-auto max-w-[1440px] space-y-14 pb-28">
       <div className="flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-end">
         <div className="space-y-4">
           <Title className="!m-0 !font-display !text-4xl !font-bold !leading-tight !tracking-tight md:!text-6xl uppercase">Điều phối đơn hàng</Title>
@@ -252,7 +303,7 @@ export default function OrderModerationPage() {
         </div>
 
         <Spin spinning={state.isLoading && state.orders.length === 0}>
-          <Table columns={columns} dataSource={state.orders.map(o => ({ ...o, key: o.id }))} pagination={false} scroll={{ x: 780 }} className="luxury-table" />
+          <Table columns={columns} dataSource={state.orders.map(o => ({ ...o, key: o.id }))} pagination={false} scroll={{ x: 1000 }} className="luxury-table" />
 
           {state.total > state.size && (
             <div className="mt-10 flex justify-center">

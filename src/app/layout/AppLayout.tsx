@@ -54,18 +54,16 @@ const sellerMenuItems: NavigationItem[] = [
 ];
 
 const managerMenuItems: NavigationItem[] = [
-  { key: "/manager/orders/moderation", icon: <ShoppingCartOutlined />, label: "Điều phối đơn" },
-  { key: "/manager/disputes/resolution", icon: <SafetyCertificateOutlined />, label: "Tranh chấp" },
-  { key: "/manager/approvals", icon: <FileDoneOutlined />, label: "Phê duyệt" },
-  { key: "/manager/returns/moderation", icon: <ReconciliationOutlined />, label: "Duyệt trả" },
-  { key: "/manager/financial/review", icon: <DollarOutlined />, label: "Tài chính" },
-  { key: "/manager/reporting", icon: <DashboardOutlined />, label: "Báo cáo" },
-  { key: "/manager/users/management", icon: <TeamOutlined />, label: "Người dùng" },
-  { key: "/manager/system/settings", icon: <SettingOutlined />, label: "Cài đặt" },
-  { key: "/manager/communication", icon: <BellFilled />, label: "Giao tiếp" },
-  { key: "/manager/performance/monitoring", icon: <DashboardOutlined />, label: "Hiệu năng" },
-  { key: "/manager/bulk-actions", icon: <FileDoneOutlined />, label: "Bulk actions" },
-  { key: "/manager/audit/logs", icon: <AuditOutlined />, label: "Audit" },
+  { key: "/consignment",                    icon: <ReconciliationOutlined />, label: "Ký gửi" },
+  { key: "/product",                        icon: <ShopOutlined />,           label: "Sản phẩm" },
+  { key: "/manager/approvals",              icon: <FileDoneOutlined />,       label: "Phê duyệt" },
+  { key: "/manager/orders/moderation",      icon: <ShoppingCartOutlined />,   label: "Điều phối đơn" },
+  { key: "/manager/returns/moderation",     icon: <ReconciliationOutlined />, label: "Duyệt trả" },
+  { key: "/manager/disputes/resolution",    icon: <SafetyCertificateOutlined />, label: "Tranh chấp" },
+  { key: "/financial",                      icon: <DollarOutlined />,         label: "Tài chính" },
+  { key: "/catalog",                        icon: <TagsOutlined />,           label: "Danh mục" },
+  { key: "/iam",                            icon: <TeamOutlined />,           label: "Người dùng" },
+  { key: "/audit",                          icon: <AuditOutlined />,          label: "Audit" },
 ];
 
 const adminMenuItems: NavigationItem[] = [

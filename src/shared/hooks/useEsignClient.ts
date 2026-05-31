@@ -5,7 +5,7 @@ import type { SignConsignmentContractRequest } from '@/shared/contracts/consignm
 
 export function useEsignClient() {
   const sign = useCallback((contractId: string, payload: SignConsignmentContractRequest) => {
-    return consignmentApi.signConsignmentContract(contractId, payload);
+    return consignmentApi.signContract(contractId, payload);
   }, []);
 
   return { sign };

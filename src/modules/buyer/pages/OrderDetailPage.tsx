@@ -11,7 +11,7 @@ import {
   Divider,
   Steps,
   Table,
-  Col,
+
   Modal,
   Form,
   Input,
@@ -20,7 +20,7 @@ import {
 } from "antd";
 import {
   ArrowLeftOutlined,
-  DownloadOutlined,
+
   UndoOutlined,
   ExclamationCircleOutlined,
   CheckCircleOutlined,
@@ -36,6 +36,7 @@ import { useAuth } from "@/shared/context/AuthContext";
 import TimelineWidget from "@/shared/components/TimelineWidget";
 import { buildTrackingUrl } from "@/shared/integrations/shippingService";
 import { Badge, Button, EmptyState } from "@/shared/ui";
+import { formatPaymentMethod as sharedFormatPaymentMethod } from "@/shared/utils/formatters";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -105,21 +106,12 @@ const ORDER_STATUS_LABELS: Record<string, string> = {
   REFUNDED: "Đã hoàn tiền",
 };
 
-const PAYMENT_METHOD_LABELS: Record<string, string> = {
-  COD: "Thanh toán khi nhận hàng",
-  CREDIT_CARD: "Thẻ tín dụng/ghi nợ",
-  VNPAY: "VNPAY",
-  MOMO: "Ví MoMo",
-  BANK_TRANSFER: "Chuyển khoản ngân hàng",
-  ONLINE_PAYMENT: "Online",
-};
-
 function formatOrderStatus(status: string) {
   return ORDER_STATUS_LABELS[status] ?? status;
 }
 
 function formatPaymentMethod(method?: string) {
-  return method ? PAYMENT_METHOD_LABELS[method] ?? method : "Chưa có thông tin";
+  return sharedFormatPaymentMethod(method) ?? "Chưa có thông tin";
 }
 
 /**
@@ -414,7 +406,7 @@ export default function OrderDetailPage() {
   ];
 
   return (
-    <div className="mx-auto max-w-[1200px] space-y-10 pb-20">
+    <div className="mx-auto max-w-[1200px] space-y-16 pb-24">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <Button
           icon={<ArrowLeftOutlined />}
@@ -427,7 +419,7 @@ export default function OrderDetailPage() {
         <Badge status={statusMap[order.status] || "Pending"}>{formatOrderStatus(order.status)}</Badge>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-6">
         <div className="flex items-center gap-3">
           <Text className="font-display text-sm font-bold uppercase tracking-[0.25em] text-primary/70">Thông tin đơn hàng</Text>
           <div className="h-px flex-1 bg-pink-100/50" />
@@ -435,9 +427,9 @@ export default function OrderDetailPage() {
         <Title className="!m-0 !font-display !text-4xl !font-bold uppercase tracking-tight text-text-dark">Mã: {order.orderCode}</Title>
       </div>
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        <Col span={24} className="lg:col-span-2 space-y-8">
-          <Card className="rounded-[2.5rem] border-pink-100/40 bg-white p-8 shadow-sm">
+      <div className="grid grid-cols-1 gap-12 lg:grid-cols-3">
+        <div className="lg:col-span-2 flex flex-col gap-10">
+          <Card className="rounded-[2.5rem] border-pink-100/40 bg-white p-10 shadow-sm">
             <Steps
               current={statusIndex}
               className="luxury-steps"
@@ -452,7 +444,7 @@ export default function OrderDetailPage() {
 
           <Card
             title={<span className="font-display text-lg font-bold uppercase tracking-widest text-text-dark">Sản phẩm đã chọn</span>}
-            className="rounded-[2.5rem] border-pink-100/40 bg-white p-4 shadow-sm"
+            className="rounded-[2.5rem] border-pink-100/40 bg-white p-8 shadow-sm"
           >
             <Table
               columns={itemColumns}
@@ -465,10 +457,10 @@ export default function OrderDetailPage() {
             />
           </Card>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
             <Card
               title={<span className="font-display text-base font-bold uppercase tracking-widest text-text-dark flex items-center gap-3"><CarOutlined className="text-primary/60" /> Thông tin nhận hàng</span>}
-              className="rounded-[2.5rem] border-pink-100/40 bg-white p-6 shadow-sm"
+              className="rounded-[2.5rem] border-pink-100/40 bg-white p-8 shadow-sm"
             >
               {shippingAddress ? (
                 <div className="space-y-4">
@@ -488,10 +480,7 @@ export default function OrderDetailPage() {
                   </div>
                 </div>
               ) : order.shippingAddressId ? (
-                <div className="space-y-2 italic text-slate-400">
-                  <div>Không có snapshot địa chỉ cho đơn hàng cũ.</div>
-                  <div className="font-mono text-xs not-italic text-slate-500">{order.shippingAddressId}</div>
-                </div>
+                <div className="italic text-slate-400">Không có thông tin chi tiết địa chỉ.</div>
               ) : (
                 <div className="italic text-slate-400">Không có thông tin địa chỉ.</div>
               )}
@@ -499,9 +488,9 @@ export default function OrderDetailPage() {
 
             <Card
               title={<span className="font-display text-base font-bold uppercase tracking-widest text-text-dark flex items-center gap-3"><CreditCardOutlined className="text-primary/60" /> Thanh toán & Vận chuyển</span>}
-              className="rounded-[2.5rem] border-pink-100/40 bg-white p-6 shadow-sm"
+              className="rounded-[2.5rem] border-pink-100/40 bg-white p-8 shadow-sm"
             >
-              <div className="space-y-6">
+              <div className="space-y-8">
                 <div>
                   <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Phương thức thanh toán</div>
                   <Badge status="Verified">{formatPaymentMethod(order.paymentMethod)}</Badge>
@@ -528,16 +517,16 @@ export default function OrderDetailPage() {
               </div>
             </Card>
           </div>
-        </Col>
+        </div>
 
-        <Col span={24} className="lg:col-span-1 space-y-8">
-          <div className="sticky top-32 space-y-8">
-            <Card className="rounded-[2.5rem] border-pink-100/40 bg-white p-8 shadow-luxury">
+        <div className="lg:col-span-1">
+          <div className="sticky top-32 flex flex-col gap-10">
+            <Card className="rounded-[2.5rem] border-pink-100/40 bg-white p-10 shadow-luxury">
               <TimelineWidget items={timelineItems} title="Hành trình đơn hàng" />
             </Card>
 
-            <Card className="rounded-[2.5rem] border-pink-100/40 bg-white p-8 shadow-sm">
-              <div className="space-y-4">
+            <Card className="rounded-[2.5rem] border-pink-100/40 bg-white p-10 shadow-sm">
+              <div className="space-y-5">
                 <div className="flex flex-wrap justify-between gap-3 text-sm font-medium text-slate-500">
                   <span>Tạm tính:</span>
                   <span>{order.subTotal.toLocaleString()}₫</span>
@@ -558,7 +547,7 @@ export default function OrderDetailPage() {
                   <span className="font-display text-2xl font-black text-primary tracking-tight">{order.totalAmount.toLocaleString()}₫</span>
                 </div>
 
-                <div className="pt-8 space-y-3">
+                <div className="pt-6 space-y-3">
                   {canCancelOrder && (
                     <Button danger block size="large" onClick={handleCancelOrder} className="h-12 rounded-xl font-bold border-red-100 text-red-500">
                       HỦY ĐƠN HÀNG
@@ -589,14 +578,12 @@ export default function OrderDetailPage() {
                     </Button>
                   )}
 
-                  <Button icon={<DownloadOutlined />} block type="text" className="font-bold text-slate-400 hover:text-primary">
-                    Tải hóa đơn (PDF)
-                  </Button>
+
                 </div>
               </div>
             </Card>
           </div>
-        </Col>
+        </div>
       </div>
 
       <Modal
