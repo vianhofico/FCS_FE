@@ -26,7 +26,7 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/shared/context/AuthContext";
 import { useNotifications } from "@/shared/hooks/useNotifications";
 
-const { Header, Content } = Layout;
+const { Header, Content, Footer } = Layout;
 
 type NavigationItem = NonNullable<MenuProps["items"]>[number];
 
@@ -54,6 +54,7 @@ const sellerMenuItems: NavigationItem[] = [
 ];
 
 const managerMenuItems: NavigationItem[] = [
+  { key: "/manager/dashboard",              icon: <DashboardOutlined />,      label: "Tổng quan" },
   { key: "/consignment",                    icon: <ReconciliationOutlined />, label: "Ký gửi" },
   { key: "/product",                        icon: <ShopOutlined />,           label: "Sản phẩm" },
   { key: "/manager/approvals",              icon: <FileDoneOutlined />,       label: "Phê duyệt" },
@@ -62,7 +63,7 @@ const managerMenuItems: NavigationItem[] = [
   { key: "/manager/disputes/resolution",    icon: <SafetyCertificateOutlined />, label: "Tranh chấp" },
   { key: "/financial",                      icon: <DollarOutlined />,         label: "Tài chính" },
   { key: "/catalog",                        icon: <TagsOutlined />,           label: "Danh mục" },
-  { key: "/iam",                            icon: <TeamOutlined />,           label: "Người dùng" },
+  { key: "/manager/users/management",        icon: <TeamOutlined />,           label: "Người dùng" },
   { key: "/audit",                          icon: <AuditOutlined />,          label: "Audit" },
 ];
 
@@ -150,7 +151,7 @@ export function AppLayout() {
                   <Dropdown
                     trigger={["hover"]}
                     placement="bottomRight"
-                    dropdownRender={() => (
+                    popupRender={() => (
                       <div className="w-80 overflow-hidden rounded-2xl border border-pink-100 bg-white shadow-xl shadow-pink-100/40">
                         <div className="flex items-center justify-between border-b border-pink-50 px-4 py-3">
                           <span className="text-sm font-bold text-slate-700">Thông báo</span>
@@ -204,9 +205,12 @@ export function AppLayout() {
 
                   <Dropdown
                     placement="bottomRight"
+                    trigger={["click"]}
                     menu={{
                       items: [
-                        { key: "profile", label: displayName },
+                        { key: "profile", icon: <UserOutlined />, label: "Hồ sơ", onClick: () => navigate("/seller/profile") },
+                        { key: "addresses", icon: <UserOutlined />, label: "Địa chỉ giao hàng", onClick: () => navigate("/buyer/addresses") },
+                        { type: "divider" },
                         { key: "logout", icon: <LogoutOutlined />, label: "Đăng xuất", onClick: handleLogout },
                       ],
                     }}
@@ -253,6 +257,109 @@ export function AppLayout() {
         </main>
       </Content>
 
+      {!hasRole("ADMIN") && !hasRole("MANAGER") && (
+        <Footer className="!bg-slate-900 !px-0 !py-0">
+          <div className="mx-auto max-w-[1440px] px-6 py-14 lg:px-12">
+            <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4">
+              {/* Brand */}
+              <div className="space-y-4 lg:col-span-1">
+                <span className="site-deco site-logo text-white !text-2xl">Re:Wear</span>
+                <p className="text-sm leading-relaxed text-slate-400">
+                  Nền tảng thời trang ký gửi thế hệ mới — nơi phong cách gặp gỡ sự bền vững.
+                </p>
+                <div className="flex gap-3 pt-2">
+                  {["Facebook", "Instagram", "TikTok"].map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-700 text-xs font-bold text-slate-400 transition-all hover:border-primary hover:text-primary"
+                    >
+                      {s[0]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Mua sắm */}
+              <div className="space-y-4">
+                <h4 className="text-xs font-black uppercase tracking-widest text-slate-300">Mua sắm</h4>
+                <ul className="space-y-3">
+                  {[
+                    { label: "Tất cả sản phẩm", path: "/buyer/products" },
+                    { label: "Hàng mới về", path: "/buyer/products" },
+                    { label: "Giỏ hàng", path: "/buyer/cart" },
+                    { label: "Danh sách yêu thích", path: "/buyer/wishlist" },
+                  ].map((item) => (
+                    <li key={item.label}>
+                      <button
+                        type="button"
+                        onClick={() => window.location.href = item.path}
+                        className="border-0 bg-transparent p-0 text-sm text-slate-400 transition-soft hover:text-white cursor-pointer"
+                      >
+                        {item.label}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Ký gửi */}
+              <div className="space-y-4">
+                <h4 className="text-xs font-black uppercase tracking-widest text-slate-300">Ký gửi</h4>
+                <ul className="space-y-3">
+                  {[
+                    { label: "Gửi đồ của bạn", path: "/seller/consignments/new" },
+                    { label: "Theo dõi yêu cầu", path: "/seller/consignments" },
+                    { label: "Hợp đồng ký gửi", path: "/seller/contracts" },
+                    { label: "Tài chính & Ví", path: "/seller/financial" },
+                  ].map((item) => (
+                    <li key={item.label}>
+                      <button
+                        type="button"
+                        onClick={() => window.location.href = item.path}
+                        className="border-0 bg-transparent p-0 text-sm text-slate-400 transition-soft hover:text-white cursor-pointer"
+                      >
+                        {item.label}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Liên hệ */}
+              <div className="space-y-4">
+                <h4 className="text-xs font-black uppercase tracking-widest text-slate-300">Liên hệ</h4>
+                <ul className="space-y-3 text-sm text-slate-400">
+                  <li>📧 support@rewear.studio</li>
+                  <li>📞 1900 xxxx</li>
+                  <li>🕐 T2 – T7: 9:00 – 18:00</li>
+                  <li className="pt-2">
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-green-500/30 bg-green-500/10 px-3 py-1 text-xs font-bold text-green-400">
+                      <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
+                      Đang hoạt động
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Bottom bar */}
+            <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-slate-800 pt-8 sm:flex-row">
+              <p className="text-xs text-slate-500">
+                © 2025 Re:Wear. All rights reserved.
+              </p>
+              <div className="flex gap-6">
+                {["Chính sách bảo mật", "Điều khoản sử dụng", "Chính sách hoàn trả"].map((t) => (
+                  <button key={t} type="button" className="border-0 bg-transparent p-0 text-xs text-slate-500 hover:text-slate-300 cursor-pointer">
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Footer>
+      )}
+
       <Drawer
         title={<span className="font-display text-2xl font-bold text-primary">Re:Wear Menu</span>}
         placement="right"
@@ -263,9 +370,7 @@ export function AppLayout() {
         className="rewear-drawer"
       >
         <div className="flex h-full flex-col">
-          <div className="mb-5 px-5 sm:px-6">
-            <div className="mt-2 text-sm text-slate-500 italic">Cửa hàng thời trang ký gửi cao cấp.</div>
-          </div>
+          <div className="mb-5 px-5 sm:px-6" />
           <Menu
             mode="inline"
             items={menuItems}

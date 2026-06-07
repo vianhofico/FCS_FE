@@ -5,6 +5,7 @@
 
 import { Navigate } from "react-router-dom";
 import type { RouteObject } from "react-router-dom";
+import ManagerDashboardPage from "@/modules/manager/pages/ManagerDashboardPage";
 import OrderModerationPage from "@/modules/manager/pages/OrderModerationPage";
 import OrderDetailPage from "@/modules/buyer/pages/OrderDetailPage";
 import DisputeResolutionPage from "@/modules/manager/pages/DisputeResolutionPage";
@@ -76,8 +77,16 @@ export const managerRoutes: RouteObject[] = [
         element: <AuditLogDetailPage />,
       },
       {
+        path: "products",
+        element: <Navigate to="/product" replace />,
+      },
+      {
+        path: "dashboard",
+        element: <ManagerDashboardPage />,
+      },
+      {
         path: "",
-        element: <Navigate to="orders/moderation" replace />,
+        element: <ManagerDashboardPage />,
       },
     ],
   },

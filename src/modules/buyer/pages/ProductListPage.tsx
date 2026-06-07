@@ -31,7 +31,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 
 import heroImage from "@/assets/buyer-hero-start.jpg";
 import { productApi } from "@/modules/product/api/productApi";
-import { Badge, Button, EmptyState, GradeBadge } from "@/shared/ui";
+import { Button, EmptyState, GradeBadge } from "@/shared/ui";
 import type { ProductCategory, ProductQuery, ProductSummary } from "@/shared/contracts/productContract";
 
 const { Title, Text, Paragraph } = Typography;
@@ -207,68 +207,67 @@ export default function BuyerProductListPage() {
   };
 
   const productGrid = (
-    <Row gutter={[24, 32]}>
+    <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
       {state.products.map((product) => (
-        <Col xs={24} sm={12} md={8} xl={6} key={product.id}>
-          <Card
-            hoverable
-            className="group overflow-hidden rounded-3xl border-border/40 bg-white transition-premium hover:shadow-luxury"
-            cover={
-              <div className="relative aspect-[3/4] overflow-hidden bg-bg-secondary">
-                {product.imageUrl ? (
-                  <img
-                    alt={product.name}
-                    src={product.imageUrl}
-                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                ) : (
-                  <div className="flex h-full items-center justify-center bg-slate-100 text-slate-300">
-                    Không có ảnh
-                  </div>
-                )}
-                <div className="absolute top-4 left-4 z-10">
-                  <GradeBadge grade={getConditionLabel(product.conditionPercent ?? product.condition ?? 0).split(" ")[0]} />
+        <Card
+          key={product.id}
+          hoverable
+          className="group flex h-full flex-col overflow-hidden rounded-3xl border-border/40 bg-white transition-premium hover:shadow-luxury"
+          styles={{ body: { flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '14px 16px' } }}
+          cover={
+            <div className="relative aspect-square overflow-hidden bg-bg-secondary">
+              {product.imageUrl ? (
+                <img
+                  alt={product.name}
+                  src={product.imageUrl}
+                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center bg-slate-100 text-slate-300 text-sm">
+                  Không có ảnh
                 </div>
-                <div className="absolute inset-0 flex items-center justify-center gap-3 bg-black/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                  <Button
-                    shape="circle"
-                    icon={<ShoppingCartOutlined />}
-                    className="translate-y-4 scale-110 border-none bg-white/90 transition-premium group-hover:translate-y-0 hover:!bg-primary hover:!text-white flex items-center justify-center w-10 h-10"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/buyer/products/${product.id}`);
-                    }}
-                  />
-                </div>
+              )}
+              <div className="absolute top-3 left-3 z-10">
+                <GradeBadge grade={getConditionLabel(product.conditionPercent ?? product.condition ?? 0).split(" ")[0]} />
               </div>
-            }
-            onClick={() => navigate(`/buyer/products/${product.id}`)}
-          >
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Text className="font-display text-[10px] font-bold uppercase tracking-[0.2em] text-primary/70">
-                  {product.sku}
-                </Text>
-                <Badge status="Active">{getConditionLabel(product.conditionPercent ?? product.condition ?? 0)}</Badge>
-              </div>
-              <Title level={5} className="!m-0 !line-clamp-1 !font-display !font-bold !text-text-dark group-hover:text-primary transition-soft">
-                {product.name}
-              </Title>
-              <div className="flex items-baseline gap-2">
-                <Text className="text-lg font-black text-primary">
-                  {product.salePrice.toLocaleString()}₫
-                </Text>
-                {product.originalPrice && product.originalPrice > product.salePrice && (
-                  <Text delete className="text-xs font-medium text-slate-300">
-                    {product.originalPrice.toLocaleString()}₫
-                  </Text>
-                )}
+              <div className="absolute inset-0 flex items-center justify-center gap-3 bg-black/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                <Button
+                  shape="circle"
+                  icon={<ShoppingCartOutlined />}
+                  className="translate-y-4 scale-110 border-none bg-white/90 transition-premium group-hover:translate-y-0 hover:!bg-primary hover:!text-white flex items-center justify-center w-10 h-10"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/buyer/products/${product.id}`);
+                  }}
+                />
               </div>
             </div>
-          </Card>
-        </Col>
+          }
+          onClick={() => navigate(`/buyer/products/${product.id}`)}
+        >
+          <div className="flex flex-col gap-1">
+            {product.brandName && (
+              <Text className="block truncate text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+                {product.brandName}
+              </Text>
+            )}
+            <Title level={5} className="!m-0 !line-clamp-2 !font-display !text-base !font-bold !leading-snug !text-slate-800 transition-soft group-hover:!text-primary">
+              {product.name}
+            </Title>
+            <div className="mt-1 flex items-baseline gap-2">
+              <Text className="text-base font-black text-primary">
+                {product.salePrice.toLocaleString()}₫
+              </Text>
+              {product.originalPrice && product.originalPrice > product.salePrice && (
+                <Text delete className="text-[11px] text-slate-300">
+                  {product.originalPrice.toLocaleString()}₫
+                </Text>
+              )}
+            </div>
+          </div>
+        </Card>
       ))}
-    </Row>
+    </div>
   );
 
   const filterContent = (

@@ -14,6 +14,7 @@ import MyReturnsPage from "@/modules/buyer/pages/MyReturnsPage";
 import ReturnDetailPage from "@/modules/buyer/pages/ReturnDetailPage";
 import ProductReviewPage from "@/modules/buyer/pages/ProductReviewPage";
 import WishlistPage from "@/modules/buyer/pages/WishlistPage";
+import AddressBookPage from "@/modules/buyer/pages/AddressBookPage";
 
 /**
  * Buyer routes
@@ -65,5 +66,9 @@ export const buyerRoutes: RouteObject[] = [
   {
     path: "buyer/returns/:returnId",
     element: <ReturnDetailPage />,
+  },
+  {
+    path: "buyer/addresses",
+    element: <AddressBookPage />,
   },
 ];

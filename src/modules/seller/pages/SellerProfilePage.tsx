@@ -261,7 +261,7 @@ export default function SellerProfilePage() {
               label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Số tài khoản</span>}
               rules={[{ required: true, message: "Vui lòng nhập số tài khoản" }]}
             >
-              <Input placeholder="Nhập số tài khoản" type="password" className="rounded-2xl border-pink-100 h-12" />
+              <Input placeholder="Nhập số tài khoản" type="tel" autoComplete="off" className="rounded-2xl border-pink-100 h-12" />
             </Form.Item>
           </div>
 

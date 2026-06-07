@@ -32,8 +32,14 @@ const STATUS_BADGE: Record<string, string> = {
   APPROVED: "Verified", REJECTED: "Rejected", RECEIVED: "Inactive",
 };
 const ITEM_STATUS_LABEL: Record<string, string> = {
-  PROPOSED: "Chờ kiểm tra", UNDER_INSPECTION: "Đang kiểm tra",
-  ACCEPTED: "Đã chấp nhận", REJECTED: "Từ chối item",
+  PROPOSED: "Chờ kiểm tra",
+  UNDER_INSPECTION: "Đang kiểm tra",
+  ACCEPTED: "Đã chấp nhận",
+  REJECTED: "Từ chối item",
+  CONVERTED_TO_PRODUCT: "Đã tạo sản phẩm",
+  SELLING: "Đang bán",
+  SOLD: "Đã bán",
+  RETURNED_TO_CONSIGNOR: "Trả về người ký gửi",
 };
 
 export default function ConsignmentRequestDetailPage() {

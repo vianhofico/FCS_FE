@@ -54,7 +54,7 @@ export default function ProductDetailPage() {
   const { message } = App.useApp();
   const { user, isAuthenticated, hasRole } = useAuth();
   const isSellerContext = location.pathname.startsWith("/seller/products") && (hasRole("SELLER") || hasRole("BUYER"));
-  const canBuyProduct = !isSellerContext;
+  const canBuyProduct = !isSellerContext && !hasRole("MANAGER") && !hasRole("ADMIN");
   const [state, setState] = useState<ProductDetailPageState>({
     product: null,
     reviews: [],
@@ -105,6 +105,11 @@ export default function ProductDetailPage() {
       navigate("/auth/login");
       return;
     }
+    if (!user.id) {
+      message.error("Phiên đăng nhập không hợp lệ, vui lòng đăng nhập lại");
+      navigate("/auth/login");
+      return;
+    }
     if (!state.product) return;
 
     navigate(`/buyer/checkout?mode=buy-now&productId=${state.product.id}&quantity=${state.quantity}`);
@@ -113,6 +118,11 @@ export default function ProductDetailPage() {
   const handleAddToCart = async () => {
     if (!isAuthenticated || !user) {
       message.info("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng");
+      navigate("/auth/login");
+      return;
+    }
+    if (!user.id) {
+      message.error("Phiên đăng nhập không hợp lệ, vui lòng đăng nhập lại");
       navigate("/auth/login");
       return;
     }
@@ -218,8 +228,10 @@ export default function ProductDetailPage() {
                   <div className="space-y-4">
                     <div className="flex flex-wrap justify-between gap-3">
                       <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Số lượng</span>
-                      {(product.stock ?? 0) > 0 ? (
-                        <span className="text-xs font-bold text-primary italic">Còn {product.stock} sản phẩm</span>
+                      {product.status === "SELLING" || (product.stock ?? 0) > 0 ? (
+                        <span className="text-xs font-bold text-primary italic">
+                          {product.stock != null && product.stock > 0 ? `Còn ${product.stock} sản phẩm` : "Còn hàng"}
+                        </span>
                       ) : (
                         <span className="text-xs font-bold text-red-400 italic">Hết hàng</span>
                       )}
@@ -237,7 +249,7 @@ export default function ProductDetailPage() {
                         <Button
                           type="text"
                           icon={<PlusOutlined />}
-                          disabled={state.quantity >= (product.stock ?? 1)}
+                          disabled={state.quantity >= (product.stock != null ? product.stock : 1)}
                           onClick={() => setState(p => ({ ...p, quantity: p.quantity + 1 }))}
                           className="h-10 w-10 text-primary flex items-center justify-center"
                         />
@@ -308,9 +320,13 @@ export default function ProductDetailPage() {
           <Col xs={24} lg={8}>
             <div className="rounded-[2.5rem] border border-pink-100/50 bg-white/50 p-10 backdrop-blur-md shadow-sm">
               <div className="text-center">
-                <div className="font-display text-7xl font-bold text-primary leading-none">{state.reviewSummary?.averageRating.toFixed(1) || "5.0"}</div>
-                <Rate disabled value={Math.round(state.reviewSummary?.averageRating || 5)} className="mt-6 !text-yellow-400" />
-                <div className="mt-4 text-sm font-bold text-slate-400 uppercase tracking-widest">Dựa trên {state.reviewSummary?.totalReviews || 0} lượt mua</div>
+                <div className="font-display text-7xl font-bold text-primary leading-none">
+                  {state.reviewSummary?.totalReviews ? state.reviewSummary.averageRating.toFixed(1) : "—"}
+                </div>
+                <Rate disabled value={Math.round(state.reviewSummary?.averageRating ?? 0)} className="mt-6 !text-yellow-400" />
+                <div className="mt-4 text-sm font-bold text-slate-400 uppercase tracking-widest">
+                  Dựa trên {state.reviewSummary?.totalReviews ?? 0} đánh giá
+                </div>
               </div>
               <div className="mt-10 space-y-4">
                 {[5, 4, 3, 2, 1].map((rating) => (

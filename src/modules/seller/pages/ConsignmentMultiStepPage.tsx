@@ -465,7 +465,7 @@ export default function ConsignmentMultiStepPage() {
               className="luxury-steps"
               items={steps.map((s) => ({
                 title: <span className="font-display text-xs font-black uppercase tracking-widest">{s.title}</span>,
-                description: <span className="text-[10px] font-medium text-slate-400 italic">{s.description}</span>,
+                content: <span className="text-[10px] font-medium text-slate-400 italic">{s.description}</span>,
                 icon: s.icon,
               }))}
             />

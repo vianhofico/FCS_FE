@@ -52,6 +52,8 @@ export type ProductSummary = {
   id: string;
   sku: string;
   name: string;
+  brandId?: string;
+  brandName?: string;
   originalPrice?: number;
   salePrice: number;
   status: ProductStatus;

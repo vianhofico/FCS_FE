@@ -1,5 +1,5 @@
 import { Result } from "antd";
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 
 import { AppLayout } from "@/app/layout/AppLayout";
 import { AuthGuard, RoleGuard } from "@/app/router/guards";
@@ -48,6 +48,10 @@ export const router = createBrowserRouter([
   {
     path: "/auth",
     children: authRoutes,
+  },
+  {
+    path: "/login",
+    element: <Navigate to="/auth/login" replace />,
   },
   {
     element: <AppLayout />,
