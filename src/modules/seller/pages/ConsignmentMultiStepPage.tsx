@@ -357,7 +357,7 @@ export default function ConsignmentMultiStepPage() {
                   </Title>
                   <Paragraph className="!mb-0 text-sm text-slate-500 leading-relaxed">
                     Phí dịch vụ ký gửi được thoả thuận trong hợp đồng sau khi được duyệt.
-                    Mức phí chuẩn là <span className="font-bold text-primary">15%</span> giá trị đơn hàng.
+                    Mức phí chuẩn là <span className="font-bold text-primary">20%</span> giá trị đơn hàng.
                   </Paragraph>
                   <ul className="space-y-1.5">
                     {[

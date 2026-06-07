@@ -464,7 +464,7 @@ export function ConsignmentPage() {
         title={<span className="font-display font-bold uppercase tracking-widest text-sm">Tạo hợp đồng ký gửi</span>}
         footer={null} width={480}>
         <Form form={contractForm} layout="vertical" onFinish={handleCreateContract}
-          initialValues={{ commissionRate: 15 }} className="mt-4">
+          initialValues={{ commissionRate: 20 }} className="mt-4">
           <Form.Item name="commissionRate" label="Tỷ lệ hoa hồng (%)"
             rules={[{ required: true }]}>
             <InputNumber min={1} max={50} suffix="%" className="w-full h-12 rounded-xl" />
