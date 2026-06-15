@@ -254,12 +254,12 @@ export default function BuyerProductListPage() {
             <Title level={5} className="!m-0 !line-clamp-2 !font-display !text-base !font-bold !leading-snug !text-slate-800 transition-soft group-hover:!text-primary">
               {product.name}
             </Title>
-            <div className="mt-1 flex items-baseline gap-2">
-              <Text className="text-base font-black text-primary">
+            <div className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+              <Text className="whitespace-nowrap text-base font-black text-primary">
                 {product.salePrice.toLocaleString()}₫
               </Text>
               {product.originalPrice && product.originalPrice > product.salePrice && (
-                <Text delete className="text-[11px] text-slate-300">
+                <Text delete className="whitespace-nowrap text-[11px] text-slate-300">
                   {product.originalPrice.toLocaleString()}₫
                 </Text>
               )}

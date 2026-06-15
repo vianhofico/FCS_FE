@@ -193,7 +193,7 @@ export default function ProductDetailPage() {
               ].map((badge, i) => (
                 <div key={i} className="flex flex-col items-center gap-2 rounded-3xl border border-pink-100/50 bg-white/40 p-4 backdrop-blur-sm transition-soft hover:bg-white/60">
                   <span className="text-xl text-primary/70">{badge.icon}</span>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{badge.text}</span>
+                  <span className="text-center text-[10px] font-bold uppercase tracking-wide text-slate-400">{badge.text}</span>
                 </div>
               ))}
             </div>
@@ -210,7 +210,7 @@ export default function ProductDetailPage() {
                   <span className="text-sm font-bold text-slate-700">{state.reviewSummary?.averageRating.toFixed(1) || "5.0"}</span>
                 </div>
               </div>
-              <Title className="!m-0 !font-display !text-4xl !font-bold !leading-tight !tracking-tight text-text-dark md:!text-5xl">{product.name}</Title>
+              <Title className="!m-0 !font-display !text-2xl sm:!text-4xl !font-bold !leading-tight !tracking-tight text-text-dark md:!text-5xl">{product.name}</Title>
               <div className="flex items-center gap-4">
                 <Text className="text-4xl font-bold text-primary">{product.salePrice.toLocaleString()}₫</Text>
                 {product.originalPrice && product.originalPrice > product.salePrice && (
@@ -312,7 +312,7 @@ export default function ProductDetailPage() {
       {/* Reviews Section */}
       <section className="mt-20 space-y-12">
         <div className="flex flex-col items-center text-center">
-          <Title className="!font-display !text-4xl !font-bold uppercase tracking-tight">Đánh giá cộng đồng</Title>
+          <Title className="!font-display !text-2xl sm:!text-4xl !font-bold uppercase tracking-tight">Đánh giá cộng đồng</Title>
           <div className="mt-4 h-1 w-20 rounded-full bg-primary/30" />
         </div>
 
@@ -331,7 +331,7 @@ export default function ProductDetailPage() {
               <div className="mt-10 space-y-4">
                 {[5, 4, 3, 2, 1].map((rating) => (
                   <div key={rating} className="flex items-center gap-4">
-                    <span className="w-10 text-xs font-bold text-slate-400">{rating} sao</span>
+                    <span className="w-10 shrink-0 whitespace-nowrap text-xs font-bold text-slate-400">{rating} sao</span>
                     <Progress
                       percent={state.reviewSummary?.ratingDistribution?.[rating as keyof typeof state.reviewSummary.ratingDistribution] || 0}
                       showInfo={false}
