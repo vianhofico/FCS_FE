@@ -215,7 +215,7 @@ export default function BuyerProductListPage() {
           className="group flex h-full flex-col overflow-hidden rounded-3xl border-border/40 bg-white transition-premium hover:shadow-luxury"
           styles={{ body: { flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '14px 16px' } }}
           cover={
-            <div className="relative aspect-square overflow-hidden bg-bg-secondary">
+            <div className="relative aspect-[3/4] overflow-hidden bg-bg-secondary">
               {product.imageUrl ? (
                 <img
                   alt={product.name}
@@ -350,12 +350,12 @@ export default function BuyerProductListPage() {
       <section className="page-hero">
         <div className="pointer-events-none absolute -right-20 -top-24 h-80 w-80 rounded-full bg-primary/5 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-24 -left-20 h-72 w-72 rounded-full bg-pink-100/40 blur-3xl" />
-        <Row gutter={[48, 48]} align="middle" className="relative z-10">
+        <Row gutter={[{ xs: 0, md: 48 }, { xs: 20, md: 48 }]} align="middle" className="relative z-10">
           <Col xs={24} lg={12}>
-            <div className="space-y-8">
+            <div className="space-y-4 sm:space-y-8">
               <div className="inline-flex items-center gap-2 rounded-full border border-pink-100 bg-pink-50 px-4 py-2">
                 <FireOutlined className="text-primary" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-primary">Thời trang ký gửi thế hệ mới</span>
+                <span className="text-[10px] font-black uppercase tracking-wide text-primary">Thời trang ký gửi thế hệ mới</span>
               </div>
 
               <div className="space-y-2">
@@ -391,7 +391,7 @@ export default function BuyerProductListPage() {
             </div>
           </Col>
 
-          <Col xs={24} lg={12}>
+          <Col xs={0} lg={12}>
             <div className="relative mx-auto max-w-xl overflow-hidden rounded-[2rem] shadow-2xl shadow-pink-200/50 sm:rounded-[3rem] lg:ml-auto">
               <img loading="lazy" src={heroImage} alt="Thời trang ký gửi thế hệ mới" className="aspect-[4/5] w-full object-cover" />
             </div>

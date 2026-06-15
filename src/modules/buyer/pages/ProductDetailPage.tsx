@@ -157,7 +157,7 @@ export default function ProductDetailPage() {
   const conditionPercent = product.conditionPercent ?? product.condition ?? 0;
 
   return (
-    <div className="mx-auto max-w-[1440px] space-y-14 pb-28">
+    <div className="mx-auto max-w-[1440px] space-y-8 sm:space-y-14 pb-16 sm:pb-28">
       <div className="flex items-center gap-4">
         <Button
           icon={<ArrowLeftOutlined />}
@@ -169,7 +169,7 @@ export default function ProductDetailPage() {
         </Button>
       </div>
 
-      <Row gutter={[48, 48]}>
+      <Row gutter={[{ xs: 0, md: 48 }, { xs: 20, md: 48 }]}>
         {/* Product Images Column */}
         <Col xs={24} md={12} lg={13}>
           <div className="sticky top-32 space-y-4">
@@ -202,7 +202,7 @@ export default function ProductDetailPage() {
 
         {/* Product Info Column */}
         <Col xs={24} md={12} lg={11}>
-          <div className="space-y-14">
+          <div className="space-y-8 sm:space-y-14">
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-1 text-yellow-400">
@@ -212,7 +212,7 @@ export default function ProductDetailPage() {
               </div>
               <Title className="!m-0 !font-display !text-2xl sm:!text-4xl !font-bold !leading-tight !tracking-tight text-text-dark md:!text-5xl">{product.name}</Title>
               <div className="flex items-center gap-4">
-                <Text className="text-4xl font-bold text-primary">{product.salePrice.toLocaleString()}₫</Text>
+                <Text className="text-2xl sm:text-4xl font-bold text-primary">{product.salePrice.toLocaleString()}₫</Text>
                 {product.originalPrice && product.originalPrice > product.salePrice && (
                   <>
                     <Text delete className="text-lg font-medium text-slate-300">{product.originalPrice.toLocaleString()}₫</Text>
@@ -223,11 +223,11 @@ export default function ProductDetailPage() {
             </div>
 
             {canBuyProduct && (
-              <Card className="rounded-[2rem] border-pink-100/50 bg-white/50 shadow-sm backdrop-blur-md">
-                <div className="space-y-8">
+              <Card className="rounded-[1.5rem] sm:rounded-[2rem] border-pink-100/50 bg-white/50 shadow-sm backdrop-blur-md">
+                <div className="space-y-4 sm:space-y-8">
                   <div className="space-y-4">
                     <div className="flex flex-wrap justify-between gap-3">
-                      <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Số lượng</span>
+                      <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Số lượng</span>
                       {product.status === "SELLING" || (product.stock ?? 0) > 0 ? (
                         <span className="text-xs font-bold text-primary italic">
                           {product.stock != null && product.stock > 0 ? `Còn ${product.stock} sản phẩm` : "Còn hàng"}
@@ -280,13 +280,13 @@ export default function ProductDetailPage() {
               </Card>
             )}
 
-            <div className="mt-8 space-y-8">
+            <div className="mt-4 sm:mt-8 space-y-5 sm:space-y-8">
               <div>
-                <Title level={5} className="!mb-4 !font-display uppercase tracking-widest text-sm">Mô tả sản phẩm</Title>
-                <Paragraph className="text-lg leading-relaxed text-slate-600/80">{product.description || "Chưa có mô tả chi tiết cho sản phẩm này."}</Paragraph>
+                <Title level={5} className="!mb-2 !font-display uppercase tracking-wide text-sm">Mô tả sản phẩm</Title>
+                <Paragraph className="text-sm sm:text-base leading-relaxed text-slate-600/80">{product.description || "Chưa có mô tả chi tiết cho sản phẩm này."}</Paragraph>
               </div>
 
-              <div className="grid grid-cols-1 gap-x-12 gap-y-7 rounded-[2rem] border border-pink-100/20 bg-pink-50/30 p-8 sm:grid-cols-2">
+              <div className="grid grid-cols-2 gap-x-3 gap-y-4 rounded-xl sm:rounded-[2rem] border border-pink-100/20 bg-pink-50/30 p-4 sm:p-8 sm:gap-x-12 sm:gap-y-7">
                 <div>
                   <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/60">Tình trạng</div>
                   <div className="mt-1 text-base font-bold text-slate-700">{conditionPercent}/100 - Rất mới</div>
@@ -310,21 +310,21 @@ export default function ProductDetailPage() {
       </Row>
 
       {/* Reviews Section */}
-      <section className="mt-20 space-y-12">
+      <section className="mt-8 sm:mt-20 space-y-8 sm:space-y-12">
         <div className="flex flex-col items-center text-center">
           <Title className="!font-display !text-2xl sm:!text-4xl !font-bold uppercase tracking-tight">Đánh giá cộng đồng</Title>
           <div className="mt-4 h-1 w-20 rounded-full bg-primary/30" />
         </div>
 
-        <Row gutter={[48, 48]}>
+        <Row gutter={[{ xs: 0, md: 48 }, { xs: 16, md: 48 }]}>
           <Col xs={24} lg={8}>
-            <div className="rounded-[2.5rem] border border-pink-100/50 bg-white/50 p-10 backdrop-blur-md shadow-sm">
+            <div className="rounded-xl sm:rounded-[2.5rem] border border-pink-100/50 bg-white/50 p-5 sm:p-10 backdrop-blur-md shadow-sm">
               <div className="text-center">
-                <div className="font-display text-7xl font-bold text-primary leading-none">
+                <div className="font-display text-5xl sm:text-7xl font-bold text-primary leading-none">
                   {state.reviewSummary?.totalReviews ? state.reviewSummary.averageRating.toFixed(1) : "—"}
                 </div>
                 <Rate disabled value={Math.round(state.reviewSummary?.averageRating ?? 0)} className="mt-6 !text-yellow-400" />
-                <div className="mt-4 text-sm font-bold text-slate-400 uppercase tracking-widest">
+                <div className="mt-4 text-sm font-bold text-slate-400 uppercase tracking-wide">
                   Dựa trên {state.reviewSummary?.totalReviews ?? 0} đánh giá
                 </div>
               </div>
