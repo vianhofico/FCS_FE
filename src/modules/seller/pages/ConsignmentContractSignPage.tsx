@@ -194,8 +194,8 @@ export default function ConsignmentContractSignPage() {
                     <Text className="text-[10px] font-bold uppercase tracking-widest text-primary/40 block mb-2">
                       Bên nhận ký gửi (Bên B)
                     </Text>
-                    <div className="font-bold text-primary">RE:WEAR LUXURY CONSIGNMENT</div>
-                    <div className="text-slate-500 text-xs">Địa chỉ: TP. Hồ Chí Minh</div>
+                    <div className="font-bold text-primary">Re:Wear Consignment</div>
+                    <div className="text-slate-500 text-xs">Địa chỉ: Hà Nội</div>
                   </div>
                 </div>
               </section>
