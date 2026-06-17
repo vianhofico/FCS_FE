@@ -9,6 +9,7 @@ import {
   EyeOutlined,
   SearchOutlined,
   ShoppingOutlined,
+  InboxOutlined,
 } from "@ant-design/icons";
 import {
   Card,
@@ -29,7 +30,7 @@ import { useNavigate } from "react-router-dom";
 import { orderApi } from "@/modules/order/api/orderApi";
 import { useAuth } from "@/shared/context/AuthContext";
 import type { OrderSummary } from "@/shared/contracts/orderContract";
-import type { OrderStatus } from "@/shared/contracts/commonContract";
+import { OrderStatus } from "@/shared/contracts/commonContract";
 import { Badge, Button, EmptyState } from "@/shared/ui";
 import { formatPaymentMethod } from "@/shared/utils/formatters";
 
@@ -40,6 +41,7 @@ const ORDER_STATUS_BADGE: Record<string, string> = {
   PAID: "Processing",
   CONFIRMED: "Processing",
   PACKING: "Processing",
+  READY_FOR_PICKUP: "Verified",
   SHIPPED: "Processing",
   DELIVERED: "Verified",
   COMPLETED: "Verified",
@@ -52,6 +54,7 @@ const ORDER_STATUS_LABELS: Record<string, string> = {
   PAID: "Đã thanh toán",
   CONFIRMED: "Đã xác nhận",
   PACKING: "Đang đóng gói",
+  READY_FOR_PICKUP: "Sẵn sàng lấy hàng",
   SHIPPED: "Đang giao",
   DELIVERED: "Đã giao",
   COMPLETED: "Hoàn tất",
@@ -116,6 +119,23 @@ export default function OrderModerationPage() {
     fetchOrders();
   }, [user, state.page, state.size, state.filters.search, state.filters.status]);
 
+  const updateOrderStatus = async (orderId: string, status: string, successMsg: string) => {
+    try {
+      const response = await orderApi.updateOrderStatus(orderId, { status: status as OrderStatus });
+      if (response.success) {
+        message.success(successMsg);
+        setState((prev) => ({
+          ...prev,
+          orders: prev.orders.map((o) => (o.id === orderId ? { ...o, status: status as OrderStatus } : o)),
+        }));
+      } else {
+        message.error(response.message || "Cập nhật trạng thái thất bại");
+      }
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : "Cập nhật trạng thái thất bại");
+    }
+  };
+
   const handleApproveOrder = (orderId: string) => {
     Modal.confirm({
       title: <span className="font-display text-xl font-black uppercase">Xác nhận đơn hàng</span>,
@@ -124,13 +144,7 @@ export default function OrderModerationPage() {
       okText: "Phê duyệt",
       cancelText: "Hủy",
       className: "luxury-modal",
-      onOk: async () => {
-        message.success("Đã phê duyệt đơn hàng thành công");
-        setState((prev) => ({
-          ...prev,
-          orders: prev.orders.map((o) => (o.id === orderId ? { ...o, status: "CONFIRMED" } : o)),
-        }));
-      },
+      onOk: () => updateOrderStatus(orderId, OrderStatus.CONFIRMED, "Đã phê duyệt đơn hàng thành công"),
     });
   };
 
@@ -142,13 +156,18 @@ export default function OrderModerationPage() {
       centered: true,
       okText: "Hủy đơn",
       cancelText: "Quay lại",
-      onOk: async () => {
-        message.info("Đã hủy đơn hàng");
-        setState((prev) => ({
-          ...prev,
-          orders: prev.orders.map((o) => (o.id === orderId ? { ...o, status: "CANCELLED" } : o)),
-        }));
-      },
+      onOk: () => updateOrderStatus(orderId, OrderStatus.CANCELLED, "Đã hủy đơn hàng"),
+    });
+  };
+
+  const handleStartPacking = (orderId: string) => {
+    Modal.confirm({
+      title: <span className="font-display text-xl font-black uppercase">Bắt đầu đóng gói</span>,
+      content: "Xác nhận bắt đầu đóng gói đơn hàng này?",
+      centered: true,
+      okText: "Xác nhận",
+      cancelText: "Hủy",
+      onOk: () => updateOrderStatus(orderId, OrderStatus.PACKING, "Đã chuyển sang trạng thái đóng gói"),
     });
   };
 
@@ -213,7 +232,7 @@ export default function OrderModerationPage() {
       width: 130,
       render: (_: any, record: OrderSummary) => (
         <Space size={4}>
-          {record.status === "PENDING_PAYMENT" && (
+          {(record.status === "PENDING_PAYMENT" || record.status === "PAID") && (
             <>
               <Tooltip title="Duyệt đơn">
                 <Button
@@ -233,6 +252,16 @@ export default function OrderModerationPage() {
                 />
               </Tooltip>
             </>
+          )}
+          {record.status === "CONFIRMED" && (
+            <Tooltip title="Bắt đầu đóng gói">
+              <Button
+                type="text"
+                icon={<InboxOutlined />}
+                className="!text-blue-500 hover:!bg-blue-50"
+                onClick={() => handleStartPacking(record.id)}
+              />
+            </Tooltip>
           )}
           <Tooltip title="Xem chi tiết">
             <Button type="text" icon={<EyeOutlined />} className="text-slate-400 hover:!text-primary" onClick={() => navigate(`/manager/orders/${record.id}`)} />
@@ -293,6 +322,7 @@ export default function OrderModerationPage() {
               { label: "Đã thanh toán", value: "PAID" },
               { label: "Đã xác nhận", value: "CONFIRMED" },
               { label: "Đang đóng gói", value: "PACKING" },
+              { label: "Sẵn sàng lấy hàng", value: "READY_FOR_PICKUP" },
               { label: "Đang giao", value: "SHIPPED" },
               { label: "Đã giao", value: "DELIVERED" },
               { label: "Hoàn tất", value: "COMPLETED" },

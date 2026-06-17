@@ -20,15 +20,18 @@ import {
 } from "antd";
 import {
   ArrowLeftOutlined,
-
   UndoOutlined,
   ExclamationCircleOutlined,
   CheckCircleOutlined,
   ShoppingOutlined,
   CreditCardOutlined,
   CarOutlined,
+  InboxOutlined,
+  HomeOutlined,
+  SendOutlined,
 } from "@ant-design/icons";
 import { orderApi } from "@/modules/order/api/orderApi";
+import type { OrderTrackingRequest } from "@/shared/contracts/orderContract";
 import { returnApi } from "@/modules/order/api/returnApi";
 import { paymentApi } from "@/modules/order/api/paymentApi";
 import type { OrderDetail, OrderItem } from "@/shared/contracts/orderContract";
@@ -53,6 +56,10 @@ interface OrderDetailPageState {
   isSubmittingReturn: boolean;
   isConfirmingReceipt: boolean;
   isRegeneratingQr: boolean;
+  trackingModalVisible: boolean;
+  trackingForm: { trackingNumber: string; shippingProvider: string };
+  isUpdatingTracking: boolean;
+  isUpdatingStatus: boolean;
 }
 
 const RETURN_REASONS = [
@@ -64,7 +71,7 @@ const RETURN_REASONS = [
   "Lý do khác",
 ];
 
-const ORDER_STATUS_STEPS: Record<string, number> = {
+const DELIVERY_STATUS_STEPS: Record<string, number> = {
   PENDING_PAYMENT: 0,
   PAID: 0,
   CONFIRMED: 1,
@@ -72,6 +79,15 @@ const ORDER_STATUS_STEPS: Record<string, number> = {
   SHIPPED: 2,
   DELIVERED: 3,
   COMPLETED: 3,
+};
+
+const PICKUP_STATUS_STEPS: Record<string, number> = {
+  PENDING_PAYMENT: 0,
+  PAID: 0,
+  CONFIRMED: 1,
+  PACKING: 2,
+  READY_FOR_PICKUP: 3,
+  COMPLETED: 4,
 };
 
 type ShippingAddressSnapshot = NonNullable<OrderDetail["shippingAddress"]>;
@@ -99,6 +115,7 @@ const ORDER_STATUS_LABELS: Record<string, string> = {
   PAID: "Đã thanh toán",
   CONFIRMED: "Đã xác nhận",
   PACKING: "Đang đóng gói",
+  READY_FOR_PICKUP: "Sẵn sàng lấy hàng",
   SHIPPED: "Đang giao hàng",
   DELIVERED: "Đã giao hàng",
   COMPLETED: "Hoàn tất",
@@ -136,6 +153,10 @@ export default function OrderDetailPage() {
     isSubmittingReturn: false,
     isConfirmingReceipt: false,
     isRegeneratingQr: false,
+    trackingModalVisible: false,
+    trackingForm: { trackingNumber: "", shippingProvider: "" },
+    isUpdatingTracking: false,
+    isUpdatingStatus: false,
   });
 
   // Load order details
@@ -291,6 +312,121 @@ export default function OrderDetailPage() {
     }
   };
 
+  const reloadOrder = async () => {
+    const resp = await orderApi.getOrderDetail(orderId!);
+    if (resp.success) setState((prev) => ({ ...prev, order: resp.data || null }));
+  };
+
+  const handleManagerStatusUpdate = async (newStatus: string, successMsg: string) => {
+    try {
+      setState((prev) => ({ ...prev, isUpdatingStatus: true }));
+      const response = await orderApi.updateOrderStatus(orderId!, { status: newStatus as never });
+      if (response.success) {
+        message.success(successMsg);
+        await reloadOrder();
+      } else {
+        message.error(response.message || "Cập nhật trạng thái thất bại");
+      }
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : "Cập nhật trạng thái thất bại");
+    } finally {
+      setState((prev) => ({ ...prev, isUpdatingStatus: false }));
+    }
+  };
+
+  const handleManagerApprove = () => {
+    Modal.confirm({
+      title: "Xác nhận đơn hàng",
+      content: "Phê duyệt và chuyển sang trạng thái Đã xác nhận?",
+      okText: "Xác nhận",
+      cancelText: "Hủy",
+      centered: true,
+      onOk: () => handleManagerStatusUpdate("CONFIRMED", "Đã xác nhận đơn hàng"),
+    });
+  };
+
+  const handleManagerCancel = () => {
+    Modal.confirm({
+      title: "Hủy đơn hàng",
+      content: "Thao tác này không thể hoàn tác. Bạn có chắc chắn?",
+      okType: "danger",
+      okText: "Hủy đơn",
+      cancelText: "Quay lại",
+      centered: true,
+      onOk: () => handleManagerStatusUpdate("CANCELLED", "Đã hủy đơn hàng"),
+    });
+  };
+
+  const handleStartPacking = () => {
+    Modal.confirm({
+      title: "Bắt đầu đóng gói",
+      content: "Xác nhận bắt đầu đóng gói đơn hàng này?",
+      okText: "Xác nhận",
+      cancelText: "Hủy",
+      centered: true,
+      onOk: () => handleManagerStatusUpdate("PACKING", "Đã bắt đầu đóng gói"),
+    });
+  };
+
+  const handleReadyForPickup = () => {
+    Modal.confirm({
+      title: "Sẵn sàng cho khách lấy hàng",
+      content: "Xác nhận hàng đã đóng gói xong, sẵn sàng cho khách đến lấy?",
+      okText: "Xác nhận",
+      cancelText: "Hủy",
+      centered: true,
+      onOk: () => handleManagerStatusUpdate("READY_FOR_PICKUP", "Đơn hàng sẵn sàng cho khách lấy"),
+    });
+  };
+
+  const handleMarkDelivered = () => {
+    Modal.confirm({
+      title: "Xác nhận đã giao hàng",
+      content: "Xác nhận đơn hàng đã được giao thành công đến khách?",
+      okText: "Xác nhận đã giao",
+      cancelText: "Hủy",
+      centered: true,
+      onOk: () => handleManagerStatusUpdate("DELIVERED", "Đã xác nhận giao hàng thành công"),
+    });
+  };
+
+  const handleManagerComplete = () => {
+    Modal.confirm({
+      title: "Hoàn tất đơn hàng",
+      content: "Xác nhận hoàn tất đơn hàng và thanh toán cho người ký gửi?",
+      okText: "Hoàn tất",
+      cancelText: "Hủy",
+      centered: true,
+      onOk: () => handleManagerStatusUpdate("COMPLETED", "Đơn hàng đã hoàn tất"),
+    });
+  };
+
+  const handleUpdateTracking = async () => {
+    if (!state.trackingForm.trackingNumber || !state.trackingForm.shippingProvider) {
+      message.error("Vui lòng nhập đầy đủ thông tin vận chuyển");
+      return;
+    }
+    try {
+      setState((prev) => ({ ...prev, isUpdatingTracking: true }));
+      const payload: OrderTrackingRequest = {
+        trackingNumber: state.trackingForm.trackingNumber,
+        shippingProvider: state.trackingForm.shippingProvider,
+      };
+      const response = await orderApi.updateOrderTracking(orderId!, payload);
+      if (response.success) {
+        message.success("Đã cập nhật thông tin vận chuyển, đơn hàng chuyển sang Đang giao");
+        setState((prev) => ({ ...prev, trackingModalVisible: false, trackingForm: { trackingNumber: "", shippingProvider: "" } }));
+        await reloadOrder();
+      } else {
+        message.error(response.message || "Cập nhật thất bại");
+      }
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : "Cập nhật thất bại");
+    } finally {
+      setState((prev) => ({ ...prev, isUpdatingTracking: false }));
+    }
+  };
+
   if (!state.order) {
     return (
       <div className="mx-auto max-w-4xl space-y-6">
@@ -317,24 +453,46 @@ export default function OrderDetailPage() {
   }
 
   const order = state.order;
+  const shippingSnapshot = parseShippingSnapshot(order.shippingSnapshot);
+  const isPickupOrder = shippingSnapshot?.serviceLevel === "warehouse-pickup";
+  const shippingAddress = order.shippingAddress ?? shippingSnapshot?.address ?? null;
+
   const canCancelOrder = isBuyerContext && order.status === "PENDING_PAYMENT";
-  const canConfirmReceipt = isBuyerContext && order.status === "DELIVERED";
+  const canConfirmReceipt = isBuyerContext && (
+    order.status === "DELIVERED" ||
+    (order.status === "READY_FOR_PICKUP" && isPickupOrder)
+  );
   const canReviewOrder = isBuyerContext && order.status === "COMPLETED";
   const canRequestReturn = isBuyerContext && order.status === "COMPLETED";
   const canRegenerateQr = isBuyerContext && order.status === "PENDING_PAYMENT" && order.paymentMethod === "ONLINE_PAYMENT";
-  const shippingSnapshot = parseShippingSnapshot(order.shippingSnapshot);
-  const shippingAddress = order.shippingAddress ?? shippingSnapshot?.address ?? null;
+
   const statusMap: Record<string, string> = {
     PENDING_PAYMENT: "Pending",
     PAID: "Processing",
     CONFIRMED: "Verified",
     PACKING: "Processing",
+    READY_FOR_PICKUP: "Verified",
     SHIPPED: "Processing",
     DELIVERED: "Verified",
     COMPLETED: "Verified",
     CANCELLED: "Rejected",
     REFUNDED: "Inactive",
   };
+
+  const statusSteps = isPickupOrder ? PICKUP_STATUS_STEPS : DELIVERY_STATUS_STEPS;
+  const pickupStepItems = [
+    { title: "Chờ thanh toán" },
+    { title: "Đã xác nhận" },
+    { title: "Đóng gói" },
+    { title: "Sẵn sàng lấy" },
+    { title: "Hoàn tất" },
+  ];
+  const deliveryStepItems = [
+    { title: "Chờ thanh toán" },
+    { title: "Đã xác nhận" },
+    { title: "Đang giao" },
+    { title: "Hoàn tất" },
+  ];
 
   const itemColumns = [
     {
@@ -379,7 +537,7 @@ export default function OrderDetailPage() {
     },
   ];
 
-  const statusIndex = ORDER_STATUS_STEPS[order.status] || 0;
+  const statusIndex = statusSteps[order.status] ?? 0;
   const timelineItems = [
     {
       id: "created",
@@ -433,12 +591,7 @@ export default function OrderDetailPage() {
             <Steps
               current={statusIndex}
               className="luxury-steps"
-              items={[
-                { title: "Chờ thanh toán", content: "Đơn hàng đã tạo" },
-                { title: "Đã xác nhận", content: "Đơn hàng được duyệt" },
-                { title: "Đang giao", content: "Đang vận chuyển" },
-                { title: "Hoàn tất", content: "Đã nhận hàng" },
-              ]}
+              items={isPickupOrder ? pickupStepItems : deliveryStepItems}
             />
           </Card>
 
@@ -578,6 +731,114 @@ export default function OrderDetailPage() {
                     </Button>
                   )}
 
+                  {isManagerContext && (order.status === "PENDING_PAYMENT" || order.status === "PAID") && (
+                    <>
+                      <Button
+                        type="primary"
+                        block
+                        size="large"
+                        icon={<CheckCircleOutlined />}
+                        loading={state.isUpdatingStatus}
+                        onClick={handleManagerApprove}
+                        className="h-12 rounded-xl font-bold"
+                      >
+                        XÁC NHẬN ĐƠN HÀNG
+                      </Button>
+                      <Button
+                        danger
+                        block
+                        size="large"
+                        loading={state.isUpdatingStatus}
+                        onClick={handleManagerCancel}
+                        className="h-12 rounded-xl font-bold"
+                      >
+                        HỦY ĐƠN HÀNG
+                      </Button>
+                    </>
+                  )}
+
+                  {isManagerContext && order.status === "CONFIRMED" && (
+                    <Button
+                      type="primary"
+                      block
+                      size="large"
+                      icon={<InboxOutlined />}
+                      loading={state.isUpdatingStatus}
+                      onClick={handleStartPacking}
+                      className="h-12 rounded-xl font-bold"
+                    >
+                      BẮT ĐẦU ĐÓNG GÓI
+                    </Button>
+                  )}
+
+                  {isManagerContext && order.status === "PACKING" && isPickupOrder && (
+                    <Button
+                      type="primary"
+                      block
+                      size="large"
+                      icon={<HomeOutlined />}
+                      loading={state.isUpdatingStatus}
+                      onClick={handleReadyForPickup}
+                      className="h-12 rounded-xl font-bold"
+                    >
+                      SẴN SÀNG CHO KHÁCH LẤY
+                    </Button>
+                  )}
+
+                  {isManagerContext && order.status === "PACKING" && !isPickupOrder && (
+                    <Button
+                      type="primary"
+                      block
+                      size="large"
+                      icon={<SendOutlined />}
+                      onClick={() => setState((prev) => ({ ...prev, trackingModalVisible: true }))}
+                      className="h-12 rounded-xl font-bold"
+                    >
+                      CẬP NHẬT MÃ VẬN ĐƠN
+                    </Button>
+                  )}
+
+                  {isManagerContext && order.status === "SHIPPED" && (
+                    <Button
+                      type="primary"
+                      block
+                      size="large"
+                      icon={<CarOutlined />}
+                      loading={state.isUpdatingStatus}
+                      onClick={handleMarkDelivered}
+                      className="h-12 rounded-xl font-bold"
+                    >
+                      XÁC NHẬN ĐÃ GIAO HÀNG
+                    </Button>
+                  )}
+
+                  {isManagerContext && order.status === "READY_FOR_PICKUP" && (
+                    <Button
+                      type="primary"
+                      block
+                      size="large"
+                      icon={<CheckCircleOutlined />}
+                      loading={state.isUpdatingStatus}
+                      onClick={handleManagerComplete}
+                      className="h-14 rounded-2xl font-black shadow-luxury"
+                    >
+                      XÁC NHẬN KHÁCH ĐÃ LẤY HÀNG
+                    </Button>
+                  )}
+
+                  {isManagerContext && order.status === "DELIVERED" && (
+                    <Button
+                      type="primary"
+                      block
+                      size="large"
+                      icon={<CheckCircleOutlined />}
+                      loading={state.isUpdatingStatus}
+                      onClick={handleManagerComplete}
+                      className="h-12 rounded-xl font-bold"
+                    >
+                      HOÀN TẤT ĐƠN HÀNG
+                    </Button>
+                  )}
 
                 </div>
               </div>
@@ -585,6 +846,38 @@ export default function OrderDetailPage() {
           </div>
         </div>
       </div>
+
+      <Modal
+        title={<Title level={4} className="!m-0 !font-display uppercase tracking-tight">Cập nhật thông tin vận chuyển</Title>}
+        open={state.trackingModalVisible}
+        onCancel={() => setState((prev) => ({ ...prev, trackingModalVisible: false }))}
+        footer={null}
+        className="luxury-modal"
+        centered
+      >
+        <Form layout="vertical" className="mt-6 space-y-2" size="large">
+          <Form.Item label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Đơn vị vận chuyển</span>} required>
+            <Input
+              placeholder="VD: GHN, J&T Express, VNPost..."
+              className="rounded-2xl border-pink-100"
+              value={state.trackingForm.shippingProvider}
+              onChange={(e) => setState((prev) => ({ ...prev, trackingForm: { ...prev.trackingForm, shippingProvider: e.target.value } }))}
+            />
+          </Form.Item>
+          <Form.Item label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Mã vận đơn</span>} required>
+            <Input
+              placeholder="Nhập mã vận đơn..."
+              className="rounded-2xl border-pink-100 font-mono"
+              value={state.trackingForm.trackingNumber}
+              onChange={(e) => setState((prev) => ({ ...prev, trackingForm: { ...prev.trackingForm, trackingNumber: e.target.value } }))}
+            />
+          </Form.Item>
+          <div className="mt-6 flex flex-col gap-4 sm:flex-row">
+            <Button block onClick={() => setState((prev) => ({ ...prev, trackingModalVisible: false }))}>HỦY</Button>
+            <Button type="primary" block loading={state.isUpdatingTracking} onClick={handleUpdateTracking}>LƯU VÀ GỬI HÀNG</Button>
+          </div>
+        </Form>
+      </Modal>
 
       <Modal
         title={<Title level={4} className="!m-0 !font-display uppercase tracking-tight">Yêu cầu trả hàng</Title>}
