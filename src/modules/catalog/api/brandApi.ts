@@ -17,4 +17,8 @@ export const brandApi = {
     const response = await http.get<ApiResponse<BrandSummary>>(`${endpoints.catalogBrands}/${id}`);
     return response.data;
   },
+  createBrand: async (payload: { name: string; description?: string }) => {
+    const response = await http.post<ApiResponse<BrandSummary>>(endpoints.catalogBrands, payload);
+    return response.data;
+  },
 };

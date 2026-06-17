@@ -14,6 +14,7 @@ import {
   Card,
   Upload,
   Select,
+  Modal,
 } from "antd";
 import type { UploadFile, UploadProps } from "antd";
 import {
@@ -26,6 +27,7 @@ import {
   SafetyCertificateOutlined,
   DollarOutlined,
   LoadingOutlined,
+  PlusOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { consignmentApi } from "@/modules/seller/api/consignmentApi";
@@ -59,6 +61,11 @@ export default function ConsignmentMultiStepPage() {
   const [categories, setCategories] = useState<CategorySummary[]>([]);
   const [brands, setBrands] = useState<BrandSummary[]>([]);
   const [catalogLoading, setCatalogLoading] = useState(false);
+
+  // Add-brand modal
+  const [brandModalOpen, setBrandModalOpen] = useState(false);
+  const [newBrandName, setNewBrandName] = useState("");
+  const [creatingBrand, setCreatingBrand] = useState(false);
 
   // Upload state
   const [fileList, setFileList] = useState<UploadFile[]>([]);
@@ -104,6 +111,42 @@ export default function ConsignmentMultiStepPage() {
   const handlePrev = () => {
     setCurrent((c) => c - 1);
     window.scrollTo(0, 0);
+  };
+
+  const handleCreateBrand = async () => {
+    const name = newBrandName.trim();
+    if (!name) {
+      message.warning("Vui lòng nhập tên thương hiệu");
+      return;
+    }
+    // Tránh tạo trùng (không phân biệt hoa thường)
+    const existing = brands.find((b) => b.name.trim().toLowerCase() === name.toLowerCase());
+    if (existing) {
+      form.setFieldValue("brandId", existing.id);
+      setBrandModalOpen(false);
+      setNewBrandName("");
+      message.info("Thương hiệu đã tồn tại — đã chọn giúp bạn.");
+      return;
+    }
+
+    setCreatingBrand(true);
+    try {
+      const res = await brandApi.createBrand({ name });
+      if (!res.success || !res.data) {
+        throw new Error(res.message ?? "Tạo thương hiệu thất bại");
+      }
+      const created = res.data;
+      setBrands((prev) => [...prev, created].sort((a, b) => a.name.localeCompare(b.name)));
+      form.setFieldValue("brandId", created.id);
+      setBrandModalOpen(false);
+      setNewBrandName("");
+      message.success(`Đã thêm thương hiệu "${created.name}"`);
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : "Tạo thương hiệu thất bại. Vui lòng thử lại.";
+      message.error(msg);
+    } finally {
+      setCreatingBrand(false);
+    }
   };
 
   const onFinish = async (values: FormValues) => {
@@ -229,18 +272,27 @@ export default function ConsignmentMultiStepPage() {
               </Form.Item>
 
               <Form.Item
-                name="brandId"
                 label={<span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">Thương hiệu</span>}
               >
-                <Select
-                  placeholder="Chọn thương hiệu..."
-                  loading={catalogLoading}
-                  showSearch
-                  allowClear
-                  optionFilterProp="label"
-                  options={brands.map((b) => ({ value: b.id, label: b.name }))}
-                  className="h-14 [&_.ant-select-selector]:!h-14 [&_.ant-select-selector]:!rounded-2xl [&_.ant-select-selector]:!border-pink-100 [&_.ant-select-selection-item]:!leading-[56px]"
-                />
+                <div className="flex items-center gap-2">
+                  <Form.Item name="brandId" noStyle>
+                    <Select
+                      placeholder="Chọn thương hiệu..."
+                      loading={catalogLoading}
+                      showSearch
+                      allowClear
+                      optionFilterProp="label"
+                      options={brands.map((b) => ({ value: b.id, label: b.name }))}
+                      className="flex-1 h-14 [&_.ant-select-selector]:!h-14 [&_.ant-select-selector]:!rounded-2xl [&_.ant-select-selector]:!border-pink-100 [&_.ant-select-selection-item]:!leading-[56px]"
+                    />
+                  </Form.Item>
+                  <Button
+                    icon={<PlusOutlined />}
+                    onClick={() => setBrandModalOpen(true)}
+                    title="Thêm thương hiệu mới"
+                    className="h-14 w-14 shrink-0 rounded-2xl border-pink-100 text-primary hover:border-primary"
+                  />
+                </div>
               </Form.Item>
             </div>
 
@@ -529,6 +581,38 @@ export default function ConsignmentMultiStepPage() {
           </Card>
         </div>
       </div>
+
+      <Modal
+        title={<span className="font-display uppercase tracking-widest text-sm">Thêm thương hiệu mới</span>}
+        open={brandModalOpen}
+        onCancel={() => {
+          setBrandModalOpen(false);
+          setNewBrandName("");
+        }}
+        onOk={handleCreateBrand}
+        confirmLoading={creatingBrand}
+        okText="Thêm"
+        cancelText="Hủy"
+        destroyOnClose
+      >
+        <div className="space-y-2 py-2">
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-light/70 ml-1">
+            Tên thương hiệu
+          </span>
+          <Input
+            autoFocus
+            value={newBrandName}
+            onChange={(e) => setNewBrandName(e.target.value)}
+            onPressEnter={handleCreateBrand}
+            placeholder="Ví dụ: Chanel, Hermès, Louis Vuitton..."
+            maxLength={100}
+            className="h-12 rounded-xl border-pink-100"
+          />
+          <p className="text-[11px] text-slate-400 italic ml-1">
+            Nếu không tìm thấy thương hiệu trong danh sách, bạn có thể thêm mới tại đây.
+          </p>
+        </div>
+      </Modal>
     </div>
   );
 }
