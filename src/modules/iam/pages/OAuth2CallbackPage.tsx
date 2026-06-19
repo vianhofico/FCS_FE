@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { useAuth } from "@/shared/context/AuthContext";
-import type { LoginResponse } from "@/shared/contracts/authContract";
+import { authApi } from "@/modules/iam/api/authApi";
 import type { UserRole } from "@/shared/contracts/commonContract";
 
 function getDefaultRouteByRoles(roles: UserRole[] = []) {
@@ -26,30 +26,25 @@ export default function OAuth2CallbackPage() {
       return;
     }
 
-    const accessToken = searchParams.get("accessToken");
-    const refreshToken = searchParams.get("refreshToken");
-    const userId = searchParams.get("userId");
-    const username = searchParams.get("username");
-    const email = searchParams.get("email");
-    const fullName = searchParams.get("fullName") || undefined;
-    const roles = searchParams.get("roles")?.split(",").filter(Boolean) as UserRole[] | undefined;
-
-    if (!accessToken || !refreshToken || !userId || !username || !email || !roles?.length) {
+    const code = searchParams.get("code");
+    if (!code) {
       setError("Google login response is incomplete");
       return;
     }
 
-    const payload: LoginResponse = {
-      accessToken,
-      refreshToken,
-      userId,
-      username,
-      email,
-      fullName,
-      roles,
-    };
-    const profile = completeOAuthLogin(payload);
-    navigate(getDefaultRouteByRoles(profile.roles), { replace: true });
+    authApi
+      .exchangeOAuth2Code(code)
+      .then((response) => {
+        if (response.success && response.data) {
+          const profile = completeOAuthLogin(response.data);
+          navigate(getDefaultRouteByRoles(profile.roles), { replace: true });
+        } else {
+          setError(response.message ?? "Google login failed");
+        }
+      })
+      .catch(() => {
+        setError("Failed to complete Google login. The link may have expired.");
+      });
   }, [completeOAuthLogin, navigate, searchParams]);
 
   return (

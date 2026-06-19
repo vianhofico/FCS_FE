@@ -87,6 +87,18 @@ export const authApi = {
   },
 
   /**
+   * Exchange a short-lived OAuth2 code for the full auth response.
+   * The code is issued by the backend after a successful Google OAuth2 login.
+   */
+  exchangeOAuth2Code: async (code: string): Promise<ApiResponse<LoginResponse>> => {
+    const response = await http.get<ApiResponse<LoginResponse>>(
+      `${endpoints.auth}/oauth2/exchange`,
+      { params: { code } }
+    );
+    return response.data;
+  },
+
+  /**
    * Change password for authenticated user
    */
   changePassword: async (
