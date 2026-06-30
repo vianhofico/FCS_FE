@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ProductPage (Manager/Admin)
  * Manage product lifecycle: READY_TO_LIST → SELLING, SELLING → ARCHIVED/HOLD
  */
@@ -37,6 +37,10 @@ const TRANSITION_ACTIONS: Record<string, Array<{ status: string; label: string; 
   SELLING: [
     { status: "HOLD",     label: "Tạm giữ",         className: "bg-amber-50 font-bold text-amber-600 border-none" },
     { status: "ARCHIVED", label: "Thu hồi/Lưu trữ", className: "bg-red-50 font-bold text-red-500 border-none" },
+  ],
+  ARCHIVED: [
+    { status: "READY_TO_LIST", label: "Niêm yết lại",  className: "bg-emerald-50 font-bold text-emerald-600 border-none" },
+    { status: "SELLING",       label: "Bán ngay",       className: "bg-blue-50 font-bold text-blue-600 border-none" },
   ],
   HOLD: [
     { status: "SELLING",  label: "Bán lại",          className: "bg-emerald-50 font-bold text-emerald-600 border-none" },
